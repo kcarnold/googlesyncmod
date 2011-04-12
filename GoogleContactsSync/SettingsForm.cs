@@ -33,7 +33,6 @@ namespace GoContactSyncMod
 		{
 			InitializeComponent();
 			Logger.LogUpdated += new Logger.LogUpdatedHandler(Logger_LogUpdated);
-            ContactsMatcher.NotificationReceived += new ContactsMatcher.NotificationHandler(OnNotificationReceived);
 			PopulateSyncOptionBox();
 
 			LoadSettings();
@@ -200,8 +199,8 @@ namespace GoContactSyncMod
 				if (_sync == null)
 				{
 					_sync = new Syncronizer();
-					_sync.DuplicatesFound += new Syncronizer.DuplicatesFoundHandler(OnDuplicatesFound);
-					_sync.ErrorEncountered += new Syncronizer.ErrorNotificationHandler(OnErrorEncountered);                    
+					_sync.DuplicatesFound += new Syncronizer.NotificationHandler(_sync_DuplicatesFound);
+					_sync.ErrorEncountered += new Syncronizer.ErrorNotificationHandler(_sync_ErrorEncountered);
 				}
 
 				Logger.ClearLog();
@@ -209,8 +208,7 @@ namespace GoContactSyncMod
 				Logger.Log("Sync started.", EventType.Information);
 				//SetSyncConsoleText(Logger.GetText());
 				_sync.SyncProfile = tbSyncProfile.Text;
-				_sync.SyncOption = _syncOption;
-                _sync.SyncDelete = btSyncDelete.Checked;
+				_sync.SyncOption = _syncOption;                
                    
                 _sync.LoginToGoogle(UserName.Text, Password.Text);
                 _sync.LoginToOutlook();
@@ -304,7 +302,7 @@ namespace GoContactSyncMod
 			AppendSyncConsoleText(Message);
 		}
 
-		void OnErrorEncountered(string title, Exception ex, EventType eventType)
+		void _sync_ErrorEncountered(string title, Exception ex, EventType eventType)
 		{
 			// do not show ErrorHandler, as there may be multiple exceptions that would nag the user
 			Logger.Log(ex.ToString(), EventType.Error);
@@ -316,9 +314,9 @@ namespace GoContactSyncMod
 			notifyIcon.ShowBalloonTip(5000);*/
 		}
 
-		void OnDuplicatesFound(string title, string message)
+		void _sync_DuplicatesFound(string title, string message, EventType eventType)
 		{
-            Logger.Log(message, EventType.Warning);
+            Logger.Log(message, eventType);
             ShowBalloonToolTip(title,message,ToolTipIcon.Warning,5000);
             /*
 			notifyIcon.BalloonTipTitle = title;
@@ -327,11 +325,6 @@ namespace GoContactSyncMod
 			notifyIcon.ShowBalloonTip(5000);
              */
 		}
-
-        void OnNotificationReceived(string message)
-        {
-            SetLastSyncText(message);           
-        }
 
 		public void SetFormEnabled(bool enabled)
 		{
@@ -614,8 +607,6 @@ namespace GoContactSyncMod
                 //Load matches, but match them by properties, not sync id
 				_sync.Load();
 
-                SetLastSyncText("Resetting matches...");
-
 				_sync.ResetMatches();
 
                 lastSync = DateTime.Now;
@@ -629,17 +620,11 @@ namespace GoContactSyncMod
 				ErrorHandler.Handle(ex);
 			}
 			finally
-			{                
+			{
                 lastSync = DateTime.Now;
                 TimerSwitch(true);
 				SetFormEnabled(true);
                 this.hideButton.Enabled = true;
-                if (_sync != null)
-                {
-                    _sync.LogoffOutlook();
-                    _sync.LogoffGoogle();
-                    _sync = null;
-                }
 			}
 		}
 
@@ -732,15 +717,15 @@ namespace GoContactSyncMod
 			ValidateSyncButton();
 		}
 
-        //private void btSyncDelete_CheckedChanged(object sender, EventArgs e)
-        //{
-        //    if (_sync == null)
-        //    {
-        //        _sync = new Syncronizer(_syncOption);
-        //    }
+		private void btSyncDelete_CheckedChanged(object sender, EventArgs e)
+		{
+			if (_sync == null)
+			{
+				_sync = new Syncronizer();
+			}
 
-        //    _sync.SyncDelete = btSyncDelete.Checked;
-        //}
+			_sync.SyncDelete = btSyncDelete.Checked;
+		}
 
 		private void Donate_Click(object sender, EventArgs e)
 		{

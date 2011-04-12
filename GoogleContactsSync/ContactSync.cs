@@ -21,53 +21,47 @@ namespace GoContactSyncMod
         private const string relAnniversary = "anniversary";
         
         private const string relHomePage = "home-page";
-
-        public static void SetAddresses(Outlook.ContactItem source, Contact destination)
-        {
+        
+ 		public static void SetAddresses(Outlook.ContactItem source, Contact destination)
+		{
             destination.PostalAddresses.Clear();
 
-            if (!string.IsNullOrEmpty(source.HomeAddress))
-            {
-                StructuredPostalAddress postalAddress = new StructuredPostalAddress();
+			if (!string.IsNullOrEmpty(source.HomeAddress))
+			{
+				StructuredPostalAddress postalAddress = new StructuredPostalAddress();
                 postalAddress.Street = source.HomeAddressStreet;
                 postalAddress.City = source.HomeAddressCity;
                 postalAddress.Postcode = source.HomeAddressPostalCode;
                 postalAddress.Country = source.HomeAddressCountry;
-                postalAddress.Pobox = source.HomeAddressPostOfficeBox;
-                postalAddress.Region = source.HomeAddressState;
                 postalAddress.Primary = destination.PostalAddresses.Count == 0;
-                postalAddress.Rel = ContactsRelationships.IsHome;
-                destination.PostalAddresses.Add(postalAddress);
-            }
+				postalAddress.Rel = ContactsRelationships.IsHome;
+				destination.PostalAddresses.Add(postalAddress);
+			}
 
-            if (!string.IsNullOrEmpty(source.BusinessAddress))
-            {
-                StructuredPostalAddress postalAddress = new StructuredPostalAddress();
+			if (!string.IsNullOrEmpty(source.BusinessAddress))
+			{
+				StructuredPostalAddress postalAddress = new StructuredPostalAddress();
                 postalAddress.Street = source.BusinessAddressStreet;
                 postalAddress.City = source.BusinessAddressCity;
                 postalAddress.Postcode = source.BusinessAddressPostalCode;
                 postalAddress.Country = source.BusinessAddressCountry;
-                postalAddress.Pobox = source.BusinessAddressPostOfficeBox;
-                postalAddress.Region = source.BusinessAddressState;
-                postalAddress.Primary = destination.PostalAddresses.Count == 0;
-                postalAddress.Rel = ContactsRelationships.IsWork;
-                destination.PostalAddresses.Add(postalAddress);
-            }
+				postalAddress.Primary = destination.PostalAddresses.Count == 0;
+				postalAddress.Rel = ContactsRelationships.IsWork;
+				destination.PostalAddresses.Add(postalAddress);
+			}
 
-            if (!string.IsNullOrEmpty(source.OtherAddress))
-            {
-                StructuredPostalAddress postalAddress = new StructuredPostalAddress();
+			if (!string.IsNullOrEmpty(source.OtherAddress))
+			{
+				StructuredPostalAddress postalAddress = new StructuredPostalAddress();
                 postalAddress.Street = source.OtherAddressStreet;
                 postalAddress.City = source.OtherAddressCity;
                 postalAddress.Postcode = source.OtherAddressPostalCode;
                 postalAddress.Country = source.OtherAddressCountry;
-                postalAddress.Pobox = source.OtherAddressPostOfficeBox;
-                postalAddress.Region = source.OtherAddressState;
-                postalAddress.Primary = destination.PostalAddresses.Count == 0;
-                postalAddress.Rel = ContactsRelationships.IsOther;
-                destination.PostalAddresses.Add(postalAddress);
-            }
-        }
+				postalAddress.Primary = destination.PostalAddresses.Count == 0;
+				postalAddress.Rel = ContactsRelationships.IsOther;
+				destination.PostalAddresses.Add(postalAddress);
+			}
+		}
 
 		public static void SetIMs(Outlook.ContactItem source, Contact destination)
 		{
@@ -106,7 +100,7 @@ namespace GoContactSyncMod
 
 			if (!string.IsNullOrEmpty(source.Email1Address) && !source.Email1Address.Trim().Equals(string.Empty))
 			{
-                EMail primaryEmail = new EMail(ContactPropertiesUtils.GetOutlookEmailAddress1(source));
+				EMail primaryEmail = new EMail(source.Email1Address);
 				primaryEmail.Primary = destination.Emails.Count == 0;
 				primaryEmail.Rel = ContactsRelationships.IsWork;
 				destination.Emails.Add(primaryEmail);
@@ -114,7 +108,7 @@ namespace GoContactSyncMod
 
             if (!string.IsNullOrEmpty(source.Email2Address) && !source.Email2Address.Trim().Equals(string.Empty))
 			{
-				EMail secondaryEmail = new EMail(ContactPropertiesUtils.GetOutlookEmailAddress2(source));
+				EMail secondaryEmail = new EMail(source.Email2Address);
 				secondaryEmail.Primary = destination.Emails.Count == 0;
 				secondaryEmail.Rel = ContactsRelationships.IsHome;
 				destination.Emails.Add(secondaryEmail);
@@ -122,7 +116,7 @@ namespace GoContactSyncMod
 
             if (!string.IsNullOrEmpty(source.Email3Address) && !source.Email3Address.Trim().Equals(string.Empty))
 			{
-                EMail secondaryEmail = new EMail(ContactPropertiesUtils.GetOutlookEmailAddress3(source));
+				EMail secondaryEmail = new EMail(source.Email3Address);
 				secondaryEmail.Primary = destination.Emails.Count == 0;
 				secondaryEmail.Rel = ContactsRelationships.IsOther;
 				destination.Emails.Add(secondaryEmail);
@@ -289,7 +283,7 @@ namespace GoContactSyncMod
 				{
 					Organization company = new Organization();
                     company.Name = (destination.Organizations.Count == 0) ? source.CompanyName : null;
-                    company.Title = (destination.Organizations.Count == 0)? source.JobTitle : null;
+                    company.Title = (destination.Organizations.Count == 0)?source.JobTitle : null;
                     company.Department = (destination.Organizations.Count == 0) ? source.Department : null;
 					company.Primary = destination.Organizations.Count == 0;
 					company.Rel = ContactsRelationships.IsWork;
@@ -358,10 +352,8 @@ namespace GoContactSyncMod
 			{
                 destination.HomeAddressStreet=address.Street;
                 destination.HomeAddressCity=address.City;
-                destination.HomeAddressPostalCode = address.Postcode;
+                destination.HomeAddressPostalCode=address.Postcode;
                 destination.HomeAddressCountry=address.Country;
-                destination.HomeAddressState = address.Region;
-                destination.HomeAddressPostOfficeBox = address.Pobox;
 
                 //Workaround because of Google bug: If a contact was created on GOOGLE side, it uses the unstructured approach
                 //Therefore we need to check, if the structure was filled, if yes it resulted in a formatted string in the Address summary field
@@ -378,8 +370,6 @@ namespace GoContactSyncMod
                 destination.BusinessAddressCity = address.City;
                 destination.BusinessAddressPostalCode = address.Postcode;
                 destination.BusinessAddressCountry = address.Country;
-                destination.BusinessAddressState = address.Region;
-                destination.BusinessAddressPostOfficeBox = address.Pobox;
 
                 //Workaround because of Google bug: If a contact was created on GOOGLE side, it uses the unstructured approach
                 //Therefore we need to check, if the structure was filled, if yes it resulted in a formatted string in the Address summary field
@@ -396,8 +386,6 @@ namespace GoContactSyncMod
                 destination.OtherAddressCity = address.City;
                 destination.OtherAddressPostalCode = address.Postcode;
                 destination.OtherAddressCountry = address.Country;
-                destination.OtherAddressState = address.Region;
-                destination.OtherAddressPostOfficeBox = address.Pobox;
 
                 //Workaround because of Google bug: If a contact was created on GOOGLE side, it uses the unstructured approach
                 //Therefore we need to check, if the structure was filled, if yes it resulted in a formatted string in the Address summary field
@@ -593,9 +581,8 @@ namespace GoContactSyncMod
 			{
 				if (!String.IsNullOrEmpty(slave.Email1Address))
 				{
-                    string emailAddress = ContactPropertiesUtils.GetOutlookEmailAddress1(slave);
-                    Logger.Log("Google Contact '" + master.Summary + "' has neither name nor E-Mail address. Setting E-Mail address of Outlook contact: " + emailAddress, EventType.Warning);
-                    master.Emails.Add(new EMail(emailAddress));
+					Logger.Log("Google Contact '" + master.Summary + "' has neither name nor E-Mail address. Setting E-Mail address of Outlook contact: " + slave.Email1Address, EventType.Warning);
+					master.Emails.Add(new EMail(slave.Email1Address));
 					slave.FileAs = master.Emails[0].Address;
 				}
 				else
@@ -704,24 +691,18 @@ namespace GoContactSyncMod
             slave.HomeAddressCity = string.Empty;
             slave.HomeAddressPostalCode = string.Empty;
             slave.HomeAddressCountry = string.Empty;
-            slave.HomeAddressState = string.Empty;
-            slave.HomeAddressPostOfficeBox = string.Empty;
 
             slave.BusinessAddress = string.Empty;
             slave.BusinessAddressStreet = string.Empty;
             slave.BusinessAddressCity = string.Empty;
             slave.BusinessAddressPostalCode = string.Empty;
             slave.BusinessAddressCountry = string.Empty;
-            slave.BusinessAddressState = string.Empty;
-            slave.BusinessAddressPostOfficeBox = string.Empty;
 
             slave.OtherAddress = string.Empty;
             slave.OtherAddressStreet = string.Empty;
             slave.OtherAddressCity = string.Empty;
             slave.OtherAddressPostalCode = string.Empty;
             slave.OtherAddressCountry = string.Empty;
-            slave.OtherAddressState = string.Empty;
-            slave.OtherAddressPostOfficeBox = string.Empty;
 
             slave.SelectedMailingAddress = Microsoft.Office.Interop.Outlook.OlMailingAddress.olNone;
 			foreach (StructuredPostalAddress address in master.PostalAddresses)
