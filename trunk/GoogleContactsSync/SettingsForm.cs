@@ -372,21 +372,38 @@ namespace GoContactSyncMod
         }
 
 
-        private bool ValidCredentials
+	    private bool ValidSyncFolders
+	    {
+            get
+            {
+                bool syncContactFolderIsValid = (contactFoldersComboBox.SelectedIndex >= 0
+                                                 && contactFoldersComboBox.SelectedIndex < contactFoldersComboBox.Items.Count) || !btSyncContacts.Checked;
+                bool syncNoteFolderIsValid = (noteFoldersComboBox.SelectedIndex >= 0 && noteFoldersComboBox.SelectedIndex < noteFoldersComboBox.Items.Count)
+                                             || !btSyncNotes.Checked;
+
+                //ToDo: Coloring doesn'T Work for these combos
+                setBgColor(contactFoldersComboBox, syncContactFolderIsValid);
+                setBgColor(noteFoldersComboBox, syncNoteFolderIsValid);
+
+                return syncContactFolderIsValid && syncNoteFolderIsValid;
+            }
+
+
+	    }
+
+	    private bool ValidCredentials
 		{
 			get
 			{
 				bool userNameIsValid = Regex.IsMatch(UserName.Text, @"^(?'id'[a-z0-9\'\%\._\+\-]+)@(?'domain'[a-z0-9\'\%\._\+\-]+)\.(?'ext'[a-z]{2,6})$", RegexOptions.IgnoreCase);
 				bool passwordIsValid = !string.IsNullOrEmpty(Password.Text.Trim());
                 bool syncProfileIsValid = (cmbSyncProfile.SelectedIndex > 0 && cmbSyncProfile.SelectedIndex < cmbSyncProfile.Items.Count-1);
-                bool syncContactFolderIsValid = (contactFoldersComboBox.SelectedIndex >= 0 && contactFoldersComboBox.SelectedIndex < contactFoldersComboBox.Items.Count) || !btSyncContacts.Checked;
-                bool syncNoteFolderIsValid = (noteFoldersComboBox.SelectedIndex >= 0 && noteFoldersComboBox.SelectedIndex < noteFoldersComboBox.Items.Count) || !btSyncNotes.Checked;
+               
 
 				setBgColor(UserName, userNameIsValid);
 				setBgColor(Password, passwordIsValid);
                 setBgColor(cmbSyncProfile, syncProfileIsValid);
-                setBgColor(contactFoldersComboBox, syncContactFolderIsValid);
-                setBgColor(noteFoldersComboBox, syncNoteFolderIsValid);
+               
 
 
                 if (!userNameIsValid)
@@ -399,7 +416,7 @@ namespace GoContactSyncMod
                     toolTip.SetToolTip(Password, String.Empty);               
                                              
 
-                return userNameIsValid && passwordIsValid && syncProfileIsValid && syncContactFolderIsValid && syncNoteFolderIsValid;
+                return userNameIsValid && passwordIsValid && syncProfileIsValid;
 			}
 		}
 
@@ -421,6 +438,11 @@ namespace GoContactSyncMod
 			{
 				if (!ValidCredentials)
 					return;
+
+                fillSyncFolderItems();
+
+                if (!ValidSyncFolders)
+                    throw new Exception("At least one sync folder is not selected or invalid!");
 
 				ThreadStart starter = new ThreadStart(Sync_ThreadStarter);
 				Thread thread = new Thread(starter);
@@ -460,9 +482,7 @@ namespace GoContactSyncMod
                     regKeyAppRoot.SetValue("SyncNotesFolder", this.syncNotesFolder);
 
                 SetLastSyncText("Syncing...");
-                notifyIcon.Text = Application.ProductName + "\nSyncing...";
-
-                fillSyncFolderItems();
+                notifyIcon.Text = Application.ProductName + "\nSyncing...";                
 
                 SetFormEnabled(false);
 
@@ -1061,7 +1081,7 @@ namespace GoContactSyncMod
 
 		private void ValidateSyncButton()
 		{
-			syncButton.Enabled = ValidCredentials;
+			syncButton.Enabled = ValidCredentials && ValidSyncFolders;
 		}
 
 		private void deleteDuplicatesButton_Click(object sender, EventArgs e)
