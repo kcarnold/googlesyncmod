@@ -49,6 +49,7 @@ namespace GoContactSyncMod
                 logwriter = new StreamWriter(logFileName, true);
 
                 logwriter.WriteLine("[Start Rolling]");
+                logwriter.Flush();
             }
             catch (Exception ex)
             {
@@ -63,6 +64,7 @@ namespace GoContactSyncMod
                 if (logwriter != null)
                 {
                     logwriter.WriteLine("[End Rolling]");
+                    logwriter.Flush();
                     logwriter.Close();
                 }
             }

@@ -47,7 +47,7 @@ namespace GoContactSyncMod
                 try
                 {
                     oln = sync.OutlookNotes[i] as Outlook.NoteItem;
-                    if (oln == null || string.IsNullOrEmpty(oln.Subject))
+                    if (oln == null || string.IsNullOrEmpty(oln.Body))
                     {
                         Logger.Log("Empty Outlook note found. Skipping", EventType.Warning);
                         sync.SkippedCount++;
