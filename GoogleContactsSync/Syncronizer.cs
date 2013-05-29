@@ -13,6 +13,7 @@ using Google.Contacts;
 using Google.Documents;
 using Google.GData.Client.ResumableUpload;
 using Google.GData.Documents;
+using System.Threading;
 
 namespace GoContactSyncMod
 {
@@ -129,7 +130,11 @@ namespace GoContactSyncMod
         /// if true, use Outlook's FileAs for Google Title/FullName. If false, use Outlook's Fullname
         /// </summary>
         public bool UseFileAs { get; set; }
-       
+
+
+        private int executing; // make this static if you want this one-caller-only to
+                                      // all objects instead of a single object
+
 
 		public void LoginToGoogle(string username, string password)
 		{
@@ -770,214 +775,226 @@ namespace GoContactSyncMod
 
 		public void Sync()
 		{
-			lock (_syncRoot)
-			{
+            //lock (_syncRoot)
+            //{
+            //==>Instead of lock, use Interlocked to exit the code, if already another thread is calling the same
+                bool won = false;
+
                 try
                 {
-                    if (string.IsNullOrEmpty(SyncProfile))
+
+                    won = Interlocked.CompareExchange(ref executing, 1, 0) == 0;
+                    if (won)
                     {
-                        Logger.Log("Must set a sync profile. This should be different on each user/computer you sync on.", EventType.Error);
-                        return;
-                    }
 
 
-                    SyncedCount = 0;
-                    DeletedCount = 0;
-                    ErrorCount = 0;
-                    SkippedCount = 0;
-                    SkippedCountNotMatches = 0;
-                    ConflictResolution = ConflictResolution.Cancel;
-                    DeleteGoogleResolution = DeleteResolution.Cancel;
-                    DeleteOutlookResolution = DeleteResolution.Cancel;
+                        if (string.IsNullOrEmpty(SyncProfile))
+                        {
+                            Logger.Log("Must set a sync profile. This should be different on each user/computer you sync on.", EventType.Error);
+                            return;
+                        }
 
-                    if (SyncContacts)
-                        MatchContacts();
-                                       
-                    if (SyncNotes)
-                        MatchNotes();
+
+                        SyncedCount = 0;
+                        DeletedCount = 0;
+                        ErrorCount = 0;
+                        SkippedCount = 0;
+                        SkippedCountNotMatches = 0;
+                        ConflictResolution = ConflictResolution.Cancel;
+                        DeleteGoogleResolution = DeleteResolution.Cancel;
+                        DeleteOutlookResolution = DeleteResolution.Cancel;
+
+                        if (SyncContacts)
+                            MatchContacts();
+
+                        if (SyncNotes)
+                            MatchNotes();
 
 #if debug
-                    this.DebugContacts();
+                        this.DebugContacts();
 #endif
 
-                    if (SyncContacts)
-                    {
-                        if (Contacts == null)
-                            return;
-
-                        TotalCount = Contacts.Count + SkippedCountNotMatches;
-
-                        //Remove Google duplicates from matches to be synced
-                        if (GoogleContactDuplicates != null)
+                        if (SyncContacts)
                         {
-                            for (int i = GoogleContactDuplicates.Count - 1; i >= 0; i--)
+                            if (Contacts == null)
+                                return;
+
+                            TotalCount = Contacts.Count + SkippedCountNotMatches;
+
+                            //Remove Google duplicates from matches to be synced
+                            if (GoogleContactDuplicates != null)
                             {
-                                ContactMatch match = GoogleContactDuplicates[i];
-                                if (Contacts.Contains(match))
+                                for (int i = GoogleContactDuplicates.Count - 1; i >= 0; i--)
                                 {
-                                    if (_syncOption == SyncOption.MergePrompt)
+                                    ContactMatch match = GoogleContactDuplicates[i];
+                                    if (Contacts.Contains(match))
                                     {
-                                        //For each OutlookDuplicate: Ask user for the GoogleContact to be synced with
-                                        for (int j = match.AllOutlookContactMatches.Count - 1; j >= 0 && match.AllGoogleContactMatches.Count > 0; j--)
+                                        if (_syncOption == SyncOption.MergePrompt)
                                         {
-                                            OutlookContactInfo olci = match.AllOutlookContactMatches[j];
-                                            Outlook.ContactItem outlookContactItem = olci.GetOriginalItemFromOutlook();
-
-                                            try
+                                            //For each OutlookDuplicate: Ask user for the GoogleContact to be synced with
+                                            for (int j = match.AllOutlookContactMatches.Count - 1; j >= 0 && match.AllGoogleContactMatches.Count > 0; j--)
                                             {
-                                                Contact googleContact;
-                                                ConflictResolver r = new ConflictResolver();
-                                                switch (r.ResolveDuplicate(olci, match.AllGoogleContactMatches, out googleContact))
-                                                {
-                                                    case ConflictResolution.Skip:
-                                                    case ConflictResolution.SkipAlways: //Keep both entries and sync it to both sides
-                                                        match.AllGoogleContactMatches.Remove(googleContact);
-                                                        match.AllOutlookContactMatches.Remove(olci);
-                                                        Contacts.Add(new ContactMatch(null, googleContact));
-                                                        Contacts.Add(new ContactMatch(olci, null));                                                        
-                                                        break;
-                                                    case ConflictResolution.OutlookWins:
-                                                    case ConflictResolution.OutlookWinsAlways: //Keep Outlook and overwrite Google
-                                                        match.AllGoogleContactMatches.Remove(googleContact);
-                                                        match.AllOutlookContactMatches.Remove(olci);                                                         
-                                                        UpdateContact(outlookContactItem, googleContact);
-                                                        SaveContact(new ContactMatch(olci, googleContact));                                                        
-                                                        break;
-                                                    case ConflictResolution.GoogleWins:
-                                                    case ConflictResolution.GoogleWinsAlways: //Keep Google and overwrite Outlook
-                                                        match.AllGoogleContactMatches.Remove(googleContact);
-                                                        match.AllOutlookContactMatches.Remove(olci);                                                       
-                                                        UpdateContact(googleContact, outlookContactItem);
-                                                        SaveContact(new ContactMatch(olci, googleContact));                                                        
-                                                        break;
-                                                    default:
-                                                        throw new ApplicationException("Cancelled");
-                                                }
-                                            }
-                                            finally
-                                            {
-                                                if (outlookContactItem != null)
-                                                {
-                                                    Marshal.ReleaseComObject(outlookContactItem);
-                                                    outlookContactItem = null;
-                                                }
-                                            }
+                                                OutlookContactInfo olci = match.AllOutlookContactMatches[j];
+                                                Outlook.ContactItem outlookContactItem = olci.GetOriginalItemFromOutlook();
 
-                                            //Cleanup the match, i.e. assign a proper OutlookContact and GoogleContact, because can be deleted before
-                                            if (match.AllOutlookContactMatches.Count == 0)
-                                                match.OutlookContact = null;
-                                            else
-                                                match.OutlookContact = match.AllOutlookContactMatches[0]; 
+                                                try
+                                                {
+                                                    Contact googleContact;
+                                                    ConflictResolver r = new ConflictResolver();
+                                                    switch (r.ResolveDuplicate(olci, match.AllGoogleContactMatches, out googleContact))
+                                                    {
+                                                        case ConflictResolution.Skip:
+                                                        case ConflictResolution.SkipAlways: //Keep both entries and sync it to both sides
+                                                            match.AllGoogleContactMatches.Remove(googleContact);
+                                                            match.AllOutlookContactMatches.Remove(olci);
+                                                            Contacts.Add(new ContactMatch(null, googleContact));
+                                                            Contacts.Add(new ContactMatch(olci, null));
+                                                            break;
+                                                        case ConflictResolution.OutlookWins:
+                                                        case ConflictResolution.OutlookWinsAlways: //Keep Outlook and overwrite Google
+                                                            match.AllGoogleContactMatches.Remove(googleContact);
+                                                            match.AllOutlookContactMatches.Remove(olci);
+                                                            UpdateContact(outlookContactItem, googleContact);
+                                                            SaveContact(new ContactMatch(olci, googleContact));
+                                                            break;
+                                                        case ConflictResolution.GoogleWins:
+                                                        case ConflictResolution.GoogleWinsAlways: //Keep Google and overwrite Outlook
+                                                            match.AllGoogleContactMatches.Remove(googleContact);
+                                                            match.AllOutlookContactMatches.Remove(olci);
+                                                            UpdateContact(googleContact, outlookContactItem);
+                                                            SaveContact(new ContactMatch(olci, googleContact));
+                                                            break;
+                                                        default:
+                                                            throw new ApplicationException("Cancelled");
+                                                    }
+                                                }
+                                                finally
+                                                {
+                                                    if (outlookContactItem != null)
+                                                    {
+                                                        Marshal.ReleaseComObject(outlookContactItem);
+                                                        outlookContactItem = null;
+                                                    }
+                                                }
+
+                                                //Cleanup the match, i.e. assign a proper OutlookContact and GoogleContact, because can be deleted before
+                                                if (match.AllOutlookContactMatches.Count == 0)
+                                                    match.OutlookContact = null;
+                                                else
+                                                    match.OutlookContact = match.AllOutlookContactMatches[0];
+                                            }
                                         }
-                                    }    
-                                    
-                                    //Cleanup the match, i.e. assign a proper OutlookContact and GoogleContact, because can be deleted before
-                                    if (match.AllGoogleContactMatches.Count == 0)
-                                         match.GoogleContact = null;
-                                    else
-                                        match.GoogleContact = match.AllGoogleContactMatches[0];                                    
-                                       
 
-                                    if (match.AllOutlookContactMatches.Count == 0)
-                                    {
-                                        //If all OutlookContacts have been assigned by the users ==> Create one match for each remaining Google Contact to sync them to Outlook
-                                        Contacts.Remove(match);
-                                        foreach (Contact googleContact in match.AllGoogleContactMatches)
-                                            Contacts.Add(new ContactMatch(null, googleContact));
+                                        //Cleanup the match, i.e. assign a proper OutlookContact and GoogleContact, because can be deleted before
+                                        if (match.AllGoogleContactMatches.Count == 0)
+                                            match.GoogleContact = null;
+                                        else
+                                            match.GoogleContact = match.AllGoogleContactMatches[0];
+
+
+                                        if (match.AllOutlookContactMatches.Count == 0)
+                                        {
+                                            //If all OutlookContacts have been assigned by the users ==> Create one match for each remaining Google Contact to sync them to Outlook
+                                            Contacts.Remove(match);
+                                            foreach (Contact googleContact in match.AllGoogleContactMatches)
+                                                Contacts.Add(new ContactMatch(null, googleContact));
+                                        }
+                                        else if (match.AllGoogleContactMatches.Count == 0)
+                                        {
+                                            //If all GoogleContacts have been assigned by the users ==> Create one match for each remaining Outlook Contact to sync them to Google
+                                            Contacts.Remove(match);
+                                            foreach (OutlookContactInfo outlookContact in match.AllOutlookContactMatches)
+                                                Contacts.Add(new ContactMatch(outlookContact, null));
+                                        }
+                                        else // if (match.AllGoogleContactMatches.Count > 1 ||
+                                        //         match.AllOutlookContactMatches.Count > 1)
+                                        {
+                                            SkippedCount++;
+                                            Contacts.Remove(match);
+                                        }
+                                        //else
+                                        //{
+                                        //    //If there remains a modified ContactMatch with only a single OutlookContact and GoogleContact
+                                        //    //==>Remove all outlookContactDuplicates for this Outlook Contact to not remove it later from the Contacts to sync
+                                        //    foreach (ContactMatch duplicate in OutlookContactDuplicates)
+                                        //    {
+                                        //        if (duplicate.OutlookContact.EntryID == match.OutlookContact.EntryID)
+                                        //        {
+                                        //            OutlookContactDuplicates.Remove(duplicate);
+                                        //            break;
+                                        //        }
+                                        //    }
+                                        //}
                                     }
-                                    else if (match.AllGoogleContactMatches.Count == 0)
+                                }
+                            }
+
+                            //Remove Outlook duplicates from matches to be synced
+                            if (OutlookContactDuplicates != null)
+                            {
+                                for (int i = OutlookContactDuplicates.Count - 1; i >= 0; i--)
+                                {
+                                    ContactMatch match = OutlookContactDuplicates[i];
+                                    if (Contacts.Contains(match))
                                     {
-                                        //If all GoogleContacts have been assigned by the users ==> Create one match for each remaining Outlook Contact to sync them to Google
-                                        Contacts.Remove(match);
-                                        foreach (OutlookContactInfo outlookContact in match.AllOutlookContactMatches)
-                                            Contacts.Add(new ContactMatch(outlookContact, null));
-                                    }
-                                    else // if (match.AllGoogleContactMatches.Count > 1 ||
-                                    //         match.AllOutlookContactMatches.Count > 1)
-                                    {
+                                        //ToDo: If there has been a resolution for a duplicate above, there is still skipped increased, check how to distinguish
                                         SkippedCount++;
                                         Contacts.Remove(match);
                                     }
-                                    //else
-                                    //{
-                                    //    //If there remains a modified ContactMatch with only a single OutlookContact and GoogleContact
-                                    //    //==>Remove all outlookContactDuplicates for this Outlook Contact to not remove it later from the Contacts to sync
-                                    //    foreach (ContactMatch duplicate in OutlookContactDuplicates)
-                                    //    {
-                                    //        if (duplicate.OutlookContact.EntryID == match.OutlookContact.EntryID)
-                                    //        {
-                                    //            OutlookContactDuplicates.Remove(duplicate);
-                                    //            break;
-                                    //        }
-                                    //    }
-                                    //}
                                 }
                             }
+
+                            ////Remove remaining google contacts not in My Contacts group (to avoid syncing accounts added automatically to "Weitere Kontakte"/"Further Contacts"
+                            //Group syncGroup = GetGoogleGroupByName(myContactsGroup);
+                            //if (syncGroup != null)
+                            //{
+                            //    for (int i = GoogleContacts.Count -1 ;i >=0; i--)
+                            //    {
+                            //        Contact googleContact = GoogleContacts[i];
+                            //        Collection<Group> googleContactGroups = Utilities.GetGoogleGroups(this, googleContact);
+
+                            //        if (!googleContactGroups.Contains(syncGroup))
+                            //            GoogleContacts.Remove(googleContact);
+
+                            //    }
+                            //}                                    
+
+
+                            Logger.Log("Syncing groups...", EventType.Information);
+                            ContactsMatcher.SyncGroups(this);
+
+                            Logger.Log("Syncing contacts...", EventType.Information);
+                            ContactsMatcher.SyncContacts(this);
+
+                            SaveContacts(Contacts);
                         }
 
-                        //Remove Outlook duplicates from matches to be synced
-                        if (OutlookContactDuplicates != null)
+                        if (SyncNotes)
                         {
-                            for (int i = OutlookContactDuplicates.Count - 1; i >= 0; i--)
-                            {
-                                ContactMatch match = OutlookContactDuplicates[i];
-                                if (Contacts.Contains(match))
-                                {
-                                    //ToDo: If there has been a resolution for a duplicate above, there is still skipped increased, check how to distinguish
-                                    SkippedCount++;
-                                    Contacts.Remove(match);
-                                }
-                            }
+                            if (Notes == null)
+                                return;
+
+                            TotalCount += Notes.Count;
+
+                            Logger.Log("Syncing notes...", EventType.Information);
+                            NotesMatcher.SyncNotes(this);
+
+                            SaveNotes(Notes);
+
+                            //Because notes are uploaded asynchonously, wait until all notes have been successfully uploaded
+                            foreach (NoteMatch match in Notes)
+                                for (int i = 0; match.AsyncUpdateCompleted.HasValue && !match.AsyncUpdateCompleted.Value && i < 10; i++)
+                                    System.Threading.Thread.Sleep(1000);//DoNothing, until the Async Update is complete, but only wait maximum 10 seconds
+
+                            //Delete empty Google note folders
+                            CleanUpGoogleCategories();
                         }
-
-                        ////Remove remaining google contacts not in My Contacts group (to avoid syncing accounts added automatically to "Weitere Kontakte"/"Further Contacts"
-                        //Group syncGroup = GetGoogleGroupByName(myContactsGroup);
-                        //if (syncGroup != null)
-                        //{
-                        //    for (int i = GoogleContacts.Count -1 ;i >=0; i--)
-                        //    {
-                        //        Contact googleContact = GoogleContacts[i];
-                        //        Collection<Group> googleContactGroups = Utilities.GetGoogleGroups(this, googleContact);
-
-                        //        if (!googleContactGroups.Contains(syncGroup))
-                        //            GoogleContacts.Remove(googleContact);
-
-                        //    }
-                        //}                                    
-
-
-                        Logger.Log("Syncing groups...", EventType.Information);
-                        ContactsMatcher.SyncGroups(this);
-
-                        Logger.Log("Syncing contacts...", EventType.Information);
-                        ContactsMatcher.SyncContacts(this);
-
-                        SaveContacts(Contacts);
-                    }
-
-                    if (SyncNotes)
-                    {
-                        if (Notes == null)
-                            return;
-
-                        TotalCount += Notes.Count;
-
-                        Logger.Log("Syncing notes...", EventType.Information);
-                        NotesMatcher.SyncNotes(this);
-
-                        SaveNotes(Notes);
-
-                        //Because notes are uploaded asynchonously, wait until all notes have been successfully uploaded
-                        foreach (NoteMatch match in Notes)
-                            for (int i = 0; match.AsyncUpdateCompleted.HasValue && !match.AsyncUpdateCompleted.Value && i < 10; i++)
-                                System.Threading.Thread.Sleep(1000);//DoNothing, until the Async Update is complete, but only wait maximum 10 seconds
-
-                        //Delete empty Google note folders
-                        CleanUpGoogleCategories();
                     }
                 }
                 finally
                 {
+                    if (won) Interlocked.Exchange(ref executing, 0);
+
                     if (OutlookContacts != null)
                     {
                         Marshal.ReleaseComObject(OutlookContacts);
@@ -989,7 +1006,7 @@ namespace GoContactSyncMod
                     GoogleGroups = null;
                     Contacts = null;                    
                 }
-			}
+            //}
 		}
 
 		public void SaveContacts(List<ContactMatch> contacts)
