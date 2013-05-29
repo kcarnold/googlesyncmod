@@ -47,6 +47,8 @@ namespace GoContactSyncMod
                     File.Move(logFileName, logFileName + "_" + DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss"));
 
                 logwriter = new StreamWriter(logFileName, true);
+
+                logwriter.WriteLine("[Start Rolling]");
             }
             catch (Exception ex)
             {
@@ -58,8 +60,11 @@ namespace GoContactSyncMod
         {
             try
             {
-                if(logwriter!=null)
+                if (logwriter != null)
+                {
+                    logwriter.WriteLine("[End Rolling]");
                     logwriter.Close();
+                }
             }
             catch(Exception e)
             {
