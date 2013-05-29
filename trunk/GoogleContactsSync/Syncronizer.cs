@@ -1907,7 +1907,10 @@ namespace GoContactSyncMod
         /// </summary>
         public void UpdateNote(Outlook.NoteItem master, Document slave)
         {
-            slave.Title = master.Subject.Replace(":", String.Empty);
+            if (string.IsNullOrEmpty(master.Subject))
+                slave.Title = "Untitled";
+            else
+                slave.Title = master.Subject.Replace(":", String.Empty);
 
             string fileName = NotePropertiesUtils.CreateNoteFile(master.EntryID, master.Body, SyncProfile);
 
