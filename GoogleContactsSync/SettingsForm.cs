@@ -72,6 +72,10 @@ namespace GoContactSyncMod
             }
         }
 
+
+        private int executing; // make this static if you want this one-caller-only to
+        // all objects instead of a single object
+
         //register window for lock/unlock messages of workstation
         //private bool registered = false;
 
@@ -460,104 +464,114 @@ namespace GoContactSyncMod
 
 		private void Sync_ThreadStarter()
 		{
+            //==>Instead of lock, use Interlocked to exit the code, if already another thread is calling the same
+            bool won = false;
+
             try
             {
-                TimerSwitch(false);                
 
-                //if the contacts or notes folder has changed ==> Reset matches (to not delete contacts or notes on the one or other side)                
-                RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey + "\\" + syncProfile);
-                string oldSyncContactsFolder = regKeyAppRoot.GetValue("SyncContactsFolder") as string;
-                string oldSyncNotesFolder = regKeyAppRoot.GetValue("SyncNotesFolder") as string;
 
-                //only reset notes if NotesFolder changed and reset contacts if ContactsFolder changed
-                bool syncContacts = !string.IsNullOrEmpty(oldSyncContactsFolder) && !oldSyncContactsFolder.Equals(this.syncContactsFolder) && btSyncContacts.Checked;
-                bool syncNotes = !string.IsNullOrEmpty(oldSyncNotesFolder) && !oldSyncNotesFolder.Equals(this.syncNotesFolder) && btSyncNotes.Checked;                                
-                if (syncContacts || syncNotes)
-                    ResetMatches(syncContacts, syncNotes);
-                
-                //Then save the Contacts and Notes Folders used at last sync
-                if (btSyncContacts.Checked)
-                    regKeyAppRoot.SetValue("SyncContactsFolder", this.syncContactsFolder);
-                if (btSyncNotes.Checked)
-                    regKeyAppRoot.SetValue("SyncNotesFolder", this.syncNotesFolder);
-
-                SetLastSyncText("Syncing...");
-                notifyIcon.Text = Application.ProductName + "\nSyncing...";                
-
-                SetFormEnabled(false);
-
-                if (sync == null)
+                won = Interlocked.CompareExchange(ref executing, 1, 0) == 0;
+                if (won)
                 {
-                    sync = new Syncronizer();
-                    sync.DuplicatesFound += new Syncronizer.DuplicatesFoundHandler(OnDuplicatesFound);
-                    sync.ErrorEncountered += new Syncronizer.ErrorNotificationHandler(OnErrorEncountered);
+
+                    TimerSwitch(false);
+
+                    //if the contacts or notes folder has changed ==> Reset matches (to not delete contacts or notes on the one or other side)                
+                    RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey + "\\" + syncProfile);
+                    string oldSyncContactsFolder = regKeyAppRoot.GetValue("SyncContactsFolder") as string;
+                    string oldSyncNotesFolder = regKeyAppRoot.GetValue("SyncNotesFolder") as string;
+
+                    //only reset notes if NotesFolder changed and reset contacts if ContactsFolder changed
+                    bool syncContacts = !string.IsNullOrEmpty(oldSyncContactsFolder) && !oldSyncContactsFolder.Equals(this.syncContactsFolder) && btSyncContacts.Checked;
+                    bool syncNotes = !string.IsNullOrEmpty(oldSyncNotesFolder) && !oldSyncNotesFolder.Equals(this.syncNotesFolder) && btSyncNotes.Checked;
+                    if (syncContacts || syncNotes)
+                        ResetMatches(syncContacts, syncNotes);
+
+                    //Then save the Contacts and Notes Folders used at last sync
+                    if (btSyncContacts.Checked)
+                        regKeyAppRoot.SetValue("SyncContactsFolder", this.syncContactsFolder);
+                    if (btSyncNotes.Checked)
+                        regKeyAppRoot.SetValue("SyncNotesFolder", this.syncNotesFolder);
+
+                    SetLastSyncText("Syncing...");
+                    notifyIcon.Text = Application.ProductName + "\nSyncing...";
+
+                    SetFormEnabled(false);
+
+                    if (sync == null)
+                    {
+                        sync = new Syncronizer();
+                        sync.DuplicatesFound += new Syncronizer.DuplicatesFoundHandler(OnDuplicatesFound);
+                        sync.ErrorEncountered += new Syncronizer.ErrorNotificationHandler(OnErrorEncountered);
+                    }
+
+                    Logger.ClearLog();
+                    SetSyncConsoleText("");
+                    Logger.Log("Sync started (" + syncProfile + ").", EventType.Information);
+                    //SetSyncConsoleText(Logger.GetText());
+                    sync.SyncProfile = syncProfile;
+                    Syncronizer.SyncContactsFolder = this.syncContactsFolder;
+                    Syncronizer.SyncNotesFolder = this.syncNotesFolder;
+
+                    sync.SyncOption = syncOption;
+                    sync.SyncDelete = btSyncDelete.Checked;
+                    sync.PromptDelete = btPromptDelete.Checked && btSyncDelete.Checked;
+                    sync.UseFileAs = chkUseFileAs.Checked;
+                    sync.SyncNotes = btSyncNotes.Checked;
+                    sync.SyncContacts = btSyncContacts.Checked;
+
+                    if (!sync.SyncContacts && !sync.SyncNotes)
+                    {
+                        SetLastSyncText("Sync failed.");
+                        notifyIcon.Text = Application.ProductName + "\nSync failed";
+
+                        string messageText = "Neither notes nor contacts are switched on for syncing. Please choose at least one option. Sync aborted!";
+                        Logger.Log(messageText, EventType.Error);
+                        ShowForm();
+                        ShowBalloonToolTip("Error", messageText, ToolTipIcon.Error, 5000);
+                        return;
+                    }
+
+
+                    sync.LoginToGoogle(UserName.Text, Password.Text);
+                    sync.LoginToOutlook();
+
+                    sync.Sync();
+
+                    lastSync = DateTime.Now;
+                    SetLastSyncText("Last synced at " + lastSync.ToString());
+
+                    string message = string.Format("Sync complete.\r\n Synced:  {1} out of {0}.\r\n Deleted:  {2}.\r\n Skipped: {3}.\r\n Errors:    {4}.", sync.TotalCount, sync.SyncedCount, sync.DeletedCount, sync.SkippedCount, sync.ErrorCount);
+                    Logger.Log(message, EventType.Information);
+                    if (reportSyncResultCheckBox.Checked)
+                    {
+                        /*
+                        notifyIcon.BalloonTipTitle = Application.ProductName;
+                        notifyIcon.BalloonTipText = string.Format("{0}. {1}", DateTime.Now, message);
+                        */
+                        ToolTipIcon icon;
+                        if (sync.ErrorCount > 0)
+                            icon = ToolTipIcon.Error;
+                        else if (sync.SkippedCount > 0)
+                            icon = ToolTipIcon.Warning;
+                        else
+                            icon = ToolTipIcon.Info;
+                        /*notifyIcon.ShowBalloonTip(5000);
+                        */
+                        ShowBalloonToolTip(Application.ProductName,
+                            string.Format("{0}. {1}", DateTime.Now, message),
+                            icon,
+                            5000);
+
+                    }
+                    string toolTip = string.Format("{0}\nLast sync: {1}", Application.ProductName, DateTime.Now.ToString("dd.MM. HH:mm"));
+                    if (sync.ErrorCount + sync.SkippedCount > 0)
+                        toolTip += string.Format("\nWarnings: {0}.", sync.ErrorCount + sync.SkippedCount);
+                    if (toolTip.Length >= 64)
+                        toolTip = toolTip.Substring(0, 63);
+                    notifyIcon.Text = toolTip;
                 }
-
-                Logger.ClearLog();
-                SetSyncConsoleText("");
-                Logger.Log("Sync started (" + syncProfile + ").", EventType.Information);
-                //SetSyncConsoleText(Logger.GetText());
-                sync.SyncProfile = syncProfile;
-                Syncronizer.SyncContactsFolder  = this.syncContactsFolder;
-                Syncronizer.SyncNotesFolder = this.syncNotesFolder;
-
-                sync.SyncOption = syncOption;
-                sync.SyncDelete = btSyncDelete.Checked;
-                sync.PromptDelete = btPromptDelete.Checked && btSyncDelete.Checked;
-                sync.UseFileAs = chkUseFileAs.Checked;
-                sync.SyncNotes = btSyncNotes.Checked;
-                sync.SyncContacts = btSyncContacts.Checked;
-
-                if (!sync.SyncContacts && !sync.SyncNotes)
-                {
-                    SetLastSyncText("Sync failed.");
-                    notifyIcon.Text = Application.ProductName + "\nSync failed";
-
-                    string messageText = "Neither notes nor contacts are switched on for syncing. Please choose at least one option. Sync aborted!";
-                    Logger.Log(messageText, EventType.Error);
-                    ShowForm();
-                    ShowBalloonToolTip("Error", messageText, ToolTipIcon.Error, 5000);
-                    return;
-                }
-
-
-                sync.LoginToGoogle(UserName.Text, Password.Text);
-                sync.LoginToOutlook();
-
-                sync.Sync();
-
-                lastSync = DateTime.Now;
-                SetLastSyncText("Last synced at " + lastSync.ToString());
-
-                string message = string.Format("Sync complete.\r\n Synced:  {1} out of {0}.\r\n Deleted:  {2}.\r\n Skipped: {3}.\r\n Errors:    {4}.", sync.TotalCount, sync.SyncedCount, sync.DeletedCount, sync.SkippedCount, sync.ErrorCount);
-                Logger.Log(message, EventType.Information);
-                if (reportSyncResultCheckBox.Checked)
-                {
-                    /*
-                    notifyIcon.BalloonTipTitle = Application.ProductName;
-                    notifyIcon.BalloonTipText = string.Format("{0}. {1}", DateTime.Now, message);
-                    */
-                    ToolTipIcon icon;
-                    if (sync.ErrorCount > 0)
-                        icon = ToolTipIcon.Error;
-                    else if (sync.SkippedCount > 0)
-                        icon = ToolTipIcon.Warning;
-                    else
-                        icon = ToolTipIcon.Info;
-                    /*notifyIcon.ShowBalloonTip(5000);
-                    */
-                    ShowBalloonToolTip(Application.ProductName,
-                        string.Format("{0}. {1}", DateTime.Now, message),
-                        icon,
-                        5000);
-
-                }
-                string toolTip = string.Format("{0}\nLast sync: {1}", Application.ProductName, DateTime.Now.ToString("dd.MM. HH:mm"));
-                if (sync.ErrorCount + sync.SkippedCount > 0)
-                    toolTip += string.Format("\nWarnings: {0}.", sync.ErrorCount + sync.SkippedCount);
-                if (toolTip.Length >= 64)
-                    toolTip = toolTip.Substring(0, 63);
-                notifyIcon.Text = toolTip;
             }
             catch (Google.GData.Client.GDataRequestException ex)
             {
@@ -605,15 +619,20 @@ namespace GoContactSyncMod
                 }
             }							
 			finally
-			{                        
-                lastSync = DateTime.Now;
-                TimerSwitch(true);
-				SetFormEnabled(true);
-                if (sync != null)
+			{
+                if (won)
                 {
-                    sync.LogoffOutlook();
-                    sync.LogoffGoogle();
-                    sync = null;
+                    Interlocked.Exchange(ref executing, 0);
+
+                    lastSync = DateTime.Now;
+                    TimerSwitch(true);
+                    SetFormEnabled(true);
+                    if (sync != null)
+                    {
+                        sync.LogoffOutlook();
+                        sync.LogoffGoogle();
+                        sync = null;
+                    }
                 }
 			}
 		}
@@ -814,6 +833,8 @@ namespace GoContactSyncMod
 			{
 				if (sync != null)
 					sync.LogoffOutlook();
+
+                Logger.Close();
 
 				SaveSettings();
 
