@@ -460,8 +460,8 @@ namespace GoContactSyncMod
 				thread.Start();
 
 				// wait for thread to start
-				while (!thread.IsAlive)
-					Thread.Sleep(1);
+                for (int i = 0; !thread.IsAlive && i < 10; i++)
+                    Thread.Sleep(1000);//DoNothing, until the thread was started, but only wait maximum 10 seconds
 			}
 			catch (Exception ex)
 			{
