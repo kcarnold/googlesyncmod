@@ -17,9 +17,11 @@ namespace GoContactSyncMod
             OutlookNoInstance
         }
 
-        public static OutlookMainVersion GetOutlookVersion()
+        public static OutlookMainVersion GetOutlookVersion(Microsoft.Office.Interop.Outlook.Application appVersion)
         {
-            Microsoft.Office.Interop.Outlook.Application appVersion = new Microsoft.Office.Interop.Outlook.Application();
+            if (appVersion == null)
+                appVersion = new Microsoft.Office.Interop.Outlook.Application();
+
             switch (appVersion.Version.ToString().Substring(0,2))
             {
                 case "10":

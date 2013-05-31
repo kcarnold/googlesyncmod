@@ -22,7 +22,7 @@ namespace GoContactSyncMod
         {
             get
             {
-                return VersionInformation.GetOutlookVersion().ToString();
+                return VersionInformation.GetOutlookVersion(Syncronizer.OutlookApplication).ToString();
             }
         }
 
@@ -58,10 +58,10 @@ namespace GoContactSyncMod
             }
             catch (Exception e)
             {
-                Logger.Log("Message couldn't be copied to clipboard: " + e.Message, EventType.Warning);
+                Logger.Log("Message couldn't be copied to clipboard: " + e.Message, EventType.Debug);
             }
-            Logger.Log(message, EventType.Debug);
-            MessageBox.Show(message, "GO Contact Sync Mod");
+            //Logger.Log(message, EventType.Debug);
+            MessageBox.Show(message, Application.ProductName);
         }
 
         private static string AssemblyVersion
