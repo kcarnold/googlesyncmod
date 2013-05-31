@@ -87,7 +87,7 @@ namespace GoContactSyncMod
 			InitializeComponent();
             Text = Text + " - " + Application.ProductVersion;
 			Logger.LogUpdated += new Logger.LogUpdatedHandler(Logger_LogUpdated);
-            Logger.Log("Started application.", EventType.Information);
+            Logger.Log("Started application " + Application.ProductName + " " + Application.ProductVersion + " on " + VersionInformation.GetWindowsMainVersion().ToString(), EventType.Information);
             ContactsMatcher.NotificationReceived += new ContactsMatcher.NotificationHandler(OnNotificationReceived);
             NotesMatcher.NotificationReceived += new NotesMatcher.NotificationHandler(OnNotificationReceived);
 			PopulateSyncOptionBox();            

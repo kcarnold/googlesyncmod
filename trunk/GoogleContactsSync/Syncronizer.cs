@@ -185,15 +185,17 @@ namespace GoContactSyncMod
                     OutlookApplication = null;
                     _outlookNamespace = null;
                     CreateOutlookInstance();
+
                     
 				}
 				catch (Exception ex)
 				{
-					string message = "Cannot connect to Outlook.\r\nPlease restart GO Contact Sync Mod and try again. If error persists, please inform developers on SourceForge.";
+					string message = "Cannot connect to Outlook.\r\nPlease restart "+Application.ProductName+" and try again. If error persists, please inform developers on SourceForge.";
 					// Error again? We need full stacktrace, display it!
 					throw new Exception(message, ex);
 				}
 			}
+
 		}
 
         private static void CreateOutlookInstance()
@@ -250,6 +252,8 @@ namespace GoContactSyncMod
 
                 if (_outlookNamespace == null)
                     throw new NotSupportedException("Could not connect to 'Microsoft Outlook'. Make sure Outlook 2003 or above version is installed and retry.");
+                else
+                    Logger.Log("Connected to Outlook: " + VersionInformation.GetOutlookVersion(OutlookApplication), EventType.Debug);
             }
 
             /*
