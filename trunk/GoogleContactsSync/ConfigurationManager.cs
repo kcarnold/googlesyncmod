@@ -20,7 +20,7 @@ namespace GoContactSyncMod
         {
             string vReturn = "";
             AddEditProfileForm AddEditProfile = new AddEditProfileForm("New profile", null);
-            if (AddEditProfile.ShowDialog() == DialogResult.OK)
+            if (AddEditProfile.ShowDialog(SettingsForm.Instance) == DialogResult.OK)
             {
                 if (null != Registry.CurrentUser.OpenSubKey(SettingsForm.AppRootKey + '\\' + AddEditProfile.ProfileName))
                 {
@@ -78,7 +78,7 @@ namespace GoContactSyncMod
             if (1 == lbProfiles.CheckedItems.Count)
             {
                 AddEditProfileForm AddEditProfile = new AddEditProfileForm("Edit profile",lbProfiles.CheckedItems[0].ToString());
-                if (AddEditProfile.ShowDialog() == DialogResult.OK)
+                if (AddEditProfile.ShowDialog(SettingsForm.Instance) == DialogResult.OK)
                 {
                     if (null != Registry.CurrentUser.OpenSubKey(SettingsForm.AppRootKey + '\\' + AddEditProfile.ProfileName))
                     {

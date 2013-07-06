@@ -654,6 +654,7 @@ namespace GoContactSyncMod
 			    notifyIcon.BalloonTipIcon = icon;
 			    notifyIcon.ShowBalloonTip(timeout);
             }
+            notifyIcon.Text = (title + ": " + message).Substring(0,63);
         }
 
 		void Logger_LogUpdated(string Message)
@@ -1011,7 +1012,21 @@ namespace GoContactSyncMod
             Logger.Log("Matches reset.", EventType.Information);
         }
 
-        private delegate void InvokeCallback(); 
+        private delegate void InvokeCallback();
+
+        public delegate DialogResult InvokeConflict(ConflictResolverForm conflictResolverForm); 
+
+        public DialogResult ShowConflictDialog(ConflictResolverForm conflictResolverForm)
+        {
+            if (this.InvokeRequired)
+            {
+                return (DialogResult) Invoke(new InvokeConflict(ShowConflictDialog), new object[] {conflictResolverForm});
+            }
+            else
+            {
+                return conflictResolverForm.ShowDialog(this);
+            }
+        }
 
         private void ShowForm()
         {
@@ -1141,7 +1156,7 @@ namespace GoContactSyncMod
 
 		private void proxySettingsLinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-            if (_proxy != null) _proxy.ShowDialog();
+            if (_proxy != null) _proxy.ShowDialog(this);
         }
 
 		private void SettingsForm_HelpButtonClicked(object sender, CancelEventArgs e)
@@ -1194,7 +1209,7 @@ namespace GoContactSyncMod
                 }
                 
                 if (comboBox.SelectedIndex == (comboBox.Items.Count - 1) && _configs != null)
-                    _configs.ShowDialog();
+                    _configs.ShowDialog(this);
 
                 fillSyncProfileItems();
 
