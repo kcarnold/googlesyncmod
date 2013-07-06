@@ -21,5 +21,11 @@ namespace GoContactSyncMod
             if (GoogleComboBox.SelectedItem != null)
                 GoogleItemTextBox.Text = ContactMatch.GetSummary((Google.Contacts.Contact)GoogleComboBox.SelectedItem);
         }
+
+        private void ConflictResolverForm_Shown(object sender, EventArgs e)
+        {
+            SettingsForm.Instance.ShowBalloonToolTip(this.Text, messageLabel.Text, ToolTipIcon.Warning, 5000);
+
+        }        
     }
 }

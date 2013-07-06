@@ -163,7 +163,7 @@ namespace GoContactSyncMod
         private ConflictResolution Resolve()
         {
 
-            switch (_form.ShowDialog())
+            switch (SettingsForm.Instance.ShowConflictDialog(_form))
             {
                 case System.Windows.Forms.DialogResult.Ignore:
                     // skip
@@ -182,7 +182,7 @@ namespace GoContactSyncMod
         private DeleteResolution ResolveDeletedOutlook()
         {
 
-            switch (_form.ShowDialog())
+            switch (SettingsForm.Instance.ShowConflictDialog(_form))
             {              
                 case System.Windows.Forms.DialogResult.No:
                     // google wins
@@ -198,7 +198,7 @@ namespace GoContactSyncMod
         private DeleteResolution ResolveDeletedGoogle()
         {
 
-            switch (_form.ShowDialog())
+            switch (SettingsForm.Instance.ShowConflictDialog(_form))
             {               
                 case System.Windows.Forms.DialogResult.No:
                     // google wins
