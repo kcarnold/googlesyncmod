@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>GoContactSyncMod</RootNamespace>
     <AssemblyName>GOContactSync</AssemblyName>
-    <ApplicationIcon>contacts-sync.ico</ApplicationIcon>
+    <ApplicationIcon>images\icons\contacts-sync.ico</ApplicationIcon>
     <TargetZone>LocalIntranet</TargetZone>
     <GenerateManifests>false</GenerateManifests>
     <SignManifests>false</SignManifests>
@@ -233,9 +233,11 @@
     <Compile Include="Utilities.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="contacts-sync.ico">
+    <Content Include="images\icons\contacts-sync.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="images\icons\sync.ico" />
+    <Content Include="images\icons\sync_error.ico" />
     <Content Include="images\icons\system-log-out.png" />
   </ItemGroup>
   <ItemGroup>

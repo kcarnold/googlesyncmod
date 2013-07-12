@@ -35,7 +35,7 @@ namespace GoContactSyncMod
 
             try
             {
-                SettingsForm.Instance.ShowBalloonToolTip("Error", ex.Message, ToolTipIcon.Error, 5000);
+                SettingsForm.Instance.ShowBalloonToolTip("Error", ex.Message, ToolTipIcon.Error, 5000, true);
                 /*
 				Program.Instance.notifyIcon.BalloonTipTitle = "Error";
 				Program.Instance.notifyIcon.BalloonTipText = ex.Message;

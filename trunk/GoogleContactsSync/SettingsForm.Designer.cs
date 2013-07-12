@@ -73,12 +73,12 @@ namespace GoContactSyncMod
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.resetMatchesLinkLabel = new System.Windows.Forms.LinkLabel();
             this.Donate = new System.Windows.Forms.PictureBox();
+            this.pictureBoxExit = new System.Windows.Forms.PictureBox();
             this.settingsGroupBox = new System.Windows.Forms.GroupBox();
             this.actionsTableLayout = new System.Windows.Forms.TableLayoutPanel();
             this.hideButton = new System.Windows.Forms.Button();
             this.MainPanel = new System.Windows.Forms.Panel();
             this.MainSplitter = new System.Windows.Forms.Splitter();
-            this.pictureBoxExit = new System.Windows.Forms.PictureBox();
             this.systemTrayMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.autoSyncInterval)).BeginInit();
             this.groupBox1.SuspendLayout();
@@ -86,16 +86,16 @@ namespace GoContactSyncMod
             this.logGroupBox.SuspendLayout();
             this.groupBox4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Donate)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxExit)).BeginInit();
             this.settingsGroupBox.SuspendLayout();
             this.actionsTableLayout.SuspendLayout();
             this.MainPanel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxExit)).BeginInit();
             this.SuspendLayout();
             // 
             // Password
             // 
-            this.Password.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.Password.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.Password.Location = new System.Drawing.Point(100, 44);
             this.Password.Name = "Password";
             this.Password.PasswordChar = '*';
@@ -106,8 +106,8 @@ namespace GoContactSyncMod
             // 
             // UserName
             // 
-            this.UserName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.UserName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.UserName.Location = new System.Drawing.Point(100, 18);
             this.UserName.Name = "UserName";
             this.UserName.Size = new System.Drawing.Size(342, 21);
@@ -133,9 +133,9 @@ namespace GoContactSyncMod
             // 
             // syncButton
             // 
-            this.syncButton.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.syncButton.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.syncButton.Location = new System.Drawing.Point(3, 3);
             this.syncButton.Name = "syncButton";
             this.syncButton.Size = new System.Drawing.Size(98, 25);
@@ -146,9 +146,9 @@ namespace GoContactSyncMod
             // 
             // syncOptionBox
             // 
-            this.syncOptionBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.syncOptionBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.syncOptionBox.BackColor = System.Drawing.SystemColors.Control;
             this.syncOptionBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.syncOptionBox.CheckOnClick = true;
@@ -284,8 +284,8 @@ namespace GoContactSyncMod
             // 
             // groupBox1
             // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.Controls.Add(this.reportSyncResultCheckBox);
             this.groupBox1.Controls.Add(this.runAtStartupCheckBox);
             this.groupBox1.Controls.Add(this.nextSyncLabel);
@@ -337,9 +337,9 @@ namespace GoContactSyncMod
             // 
             // groupBox2
             // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox2.Controls.Add(this.btSyncNotes);
             this.groupBox2.Controls.Add(this.btSyncContacts);
             this.groupBox2.Controls.Add(this.btPromptDelete);
@@ -398,8 +398,8 @@ namespace GoContactSyncMod
             // 
             // noteFoldersComboBox
             // 
-            this.noteFoldersComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.noteFoldersComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.noteFoldersComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.noteFoldersComboBox.FormattingEnabled = true;
             this.noteFoldersComboBox.Location = new System.Drawing.Point(6, 92);
@@ -411,8 +411,8 @@ namespace GoContactSyncMod
             // 
             // panel1
             // 
-            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel1.Location = new System.Drawing.Point(6, 119);
             this.panel1.Name = "panel1";
@@ -430,15 +430,15 @@ namespace GoContactSyncMod
             this.btSyncDelete.TabIndex = 2;
             this.btSyncDelete.Text = "Sync &Deletion";
             this.toolTip.SetToolTip(this.btSyncDelete, "This specifies whether deletions are\r\nsynchronized. Enabling this option\r\nmeans i" +
-        "f you delete a contact from\r\nGoogle, then it will be deleted from\r\nOutlook and v" +
-        "ice versa.");
+                    "f you delete a contact from\r\nGoogle, then it will be deleted from\r\nOutlook and v" +
+                    "ice versa.");
             this.btSyncDelete.UseVisualStyleBackColor = true;
             this.btSyncDelete.CheckedChanged += new System.EventHandler(this.btSyncDelete_CheckedChanged);
             // 
             // cmbSyncProfile
             // 
-            this.cmbSyncProfile.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.cmbSyncProfile.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.cmbSyncProfile.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbSyncProfile.FormattingEnabled = true;
             this.cmbSyncProfile.Location = new System.Drawing.Point(100, 19);
@@ -446,13 +446,13 @@ namespace GoContactSyncMod
             this.cmbSyncProfile.Size = new System.Drawing.Size(342, 21);
             this.cmbSyncProfile.TabIndex = 1;
             this.toolTip.SetToolTip(this.cmbSyncProfile, "This is a profile name of your choice.\r\nIt must be unique in each computer\r\nand a" +
-        "ccount you intend to sync with\r\nyour Google Mail account.");
+                    "ccount you intend to sync with\r\nyour Google Mail account.");
             this.cmbSyncProfile.SelectedIndexChanged += new System.EventHandler(this.cmbSyncProfile_SelectedIndexChanged);
             // 
             // contactFoldersComboBox
             // 
-            this.contactFoldersComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.contactFoldersComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.contactFoldersComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.contactFoldersComboBox.FormattingEnabled = true;
             this.contactFoldersComboBox.Location = new System.Drawing.Point(6, 65);
@@ -494,9 +494,9 @@ namespace GoContactSyncMod
             // 
             // syncConsole
             // 
-            this.syncConsole.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.syncConsole.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.syncConsole.BackColor = System.Drawing.SystemColors.Info;
             this.syncConsole.Location = new System.Drawing.Point(6, 33);
             this.syncConsole.Multiline = true;
@@ -509,8 +509,8 @@ namespace GoContactSyncMod
             // 
             // groupBox4
             // 
-            this.groupBox4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox4.Controls.Add(this.chkUseFileAs);
             this.groupBox4.Controls.Add(this.proxySettingsLinkLabel);
             this.groupBox4.Controls.Add(this.label2);
@@ -559,8 +559,8 @@ namespace GoContactSyncMod
             this.resetMatchesLinkLabel.TabStop = true;
             this.resetMatchesLinkLabel.Text = "&Reset Matches";
             this.toolTip.SetToolTip(this.resetMatchesLinkLabel, "This unlinks Outlook contacts with their\r\ncorresponding Google contatcs. If you\r\n" +
-        "accidentaly delete a contact and you\r\ndont want the deletion to be synchronised," +
-        "\r\nclick  this link.");
+                    "accidentaly delete a contact and you\r\ndont want the deletion to be synchronised," +
+                    "\r\nclick  this link.");
             this.resetMatchesLinkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.resetMatchesLinkLabel_LinkClicked);
             // 
             // Donate
@@ -578,6 +578,20 @@ namespace GoContactSyncMod
             this.Donate.Click += new System.EventHandler(this.Donate_Click);
             this.Donate.MouseEnter += new System.EventHandler(this.Donate_MouseEnter);
             this.Donate.MouseLeave += new System.EventHandler(this.Donate_MouseLeave);
+            // 
+            // pictureBoxExit
+            // 
+            this.pictureBoxExit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.pictureBoxExit.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pictureBoxExit.BackgroundImage")));
+            this.pictureBoxExit.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxExit.Image")));
+            this.pictureBoxExit.Location = new System.Drawing.Point(949, 502);
+            this.pictureBoxExit.Margin = new System.Windows.Forms.Padding(0);
+            this.pictureBoxExit.Name = "pictureBoxExit";
+            this.pictureBoxExit.Size = new System.Drawing.Size(24, 25);
+            this.pictureBoxExit.TabIndex = 5;
+            this.pictureBoxExit.TabStop = false;
+            this.toolTip.SetToolTip(this.pictureBoxExit, "Exit Go Contact Sync Mod");
+            this.pictureBoxExit.Click += new System.EventHandler(this.pictureBoxExit_Click);
             // 
             // settingsGroupBox
             // 
@@ -609,9 +623,9 @@ namespace GoContactSyncMod
             // 
             // hideButton
             // 
-            this.hideButton.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.hideButton.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.hideButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.hideButton.Location = new System.Drawing.Point(107, 3);
             this.hideButton.Name = "hideButton";
@@ -623,9 +637,9 @@ namespace GoContactSyncMod
             // 
             // MainPanel
             // 
-            this.MainPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.MainPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.MainPanel.Controls.Add(this.logGroupBox);
             this.MainPanel.Controls.Add(this.MainSplitter);
             this.MainPanel.Controls.Add(this.settingsGroupBox);
@@ -641,20 +655,6 @@ namespace GoContactSyncMod
             this.MainSplitter.Size = new System.Drawing.Size(5, 481);
             this.MainSplitter.TabIndex = 5;
             this.MainSplitter.TabStop = false;
-            // 
-            // pictureBoxExit
-            // 
-            this.pictureBoxExit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.pictureBoxExit.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pictureBoxExit.BackgroundImage")));
-            this.pictureBoxExit.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxExit.Image")));
-            this.pictureBoxExit.Location = new System.Drawing.Point(949, 502);
-            this.pictureBoxExit.Margin = new System.Windows.Forms.Padding(0);
-            this.pictureBoxExit.Name = "pictureBoxExit";
-            this.pictureBoxExit.Size = new System.Drawing.Size(24, 25);
-            this.pictureBoxExit.TabIndex = 5;
-            this.pictureBoxExit.TabStop = false;
-            this.toolTip.SetToolTip(this.pictureBoxExit, "Exit Go Contact Sync Mod");
-            this.pictureBoxExit.Click += new System.EventHandler(this.pictureBoxExit_Click);
             // 
             // SettingsForm
             // 
@@ -694,10 +694,10 @@ namespace GoContactSyncMod
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Donate)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxExit)).EndInit();
             this.settingsGroupBox.ResumeLayout(false);
             this.actionsTableLayout.ResumeLayout(false);
             this.MainPanel.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxExit)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
