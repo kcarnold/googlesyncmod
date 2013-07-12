@@ -51,12 +51,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_449A09D626FD4A6C9AEE1F387A23D13C"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_6EC35BE8EF1AAED05EABD0848EEEB700"
         "OwnerKey" = "8:_8A4A20DC9841455BB5FD97B9DF38A24E"
         "MsmSig" = "8:_UNDEFINED"
@@ -119,6 +113,12 @@
         {
         "MsmKey" = "8:_A2D96859CE406F76F4F0818B2813AE72"
         "OwnerKey" = "8:_9B5DC5D715B4971C5D9D7ED2D1D2EDD3"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_BCF1BAFE154D486BB27E6DE54DE67A30"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -441,26 +441,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_449A09D626FD4A6C9AEE1F387A23D13C"
-            {
-            "SourcePath" = "8:..\\GoogleContactsSync\\contacts-sync.ico"
-            "TargetName" = "8:contacts-sync.ico"
-            "Tag" = "8:"
-            "Folder" = "8:_5F08081D58314698A5EF7B2D88DBA295"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:TRUE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_6EC35BE8EF1AAED05EABD0848EEEB700"
             {
             "AssemblyRegister" = "3:1"
@@ -603,6 +583,26 @@
             "Register" = "3:1"
             "Exclude" = "11:TRUE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_BCF1BAFE154D486BB27E6DE54DE67A30"
+            {
+            "SourcePath" = "8:..\\GoogleContactsSync\\images\\icons\\contacts-sync.ico"
+            "TargetName" = "8:contacts-sync.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_5F08081D58314698A5EF7B2D88DBA295"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:TRUE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_CB86503BDB83C3FBEE399D4CB0262D44"
@@ -807,15 +807,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:GO Contact Sync Mod"
-        "ProductCode" = "8:{6CF50AEE-2F3E-4D01-999E-91BEB5CDB9B3}"
-        "PackageCode" = "8:{3B3E88DB-593C-465E-BCED-B2A599B9D39C}"
+        "ProductCode" = "8:{34281AC5-96CC-412C-B050-73A6E36974BC}"
+        "PackageCode" = "8:{8402B66F-E2B7-41FC-A87A-804567B48E33}"
         "UpgradeCode" = "8:{170B4620-F5BB-4D2E-97A1-239D79030F20}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:3.5.22"
+        "ProductVersion" = "8:3.5.23"
         "Manufacturer" = "8:WebGear, Create Software, Stru.be, saller.NET"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://googlesyncmod.sourceforge.net/"
@@ -825,7 +825,7 @@
         "Keywords" = "8:"
         "ARPCOMMENTS" = "8:GO Contact Sync Mod is a tool that synchronizes your contacts between Microsoft Microsoft Outlook and Google Mail. It supports contact categories and contact photos."
         "ARPURLINFOABOUT" = "8:http://googlesyncmod.sourceforge.net/"
-        "ARPPRODUCTICON" = "8:_449A09D626FD4A6C9AEE1F387A23D13C"
+        "ARPPRODUCTICON" = "8:_BCF1BAFE154D486BB27E6DE54DE67A30"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
@@ -939,7 +939,7 @@
             "Target" = "8:_8A4A20DC9841455BB5FD97B9DF38A24E"
             "Folder" = "8:_A72DB3C16CB8415995E753C547CE660E"
             "WorkingFolder" = "8:_5F08081D58314698A5EF7B2D88DBA295"
-            "Icon" = "8:_449A09D626FD4A6C9AEE1F387A23D13C"
+            "Icon" = "8:_BCF1BAFE154D486BB27E6DE54DE67A30"
             "Feature" = "8:"
             }
             "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_69AAA32BA8EA48B9803CEBAB1540A9AE"
