@@ -503,6 +503,8 @@ namespace GoContactSyncMod
 
                     SetLastSyncText("Syncing...");
                     notifyIcon.Text = Application.ProductName + "\nSyncing...";
+                    System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsForm));
+                    notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
 
                     SetFormEnabled(false);
 
@@ -536,7 +538,7 @@ namespace GoContactSyncMod
                         string messageText = "Neither notes nor contacts are switched on for syncing. Please choose at least one option. Sync aborted!";
                         Logger.Log(messageText, EventType.Error);
                         ShowForm();
-                        ShowBalloonToolTip("Error", messageText, ToolTipIcon.Error, 5000);
+                        ShowBalloonToolTip("Error", messageText, ToolTipIcon.Error, 5000, false);
                         return;
                     }
 
@@ -569,7 +571,7 @@ namespace GoContactSyncMod
                         ShowBalloonToolTip(Application.ProductName,
                             string.Format("{0}. {1}", DateTime.Now, message),
                             icon,
-                            5000);
+                            5000, false);
 
                     }
                     string toolTip = string.Format("{0}\nLast sync: {1}", Application.ProductName, DateTime.Now.ToString("dd.MM. HH:mm"));
@@ -591,7 +593,7 @@ namespace GoContactSyncMod
                 {
                     string message = "Cannot connect to Google, please check for available internet connection and proxy settings if applicable: " + ex.InnerException.Message + "\r\n" + ex.ResponseString;
                     Logger.Log(message, EventType.Warning);
-                    ShowBalloonToolTip("Error", message, ToolTipIcon.Error, 5000);
+                    ShowBalloonToolTip("Error", message, ToolTipIcon.Error, 5000, true);
                 }
                 else
                 {
@@ -606,7 +608,7 @@ namespace GoContactSyncMod
                 string message = "The credentials (Google Account username and/or password) are invalid, please correct them in the settings form before you sync again";
                 Logger.Log(message, EventType.Error);
                 ShowForm();
-                ShowBalloonToolTip("Error", message, ToolTipIcon.Error, 5000);
+                ShowBalloonToolTip("Error", message, ToolTipIcon.Error, 5000, true);
 
             }
             catch (Exception ex)
@@ -618,7 +620,7 @@ namespace GoContactSyncMod
                 {
                     string message = "Outlook exception, please assure that Outlook is running and not closed when syncing";
                     Logger.Log(message + ": " + ex.Message, EventType.Warning);
-                    ShowBalloonToolTip("Error", message, ToolTipIcon.Error, 5000);
+                    ShowBalloonToolTip("Error", message, ToolTipIcon.Error, 5000, true);
                 }
                 else
                 {
@@ -644,7 +646,7 @@ namespace GoContactSyncMod
 			}
 		}
 
-        public void ShowBalloonToolTip(string title, string message, ToolTipIcon icon, int timeout)
+        public void ShowBalloonToolTip(string title, string message, ToolTipIcon icon, int timeout, bool error)
         {
             //if user is active on workstation
             if(boolShowBalloonTip)
@@ -655,6 +657,9 @@ namespace GoContactSyncMod
 			    notifyIcon.ShowBalloonTip(timeout);
             }
             notifyIcon.Text = (title + ": " + message).Substring(0,63);
+
+            if (error) 
+                notifyIcon.Icon = GoContactSyncMod.Properties.Resources.sync_error;
         }
 
 		void Logger_LogUpdated(string Message)
@@ -667,7 +672,7 @@ namespace GoContactSyncMod
 			// do not show ErrorHandler, as there may be multiple exceptions that would nag the user
 			Logger.Log(ex.ToString(), EventType.Error);
 			string message = String.Format("Error Saving Contact: {0}.\nPlease report complete ErrorMessage from Log to the Tracker\nat https://sourceforge.net/tracker/?group_id=369321", ex.Message);
-            ShowBalloonToolTip(title,message,ToolTipIcon.Error,5000);
+            ShowBalloonToolTip(title,message,ToolTipIcon.Error,5000, true);
 			/*notifyIcon.BalloonTipTitle = title;
 			notifyIcon.BalloonTipText = message;
 			notifyIcon.BalloonTipIcon = ToolTipIcon.Error;
@@ -677,7 +682,7 @@ namespace GoContactSyncMod
 		void OnDuplicatesFound(string title, string message)
 		{
             Logger.Log(message, EventType.Warning);
-            ShowBalloonToolTip(title,message,ToolTipIcon.Warning,5000);
+            ShowBalloonToolTip(title,message,ToolTipIcon.Warning,5000, true);
             /*
 			notifyIcon.BalloonTipTitle = title;
 			notifyIcon.BalloonTipText = message;
@@ -1024,7 +1029,12 @@ namespace GoContactSyncMod
             }
             else
             {
-                return conflictResolverForm.ShowDialog(this);
+                DialogResult res = conflictResolverForm.ShowDialog(this);
+                                
+                notifyIcon.Icon = GoContactSyncMod.Properties.Resources.sync;
+
+                return res;
+
             }
         }
 
@@ -1085,7 +1095,7 @@ namespace GoContactSyncMod
                 ShowBalloonToolTip(Application.ProductName,
                         "Application started and visible in your PC's system tray, click on this balloon or the icon below to open the settings form and enter your Google credentials there.",
                         ToolTipIcon.Info,
-                        5000);
+                        5000, false);
 			}
 			else
 				HideForm();
