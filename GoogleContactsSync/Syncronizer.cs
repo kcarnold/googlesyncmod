@@ -802,10 +802,6 @@ namespace GoContactSyncMod
                     if (SyncNotes)
                         MatchNotes();
 
-#if debug
-                        this.DebugContacts();
-#endif
-
                     if (SyncContacts)
                     {
                         if (Contacts == null)
@@ -2451,30 +2447,6 @@ namespace GoContactSyncMod
 					return i;
 			}
 			return -1;
-		}
-
-		internal void DebugContacts()
-		{
-			string msg = "DEBUG INFORMATION\nPlease submit to developer:\n\n{0}\n{1}\n{2}";
-          
-
-            if (SyncContacts)
-            {
-                string oCount = "Outlook Contact Count: " + OutlookContacts.Count;
-                string gCount = "Google Contact Count: " + GoogleContacts.Count;
-                string mCount = "Matches Count: " + Contacts.Count;
-
-                MessageBox.Show(string.Format(msg, oCount, gCount, mCount), "DEBUG INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-
-            if (SyncNotes)
-            {
-                string oCount = "Outlook Notes Count: " + OutlookNotes.Count;
-                string gCount = "Google Notes Count: " + GoogleNotes.Count;
-                string mCount = "Matches Count: " + Notes.Count;
-
-                MessageBox.Show(string.Format(msg, oCount, gCount, mCount), "DEBUG INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
 		}
 
         public static Outlook.ContactItem CreateOutlookContactItem(string syncContactsFolder)
