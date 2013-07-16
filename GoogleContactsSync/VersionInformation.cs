@@ -13,6 +13,7 @@ namespace GoContactSyncMod
             Outlook2003,
             Outlook2007,
             Outlook2010,
+            Outlook2013,
             OutlookUnknownVersion,
             OutlookNoInstance
         }
@@ -32,6 +33,8 @@ namespace GoContactSyncMod
                     return OutlookMainVersion.Outlook2007;
                 case "14":
                     return OutlookMainVersion.Outlook2010;
+                case "15":
+                    return OutlookMainVersion.Outlook2013;
                 default:
                     {
                         if (appVersion != null)

@@ -102,37 +102,11 @@ namespace GoContactSyncMod
 
 			ValidateSyncButton();
 
-            // requires Windows XP or higher
-            /*bool XpOrHigher = Environment.OSVersion.Platform == PlatformID.Win32NT &&
-                                (Environment.OSVersion.Version.Major > 5 ||
-                                    (Environment.OSVersion.Version.Major == 5 &&
-                                     Environment.OSVersion.Version.Minor >= 1));
-
-            if (XpOrHigher)
-                registered = WinAPIMethods.WTSRegisterSessionNotification(Handle, 0);
-            */
             //Register Session Lock Event
             SystemEvents.SessionSwitch += new SessionSwitchEventHandler(SystemEvents_SessionSwitch);
             //Register Power Mode Event
             SystemEvents.PowerModeChanged += new PowerModeChangedEventHandler(SystemEvents_PowerModeSwitch);
 		}
-
-
-        //Will never be called:
-        //~SettingsForm()
-        //{
-        //    /*if(registered)
-        //    {
-        //        WinAPIMethods.WTSUnRegisterSessionNotification(Handle);
-        //        registered = false;
-        //    }*/
-        //    Logger.Close();
-
-        //    //Unregister Events
-        //    SystemEvents.SessionSwitch -= new SessionSwitchEventHandler(SystemEvents_SessionSwitch);
-        //    SystemEvents.PowerModeChanged -= new PowerModeChangedEventHandler(SystemEvents_PowerModeSwitch);
-            
-        //}
 
 		private void PopulateSyncOptionBox()
 		{
@@ -852,8 +826,12 @@ namespace GoContactSyncMod
                 Logger.Close();
 
 				SaveSettings();
-
-				notifyIcon.Dispose();
+                
+                //unregister event handler
+                SystemEvents.SessionSwitch -= SystemEvents_SessionSwitch;
+                SystemEvents.PowerModeChanged -= SystemEvents_PowerModeSwitch;
+				
+                notifyIcon.Dispose();
 			}
 			catch (Exception ex)
 			{

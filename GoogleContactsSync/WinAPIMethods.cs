@@ -62,13 +62,6 @@ namespace GoContactSyncMod
         [DllImport("kernel32")]
         public static extern bool GetVersionEx(ref OSVERSIONINFOEX osvi);
         
-        //to detect if the user locks or unlocks the workstation
-        /*
-        [DllImport("wtsapi32.dll")]
-        public static extern bool WTSRegisterSessionNotification(IntPtr hWnd, int dwFlags);
-        [DllImport("wtsapi32.dll")]
-        public static extern bool WTSUnRegisterSessionNotification(IntPtr hWnd);
-        */
         #endregion
     }
 }
