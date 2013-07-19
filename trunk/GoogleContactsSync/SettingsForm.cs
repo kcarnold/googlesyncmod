@@ -514,7 +514,7 @@ namespace GoContactSyncMod
                         string messageText = "Neither notes nor contacts are switched on for syncing. Please choose at least one option. Sync aborted!";
                         Logger.Log(messageText, EventType.Error);
                         ShowForm();
-                        ShowBalloonToolTip("Error", messageText, ToolTipIcon.Error, 5000, false);
+                        ShowBalloonToolTip("Error", messageText, ToolTipIcon.Error, 5000, true);
                         return;
                     }
 
@@ -632,7 +632,10 @@ namespace GoContactSyncMod
 			    notifyIcon.BalloonTipIcon = icon;
 			    notifyIcon.ShowBalloonTip(timeout);
             }
-            notifyIcon.Text = (title + ": " + message).Substring(0,63);
+
+            string iconText = title + ": " + message;
+            if (!string.IsNullOrEmpty(iconText))
+                notifyIcon.Text = (iconText).Substring(0, iconText.Length >=63? 63:iconText.Length);
 
             if (error) 
                 notifyIcon.Icon = GoContactSyncMod.Properties.Resources.sync_error;
