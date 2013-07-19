@@ -973,10 +973,22 @@ namespace GoContactSyncMod
 
                         SaveNotes(Notes);
 
+                        int timeout = 10;//seconds to wait for asynchronous upload
                         //Because notes are uploaded asynchonously, wait until all notes have been successfully uploaded
                         foreach (NoteMatch match in Notes)
-                            for (int i = 0; match.AsyncUpdateCompleted.HasValue && !match.AsyncUpdateCompleted.Value && i < 10; i++)
+                        {
+                            for (int i = 0; match.AsyncUpdateCompleted.HasValue && !match.AsyncUpdateCompleted.Value && i < timeout; i++)
+                            {
+                                Application.DoEvents();
                                 System.Threading.Thread.Sleep(1000);//DoNothing, until the Async Update is complete, but only wait maximum 10 seconds
+                                Application.DoEvents();
+                            }
+
+                            if (match.AsyncUpdateCompleted.HasValue && !match.AsyncUpdateCompleted.Value)
+                                Logger.Log("Asynchronous upload of note didn't finish within " + timeout + " seconds: " + match.GoogleNote.Title, EventType.Warning);
+                        }
+                        
+
 
                         //Delete empty Google note folders
                         CleanUpGoogleCategories();
