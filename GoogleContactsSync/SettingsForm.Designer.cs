@@ -76,6 +76,7 @@ namespace GoContactSyncMod
             this.pictureBoxExit = new System.Windows.Forms.PictureBox();
             this.settingsGroupBox = new System.Windows.Forms.GroupBox();
             this.actionsTableLayout = new System.Windows.Forms.TableLayoutPanel();
+            this.CancelButton = new System.Windows.Forms.Button();
             this.hideButton = new System.Windows.Forms.Button();
             this.MainPanel = new System.Windows.Forms.Panel();
             this.MainSplitter = new System.Windows.Forms.Splitter();
@@ -138,7 +139,7 @@ namespace GoContactSyncMod
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.syncButton.Location = new System.Drawing.Point(3, 3);
             this.syncButton.Name = "syncButton";
-            this.syncButton.Size = new System.Drawing.Size(98, 25);
+            this.syncButton.Size = new System.Drawing.Size(79, 25);
             this.syncButton.TabIndex = 1;
             this.syncButton.Text = "S&ync";
             this.syncButton.UseVisualStyleBackColor = true;
@@ -610,17 +611,33 @@ namespace GoContactSyncMod
             // actionsTableLayout
             // 
             this.actionsTableLayout.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.actionsTableLayout.ColumnCount = 2;
+            this.actionsTableLayout.ColumnCount = 3;
             this.actionsTableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.actionsTableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.actionsTableLayout.Controls.Add(this.hideButton, 0, 0);
+            this.actionsTableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 72F));
+            this.actionsTableLayout.Controls.Add(this.CancelButton, 0, 0);
             this.actionsTableLayout.Controls.Add(this.syncButton, 0, 0);
-            this.actionsTableLayout.Location = new System.Drawing.Point(737, 499);
+            this.actionsTableLayout.Controls.Add(this.hideButton, 2, 0);
+            this.actionsTableLayout.Location = new System.Drawing.Point(704, 499);
             this.actionsTableLayout.Name = "actionsTableLayout";
             this.actionsTableLayout.RowCount = 1;
             this.actionsTableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.actionsTableLayout.Size = new System.Drawing.Size(209, 31);
+            this.actionsTableLayout.Size = new System.Drawing.Size(242, 31);
             this.actionsTableLayout.TabIndex = 1;
+            // 
+            // CancelButton
+            // 
+            this.CancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.CancelButton.Enabled = false;
+            this.CancelButton.Location = new System.Drawing.Point(88, 3);
+            this.CancelButton.Name = "CancelButton";
+            this.CancelButton.Size = new System.Drawing.Size(79, 25);
+            this.CancelButton.TabIndex = 2;
+            this.CancelButton.Text = "&Cancel";
+            this.CancelButton.UseVisualStyleBackColor = true;
+            this.CancelButton.Click += new System.EventHandler(this.CancelButton_Click);
             // 
             // hideButton
             // 
@@ -628,10 +645,10 @@ namespace GoContactSyncMod
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.hideButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.hideButton.Location = new System.Drawing.Point(107, 3);
+            this.hideButton.Location = new System.Drawing.Point(173, 3);
             this.hideButton.Name = "hideButton";
-            this.hideButton.Size = new System.Drawing.Size(99, 25);
-            this.hideButton.TabIndex = 2;
+            this.hideButton.Size = new System.Drawing.Size(66, 25);
+            this.hideButton.TabIndex = 3;
             this.hideButton.Text = "&Hide";
             this.hideButton.UseVisualStyleBackColor = true;
             this.hideButton.Click += new System.EventHandler(this.hideButton_Click);
@@ -662,7 +679,6 @@ namespace GoContactSyncMod
             this.AcceptButton = this.syncButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.CancelButton = this.hideButton;
             this.ClientSize = new System.Drawing.Size(986, 542);
             this.Controls.Add(this.Donate);
             this.Controls.Add(this.MainPanel);
@@ -755,6 +771,7 @@ namespace GoContactSyncMod
         private System.Windows.Forms.CheckBox btPromptDelete;
         private System.Windows.Forms.CheckBox chkUseFileAs;
         private System.Windows.Forms.PictureBox pictureBoxExit;
+        private System.Windows.Forms.Button CancelButton;
 
     }
 }

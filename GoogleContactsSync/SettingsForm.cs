@@ -76,6 +76,8 @@ namespace GoContactSyncMod
         private int executing; // make this static if you want this one-caller-only to
         // all objects instead of a single object
 
+        Thread syncThread;
+
         //register window for lock/unlock messages of workstation
         //private bool registered = false;
 
@@ -139,8 +141,8 @@ namespace GoContactSyncMod
                 {
                     Logger.Log("Loading Outlook folders...", EventType.Information);
 
-                    this.contactFoldersComboBox.Visible = true;
-                    this.noteFoldersComboBox.Visible = true;
+                    this.contactFoldersComboBox.Visible = btSyncContacts.Checked;
+                    this.noteFoldersComboBox.Visible = btSyncNotes.Checked;
                     this.cmbSyncProfile.Visible = true;
                     ArrayList outlookContactFolders = new ArrayList();
                     ArrayList outlookNoteFolders = new ArrayList();
@@ -430,11 +432,11 @@ namespace GoContactSyncMod
                     throw new Exception("At least one sync folder is not selected or invalid!");
 
 				ThreadStart starter = new ThreadStart(Sync_ThreadStarter);
-				Thread thread = new Thread(starter);
-				thread.Start();
+				syncThread = new Thread(starter);
+                syncThread.Start();
 
 				// wait for thread to start
-                for (int i = 0; !thread.IsAlive && i < 10; i++)
+                for (int i = 0; !syncThread.IsAlive && i < 10; i++)
                     Thread.Sleep(1000);//DoNothing, until the thread was started, but only wait maximum 10 seconds
 			}
 			catch (Exception ex)
@@ -682,6 +684,7 @@ namespace GoContactSyncMod
 				resetMatchesLinkLabel.Enabled = enabled;
 				settingsGroupBox.Enabled = enabled;
 				syncButton.Enabled = enabled;
+                CancelButton.Enabled = !enabled;
 			}
 		}
 		public void SetLastSyncText(string text)
@@ -950,7 +953,7 @@ namespace GoContactSyncMod
             fillSyncFolderItems();
 
             SetFormEnabled(false);
-            //this.hideButton.Enabled = false;
+            this.CancelButton.Enabled = false; //Cancel is only working for sync currently, not for reset
 
             if (sync == null)
             {
@@ -1263,6 +1266,7 @@ namespace GoContactSyncMod
         {
             if (DialogResult.Yes == MessageBox.Show("Do you really want to exit " + Application.ProductName + "? This will also stop the service performing automatic synchronizaton in the background. If you only want to hide the settings form, use the 'Hide' Button instead.", "Exit " + Application.ProductName, MessageBoxButtons.YesNo, MessageBoxIcon.Question))
             {
+                CancelButton_Click(sender, EventArgs.Empty); //Close running thread
                 requestClose = true;
                 Close();
             }
@@ -1296,6 +1300,18 @@ namespace GoContactSyncMod
         private void autoSyncInterval_ValueChanged(object sender, EventArgs e)
         {
             TimerSwitch(true);
+        }
+
+        private void CancelButton_Click(object sender, EventArgs e)
+        {
+            KillSyncThread();
+        }
+
+        [System.Security.Permissions.SecurityPermission(System.Security.Permissions.SecurityAction.Demand, ControlThread = true)]
+        private void KillSyncThread()
+        {
+            if (syncThread != null && syncThread.IsAlive)
+                syncThread.Abort();
         }
 
 	}
