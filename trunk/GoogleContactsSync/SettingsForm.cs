@@ -1293,5 +1293,10 @@ namespace GoContactSyncMod
             }
         }
 
+        private void autoSyncInterval_ValueChanged(object sender, EventArgs e)
+        {
+            TimerSwitch(true);
+        }
+
 	}
 }
