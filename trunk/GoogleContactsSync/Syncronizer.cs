@@ -1186,9 +1186,8 @@ namespace GoContactSyncMod
                     SaveGoogleNote(match);
                     //Don't log here, because the DocumentsRequest uses async upload, log when async upload was successful
                     //Logger.Log("Updated Google note from Outlook: \"" + match.OutlookNote.Subject + "\".", EventType.Information);
-                }
-
-                if (!match.OutlookNote.Saved)// || outlookChanged)
+                } 
+                else if (!match.OutlookNote.Saved)// || outlookChanged) //If google note is saved above, Saving the OutlookNote not necessary anymore, because this will be done when updating NoteMatchId during saving the Google Note above
                 {
                     //outlook note was modified. save.
                     SyncedCount++;
