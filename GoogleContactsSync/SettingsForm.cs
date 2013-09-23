@@ -211,6 +211,8 @@ namespace GoContactSyncMod
                         Cursor = Cursors.Default;
                         ResumeLayout();
                     }
+
+                    LoadSettingsFolders(syncProfile);
                 }
             }
         }
@@ -306,18 +308,27 @@ namespace GoContactSyncMod
                 btSyncNotes.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("SyncNotes"));
             if (regKeyAppRoot.GetValue("SyncContacts") != null)
                 btSyncContacts.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("SyncContacts"));
-            if (regKeyAppRoot.GetValue("SyncContactsFolder") != null)
-                contactFoldersComboBox.SelectedValue = regKeyAppRoot.GetValue("SyncContactsFolder") as string;
-            if (regKeyAppRoot.GetValue("SyncNotesFolder") != null)
-                noteFoldersComboBox.SelectedValue = regKeyAppRoot.GetValue("SyncNotesFolder") as string;
             if (regKeyAppRoot.GetValue("UseFileAs") != null)
-                chkUseFileAs.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("UseFileAs"));                
+                chkUseFileAs.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("UseFileAs"));
+
+            LoadSettingsFolders(_profile);
 
             autoSyncCheckBox_CheckedChanged(null, null);
             btSyncContacts_CheckedChanged(null, null);
             btSyncNotes_CheckedChanged(null, null);
 
             _proxy.LoadSettings(_profile);
+        }
+
+        private void LoadSettingsFolders(string _profile)
+        {
+
+            RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey + (_profile != null ? ('\\' + _profile) : ""));
+
+            if (regKeyAppRoot.GetValue("SyncContactsFolder") != null)
+                contactFoldersComboBox.SelectedValue = regKeyAppRoot.GetValue("SyncContactsFolder") as string;
+            if (regKeyAppRoot.GetValue("SyncNotesFolder") != null)
+                noteFoldersComboBox.SelectedValue = regKeyAppRoot.GetValue("SyncNotesFolder") as string;
         }
 
 		private void SaveSettings()
@@ -923,6 +934,7 @@ namespace GoContactSyncMod
 			Application.DoEvents();
 			try
 			{
+                this.CancelButton.Enabled = false; //Cancel is only working for sync currently, not for reset
                 ResetMatches(btSyncContacts.Checked,btSyncNotes.Checked);                
 			}
 			catch (Exception ex)
@@ -955,8 +967,7 @@ namespace GoContactSyncMod
 
             fillSyncFolderItems();
 
-            SetFormEnabled(false);
-            this.CancelButton.Enabled = false; //Cancel is only working for sync currently, not for reset
+            SetFormEnabled(false);            
 
             if (sync == null)
             {
