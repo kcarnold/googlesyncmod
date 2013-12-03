@@ -83,6 +83,21 @@ namespace GoContactSyncMod
 
 		delegate void TextHandler(string text);
 		delegate void SwitchHandler(bool value);
+        delegate void IconHandler();
+
+        private Icon IconError = GoContactSyncMod.Properties.Resources.sync_error;
+        private Icon Icon0 = GoContactSyncMod.Properties.Resources.sync;
+        private Icon Icon30 = GoContactSyncMod.Properties.Resources.sync_30;
+        private Icon Icon60 = GoContactSyncMod.Properties.Resources.sync_60;
+        private Icon Icon90 = GoContactSyncMod.Properties.Resources.sync_90;
+        private Icon Icon120 = GoContactSyncMod.Properties.Resources.sync_120;
+        private Icon Icon150 = GoContactSyncMod.Properties.Resources.sync_150;
+        private Icon Icon180 = GoContactSyncMod.Properties.Resources.sync_180;
+        private Icon Icon210 = GoContactSyncMod.Properties.Resources.sync_210;
+        private Icon Icon240 = GoContactSyncMod.Properties.Resources.sync_240;
+        private Icon Icon270 = GoContactSyncMod.Properties.Resources.sync_270;
+        private Icon Icon300 = GoContactSyncMod.Properties.Resources.sync_300;
+        private Icon Icon330 = GoContactSyncMod.Properties.Resources.sync_330;
 
 		private SettingsForm()
 		{
@@ -442,6 +457,8 @@ namespace GoContactSyncMod
                 if (!ValidSyncFolders)
                     throw new Exception("At least one sync folder is not selected or invalid!");
 
+
+                //IconTimerSwitch(true);
 				ThreadStart starter = new ThreadStart(Sync_ThreadStarter);
 				syncThread = new Thread(starter);
                 syncThread.Start();
@@ -449,6 +466,7 @@ namespace GoContactSyncMod
 				// wait for thread to start
                 for (int i = 0; !syncThread.IsAlive && i < 10; i++)
                     Thread.Sleep(1000);//DoNothing, until the thread was started, but only wait maximum 10 seconds
+                
 			}
 			catch (Exception ex)
 			{
@@ -489,9 +507,11 @@ namespace GoContactSyncMod
                         regKeyAppRoot.SetValue("SyncNotesFolder", this.syncNotesFolder);
 
                     SetLastSyncText("Syncing...");
-                    notifyIcon.Text = Application.ProductName + "\nSyncing...";
-                    System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsForm));
-                    notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
+                    notifyIcon.Text = Application.ProductName + "\nSyncing...";                    
+                    //System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsForm));
+                    //notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
+                    notifyIcon.Icon = this.Icon0;
+                    IconTimerSwitch(true);
 
                     SetFormEnabled(false);
 
@@ -629,6 +649,8 @@ namespace GoContactSyncMod
                         sync.LogoffGoogle();
                         sync = null;
                     }
+
+                    IconTimerSwitch(false);
                 }
 			}
 		}
@@ -649,7 +671,7 @@ namespace GoContactSyncMod
                 notifyIcon.Text = (iconText).Substring(0, iconText.Length >=63? 63:iconText.Length);
 
             if (error) 
-                notifyIcon.Icon = GoContactSyncMod.Properties.Resources.sync_error;
+                notifyIcon.Icon = this.IconError;
         }
 
 		void Logger_LogUpdated(string Message)
@@ -759,6 +781,8 @@ namespace GoContactSyncMod
 				nextSyncLabel.Visible = autoSyncCheckBox.Checked &&  value;          				
 			}
 		}
+
+        
 
         protected override void WndProc(ref System.Windows.Forms.Message m)
 		{
@@ -1026,7 +1050,7 @@ namespace GoContactSyncMod
             {
                 DialogResult res = conflictResolverForm.ShowDialog(this);
                                 
-                notifyIcon.Icon = GoContactSyncMod.Properties.Resources.sync;
+                notifyIcon.Icon = this.Icon0;
 
                 return res;
 
@@ -1328,5 +1352,68 @@ namespace GoContactSyncMod
                 syncThread.Abort();
         }
 
-	}
+        #region syncing icon
+        public void IconTimerSwitch(bool value)
+        {
+            if (this.InvokeRequired)
+            {
+                SwitchHandler h = new SwitchHandler(IconTimerSwitch);
+                this.Invoke(h, new object[] { value });
+            }
+            else
+            {                
+                iconTimer.Enabled = value;
+            }
+        }
+
+        private void iconTimer_Tick(object sender, EventArgs e)
+        {
+            showNextIcon();
+        }
+
+        private void showNextIcon()
+        {
+            if (this.InvokeRequired)
+            {
+                IconHandler h = new IconHandler(showNextIcon);
+                this.Invoke(h, new object[] {});
+            }
+            else
+                this.notifyIcon.Icon = GetNextIcon(this.notifyIcon.Icon); ;
+        }
+
+        
+        
+        private Icon GetNextIcon(Icon currentIcon)
+        {
+            if (currentIcon == IconError)
+                return IconError;
+            if (currentIcon == Icon30)
+                return Icon60;
+            else if (currentIcon == Icon60)
+                return Icon90;
+            else if (currentIcon == Icon90)
+                return Icon120;
+            else if (currentIcon == Icon120)
+                return Icon150;
+            else if (currentIcon == Icon150)
+                return Icon180;
+            else if (currentIcon == Icon180)
+                return Icon210;
+            else if (currentIcon == Icon210)
+                return Icon240;
+            else if (currentIcon == Icon240)
+                return Icon270;
+            else if (currentIcon == Icon270)
+                return Icon300;
+            else if (currentIcon == Icon300)
+                return Icon330;
+            else if (currentIcon == Icon330)
+                return Icon0;
+            else
+                return Icon30;
+        }
+        #endregion
+
+    }
 }

@@ -237,6 +237,17 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="images\icons\sync.ico" />
+    <None Include="images\icons\sync_30.ico" />
+    <None Include="images\icons\sync_60.ico" />
+    <None Include="images\icons\sync_90.ico" />
+    <None Include="images\icons\sync_120.ico" />
+    <None Include="images\icons\sync_150.ico" />
+    <None Include="images\icons\sync_180.ico" />
+    <None Include="images\icons\sync_210.ico" />
+    <None Include="images\icons\sync_240.ico" />
+    <None Include="images\icons\sync_270.ico" />
+    <None Include="images\icons\sync_300.ico" />
+    <None Include="images\icons\sync_330.ico" />
     <Content Include="images\icons\sync_error.ico" />
     <Content Include="images\icons\system-log-out.png" />
   </ItemGroup>
