@@ -509,8 +509,7 @@ namespace GoContactSyncMod
                     SetLastSyncText("Syncing...");
                     notifyIcon.Text = Application.ProductName + "\nSyncing...";                    
                     //System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsForm));
-                    //notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
-                    notifyIcon.Icon = this.Icon0;
+                    //notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));                    
                     IconTimerSwitch(true);
 
                     SetFormEnabled(false);
@@ -720,7 +719,7 @@ namespace GoContactSyncMod
 				resetMatchesLinkLabel.Enabled = enabled;
 				settingsGroupBox.Enabled = enabled;
 				syncButton.Enabled = enabled;
-                CancelButton.Enabled = !enabled;
+                cancelButton.Enabled = !enabled;
 			}
 		}
 		public void SetLastSyncText(string text)
@@ -958,7 +957,7 @@ namespace GoContactSyncMod
 			Application.DoEvents();
 			try
 			{
-                this.CancelButton.Enabled = false; //Cancel is only working for sync currently, not for reset
+                this.cancelButton.Enabled = false; //Cancel is only working for sync currently, not for reset
                 ResetMatches(btSyncContacts.Checked,btSyncNotes.Checked);                
 			}
 			catch (Exception ex)
@@ -1361,7 +1360,9 @@ namespace GoContactSyncMod
                 this.Invoke(h, new object[] { value });
             }
             else
-            {                
+            {      
+                if (value) //Reset Icon to default icon as starting point for the syncing icon
+                    notifyIcon.Icon = this.Icon0;
                 iconTimer.Enabled = value;
             }
         }
@@ -1386,7 +1387,7 @@ namespace GoContactSyncMod
         
         private Icon GetNextIcon(Icon currentIcon)
         {
-            if (currentIcon == IconError)
+            if (currentIcon == IconError) //Don't change the icon anymore, once an error occurred
                 return IconError;
             if (currentIcon == Icon30)
                 return Icon60;
