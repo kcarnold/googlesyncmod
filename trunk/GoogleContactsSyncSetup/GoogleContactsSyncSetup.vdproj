@@ -39,6 +39,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_178A0CA4C68E4F15B7F218561EA24E6C"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_17C96A08C0C04AB99C55461B72206B9C"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -113,12 +119,6 @@
         {
         "MsmKey" = "8:_A2D96859CE406F76F4F0818B2813AE72"
         "OwnerKey" = "8:_9B5DC5D715B4971C5D9D7ED2D1D2EDD3"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_BCF1BAFE154D486BB27E6DE54DE67A30"
-        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -401,6 +401,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_178A0CA4C68E4F15B7F218561EA24E6C"
+            {
+            "SourcePath" = "8:..\\GoogleContactsSync\\Resources\\contacts-sync.ico"
+            "TargetName" = "8:contacts-sync.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_5F08081D58314698A5EF7B2D88DBA295"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:TRUE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_17C96A08C0C04AB99C55461B72206B9C"
             {
             "SourcePath" = "8:..\\GoogleContactsSync\\GO Contact Sync Homepage.url"
@@ -445,7 +465,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Google.GData.Contacts, Version=2.1.0.0, Culture=neutral, PublicKeyToken=7e065189dd4b982f, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Google.GData.Contacts, Version=2.2.0.0, Culture=neutral, PublicKeyToken=7e065189dd4b982f, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_6EC35BE8EF1AAED05EABD0848EEEB700"
@@ -476,7 +496,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Google.GData.Client, Version=2.1.0.0, Culture=neutral, PublicKeyToken=04a59ca9b0273830, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Google.GData.Client, Version=2.2.0.0, Culture=neutral, PublicKeyToken=04a59ca9b0273830, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_91E364B39302FB8247F82D5FA41F951E"
@@ -585,31 +605,11 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_BCF1BAFE154D486BB27E6DE54DE67A30"
-            {
-            "SourcePath" = "8:..\\GoogleContactsSync\\images\\icons\\contacts-sync.ico"
-            "TargetName" = "8:contacts-sync.ico"
-            "Tag" = "8:"
-            "Folder" = "8:_5F08081D58314698A5EF7B2D88DBA295"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:TRUE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_CB86503BDB83C3FBEE399D4CB0262D44"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Google.GData.AccessControl, Version=2.1.0.0, Culture=neutral, PublicKeyToken=b4b8eb9a7afc8328, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Google.GData.AccessControl, Version=2.2.0.0, Culture=neutral, PublicKeyToken=b4b8eb9a7afc8328, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_CB86503BDB83C3FBEE399D4CB0262D44"
@@ -640,7 +640,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Google.GData.Documents, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e4daaad656f19bb9, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Google.GData.Documents, Version=2.2.0.0, Culture=neutral, PublicKeyToken=e4daaad656f19bb9, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_D7DDBBCA636A87CDD2ADC2B73352977A"
@@ -671,7 +671,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Google.GData.Extensions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=0b4c5df2ebf20876, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Google.GData.Extensions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=0b4c5df2ebf20876, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_E4E9E9D12EE20858632E2D09D30DCA43"
@@ -807,15 +807,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:GO Contact Sync Mod"
-        "ProductCode" = "8:{8369D5CF-222F-4B4A-8E56-D26037F6D4AC}"
-        "PackageCode" = "8:{8FBF2FCC-93D3-4661-85CC-5A21C389970A}"
+        "ProductCode" = "8:{EC21C16D-4527-48A8-8993-F47B49492CB2}"
+        "PackageCode" = "8:{948A274C-9678-49C4-A64B-19148A5D78C2}"
         "UpgradeCode" = "8:{170B4620-F5BB-4D2E-97A1-239D79030F20}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:3.5.24"
+        "ProductVersion" = "8:3.6.0"
         "Manufacturer" = "8:WebGear, Create Software, Stru.be, saller.NET"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://googlesyncmod.sourceforge.net/"
@@ -825,7 +825,7 @@
         "Keywords" = "8:"
         "ARPCOMMENTS" = "8:GO Contact Sync Mod is a tool that synchronizes your contacts between Microsoft Microsoft Outlook and Google Mail. It supports contact categories and contact photos."
         "ARPURLINFOABOUT" = "8:http://googlesyncmod.sourceforge.net/"
-        "ARPPRODUCTICON" = "8:_BCF1BAFE154D486BB27E6DE54DE67A30"
+        "ARPPRODUCTICON" = "8:_178A0CA4C68E4F15B7F218561EA24E6C"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
@@ -939,7 +939,7 @@
             "Target" = "8:_8A4A20DC9841455BB5FD97B9DF38A24E"
             "Folder" = "8:_A72DB3C16CB8415995E753C547CE660E"
             "WorkingFolder" = "8:_5F08081D58314698A5EF7B2D88DBA295"
-            "Icon" = "8:_BCF1BAFE154D486BB27E6DE54DE67A30"
+            "Icon" = "8:_178A0CA4C68E4F15B7F218561EA24E6C"
             "Feature" = "8:"
             }
             "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_69AAA32BA8EA48B9803CEBAB1540A9AE"
