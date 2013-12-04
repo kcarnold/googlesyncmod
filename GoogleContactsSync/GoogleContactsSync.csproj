@@ -237,7 +237,6 @@
     <Content Include="Resources\contacts-sync.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="Resources\sync.ico" />
     <None Include="Resources\sync_0.ico" />
     <None Include="Resources\sync_30.ico" />
     <None Include="Resources\sync_60.ico" />
