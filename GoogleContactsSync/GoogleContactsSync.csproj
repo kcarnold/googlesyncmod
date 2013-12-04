@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>GoContactSyncMod</RootNamespace>
     <AssemblyName>GOContactSync</AssemblyName>
-    <ApplicationIcon>images\icons\contacts-sync.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\contacts-sync.ico</ApplicationIcon>
     <TargetZone>LocalIntranet</TargetZone>
     <GenerateManifests>false</GenerateManifests>
     <SignManifests>false</SignManifests>
@@ -215,6 +215,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="ProxySettings.resx">
@@ -233,23 +234,27 @@
     <Compile Include="Utilities.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="images\icons\contacts-sync.ico">
+    <Content Include="Resources\contacts-sync.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="images\icons\sync.ico" />
-    <None Include="images\icons\sync_30.ico" />
-    <None Include="images\icons\sync_60.ico" />
-    <None Include="images\icons\sync_90.ico" />
-    <None Include="images\icons\sync_120.ico" />
-    <None Include="images\icons\sync_150.ico" />
-    <None Include="images\icons\sync_180.ico" />
-    <None Include="images\icons\sync_210.ico" />
-    <None Include="images\icons\sync_240.ico" />
-    <None Include="images\icons\sync_270.ico" />
-    <None Include="images\icons\sync_300.ico" />
-    <None Include="images\icons\sync_330.ico" />
-    <Content Include="images\icons\sync_error.ico" />
-    <Content Include="images\icons\system-log-out.png" />
+    <None Include="Resources\sync.ico" />
+    <None Include="Resources\sync_0.ico" />
+    <None Include="Resources\sync_30.ico" />
+    <None Include="Resources\sync_60.ico" />
+    <None Include="Resources\sync_90.ico" />
+    <None Include="Resources\sync_120.ico" />
+    <None Include="Resources\sync_150.ico" />
+    <None Include="Resources\sync_180.ico" />
+    <None Include="Resources\sync_210.ico" />
+    <None Include="Resources\sync_240.ico" />
+    <None Include="Resources\sync_270.ico" />
+    <None Include="Resources\sync_300.ico" />
+    <None Include="Resources\sync_330.ico" />
+    <None Include="Resources\Donate.Image.png" />
+    <None Include="Resources\pictureBoxExit.BackgroundImage.png" />
+    <None Include="Resources\pictureBoxExit.Image.png" />
+    <Content Include="Resources\sync_error.ico" />
+    <Content Include="Resources\system-log-out.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
