@@ -135,10 +135,6 @@ Google To Outlook Only:  Only updates Outlook contacts based on google contacts.
   <data name="systemTrayMenu.TrayLocation" type="System.Drawing.Point, System.Drawing">
     <value>118, 17</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="notifyIcon.Icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\sync_0.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="syncTimer.TrayLocation" type="System.Drawing.Point, System.Drawing">
     <value>254, 17</value>
   </data>
@@ -153,6 +149,7 @@ according entry shall be deleted from Outlook and vice versa.</value>
     <value>By default the systems proxy settings are used. Go to Internet Explorer Settings and setup the proxy in the LAN Configuration.
 If alternate configuration is required or default setting does not work, click this link.</value>
   </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="Donate.Image" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\Donate.Image.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
