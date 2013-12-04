@@ -178,6 +178,6 @@ Click here to go to the donation site of the project.</value>
     <value>42</value>
   </data>
   <data name="$this.Icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\sync.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+    <value>Resources\contacts-sync.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>
