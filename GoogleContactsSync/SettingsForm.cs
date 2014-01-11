@@ -449,8 +449,9 @@ namespace GoContactSyncMod
 		{
 			try
 			{
-				if (!ValidCredentials)
-					return;
+                if (!ValidCredentials)
+                    //return;
+                    throw new Exception("Gmail Credentials are incomplete or incorrect!");
 
                 fillSyncFolderItems();
 
@@ -470,6 +471,8 @@ namespace GoContactSyncMod
 			}
 			catch (Exception ex)
 			{
+                TimerSwitch(false);
+                ShowForm();
 				ErrorHandler.Handle(ex);
 			}
 		}
@@ -891,6 +894,8 @@ namespace GoContactSyncMod
 			}
 			catch (Exception ex)
 			{
+                TimerSwitch(false);
+                ShowForm();
 				ErrorHandler.Handle(ex);
 			}
 		}
@@ -1139,6 +1144,8 @@ namespace GoContactSyncMod
             }
             catch (Exception ex)
             {
+                TimerSwitch(false);
+                ShowForm();
                 ErrorHandler.Handle(new Exception("Error saving 'Run program at startup' settings into Registry key '" + regKey + "'",ex));
             }
 		}
