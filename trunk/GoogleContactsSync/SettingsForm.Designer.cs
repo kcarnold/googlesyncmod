@@ -167,8 +167,7 @@ namespace GoContactSyncMod
             // 
             this.notifyIcon.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Warning;
             this.notifyIcon.ContextMenuStrip = this.systemTrayMenu;
-            //this.notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
-            this.notifyIcon.Icon = GoContactSyncMod.Properties.Resources.sync;
+            this.notifyIcon.Icon = global::GoContactSyncMod.Properties.Resources.sync;
             this.notifyIcon.Text = "GO Contact Sync Mod";
             this.notifyIcon.Visible = true;
             this.notifyIcon.BalloonTipClicked += new System.EventHandler(this.toolStripMenuItem1_Click);
@@ -302,7 +301,7 @@ namespace GoContactSyncMod
             this.groupBox1.Size = new System.Drawing.Size(450, 138);
             this.groupBox1.TabIndex = 2;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Automization";
+            this.groupBox1.Text = "Automation";
             // 
             // reportSyncResultCheckBox
             // 
@@ -627,14 +626,14 @@ namespace GoContactSyncMod
             this.actionsTableLayout.Size = new System.Drawing.Size(242, 31);
             this.actionsTableLayout.TabIndex = 1;
             // 
-            // CancelButton
+            // cancelButton
             // 
             this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.cancelButton.Enabled = false;
             this.cancelButton.Location = new System.Drawing.Point(88, 3);
-            this.cancelButton.Name = "CancelButton";
+            this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(79, 25);
             this.cancelButton.TabIndex = 2;
             this.cancelButton.Text = "&Cancel";
