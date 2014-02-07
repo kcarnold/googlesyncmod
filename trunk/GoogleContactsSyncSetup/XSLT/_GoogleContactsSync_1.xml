@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ProjectOutput Name="GoogleContactsSync_1" ProjectDirVar="$(var.GoogleContactsSync.ProjectDir)" TargetDirVar="$(var.GoogleContactsSync.TargetDir)" SharedFileId="_18B2A439_45AB_439C_BCC0_388204D8C8BF" Tag="_1">
+  <Binaries>
+    <DiskId>1</DiskId>
+    <Compressed>yes</Compressed>
+    <Hidden>no</Hidden>
+    <KeyPath>yes</KeyPath>
+    <ReadOnly>no</ReadOnly>
+    <System>no</System>
+    <Vital>yes</Vital>
+    <Permanent>no</Permanent>
+    <SharedDllRefCount>no</SharedDllRefCount>
+    <Transitive>no</Transitive>
+  </Binaries>
+</ProjectOutput>
