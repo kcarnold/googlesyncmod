@@ -93,6 +93,9 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Google.GData.Calendar">
+      <HintPath>..\GoogleAPI\Google.GData.Calendar.dll</HintPath>
+    </Reference>
     <Reference Include="Google.GData.Client, Version=1.7.0.12891, Culture=neutral, PublicKeyToken=04a59ca9b0273830, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\GoogleAPI\Google.GData.Client.dll</HintPath>
@@ -134,6 +137,9 @@
     <Compile Include="AddEditProfile.designer.cs">
       <DependentUpon>AddEditProfile.cs</DependentUpon>
     </Compile>
+    <Compile Include="AppointmentPropertiesUtils.cs" />
+    <Compile Include="AppointmentsMatcher.cs" />
+    <Compile Include="AppointmentSync.cs" />
     <Compile Include="ConfigurationManager.cs">
       <SubType>Form</SubType>
     </Compile>

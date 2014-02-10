@@ -14,6 +14,7 @@ using Google.Documents;
 using Google.GData.Client.ResumableUpload;
 using Google.GData.Documents;
 using System.Threading;
+using Google.GData.Calendar;
 
 namespace GoContactSyncMod
 {
@@ -58,13 +59,16 @@ namespace GoContactSyncMod
         public static Outlook.Application OutlookApplication { get; private set; }
         public Outlook.Items OutlookContacts { get; private set; }
         public Outlook.Items OutlookNotes { get; private set; }
+        public Outlook.Items OutlookAppointments { get; private set; }
         public Collection<ContactMatch> OutlookContactDuplicates { get; set; }
         public Collection<ContactMatch> GoogleContactDuplicates { get; set; }
         public Collection<Contact> GoogleContacts { get; private set; }
         public Collection<Document> GoogleNotes { get; private set; }
+        public Collection<EventEntry> GoogleAppointments { get; private set; }
         public Collection<Group> GoogleGroups { get; set; }
         internal Document googleNotesFolder;
         public string OutlookPropertyPrefix { get; private set; }
+
 		public string OutlookPropertyNameId
 		{
             get { return OutlookPropertyPrefix + "id"; }
@@ -90,6 +94,7 @@ namespace GoContactSyncMod
         public string SyncProfile { get; set; }
         public static string SyncContactsFolder { get; set; }
         public static string SyncNotesFolder { get; set; }
+        public static string SyncAppointmentsFolder { get; set; }
 
 		//private ConflictResolution? _conflictResolution;
 		//public ConflictResolution? CResolution
@@ -101,6 +106,8 @@ namespace GoContactSyncMod
         public List<ContactMatch> Contacts { get; private set; }
 
         public List<NoteMatch> Notes { get; private set; }
+
+        public List<AppointmentMatch> Appointments { get; private set; }
 
         //private string _authToken;
         //public string AuthToken
@@ -125,6 +132,11 @@ namespace GoContactSyncMod
         /// If true sync also contacts
         /// </summary>
         public bool SyncContacts { get; set; }
+
+        /// <summary>
+        /// If true sync also appointments (calendar)
+        /// </summary>
+        public bool SyncAppointments { get; set; }
 
         /// <summary>
         /// if true, use Outlook's FileAs for Google Title/FullName. If false, use Outlook's Fullname
@@ -190,7 +202,7 @@ namespace GoContactSyncMod
 				}
 				catch (Exception ex)
 				{
-					string message = "Cannot connect to Outlook.\r\nPlease restart "+Application.ProductName+" and try again. If error persists, please inform developers on SourceForge.";
+					string message = "Cannot connect to Outlook.\r\nPlease restart "+Application.ProductName+" and try again. If error persists, please inform developers on OutlookForge.";
 					// Error again? We need full stacktrace, display it!
 					throw new Exception(message, ex);
 				}
@@ -629,7 +641,7 @@ namespace GoContactSyncMod
 
                     if (isEmpty)
                     {
-                        DocumentsRequest.Delete(new Uri(Google.GData.Documents.DocumentsListQuery.documentsBaseUri + "/" +categoryFolder.ResourceId), categoryFolder.ETag);
+                        DocumentsRequest.Delete(new Uri(Google.GData.Documents.DocumentsListQuery.documentsBaseUri + "/" +categoryFolder.ReoutlookId), categoryFolder.ETag);
                         Logger.Log("Deleted empty Google category folder: " + categoryFolder.Title, EventType.Information);
                     }
 
@@ -731,6 +743,26 @@ namespace GoContactSyncMod
             LoadGoogleNotes();
         }
 
+        public void LoadAppointments()
+        {
+            if (OutlookAppointmentsFolder == GoogleAppointmentsFolder)
+                throw new Exception("Outlook and Google Appointments Folder are the same, please choose different folders");
+
+            Logger.Log("Loading Outlook Outlook appointments...", EventType.Information);
+            OutlookAppointments = GetOutlookItems(Outlook.OlDefaultFolders.olFolderCalendar, OutlookAppointmentsFolder);
+            Logger.Log("Outlook Outlook Appointments Found: " + OutlookAppointments.Count, EventType.Debug);
+
+            Logger.Log("Loading Google Outlook appointments...", EventType.Information);
+            //Copy Outlook.Items to Collection, because otherwise when removing a GoogleAppointment from Outlook.Items, the GoogleAppointment is also deleted
+            Outlook.Items GoogleAppointments = GetOutlookItems(Outlook.OlDefaultFolders.olFolderCalendar, GoogleAppointmentsFolder);
+            GoogleAppointments = new Collection<Outlook.AppointmentItem>();
+            foreach (Outlook.AppointmentItem appointment in GoogleAppointments)
+                GoogleAppointments.Add(appointment);
+
+            Logger.Log("Google Outlook Appointments Found: " + GoogleAppointments.Count, EventType.Debug);
+        }
+
+
         /// <summary>
         /// Load the contacts from Google and Outlook and match them
         /// </summary>
@@ -772,6 +804,27 @@ namespace GoContactSyncMod
             Logger.Log("Note Matches Found: " + Notes.Count, EventType.Debug);
         }
 
+        /// <summary>
+        /// Load the appointments from Google and Outlook and match them
+        /// </summary>
+        public void MatchAppointments()
+        {
+            LoadAppointments();
+            Appointments = AppointmentsMatcher.MatchAppointments(this);
+            /*DuplicateDataException duplicateDataException;
+            _matches = ContactsMatcher.MatchContacts(this, out duplicateDataException);
+            if (duplicateDataException != null)
+            {
+
+                if (DuplicatesFound != null)
+                    DuplicatesFound("Google duplicates found", duplicateDataException.Message);
+                else
+                    Logger.Log(duplicateDataException.Message, EventType.Warning);
+            }*/
+            Logger.Log("Appointment Matches Found: " + Appointments.Count, EventType.Debug);
+        }
+
+
 		public void Sync()
 		{
             lock (_syncRoot)
@@ -801,6 +854,9 @@ namespace GoContactSyncMod
 
                     if (SyncNotes)
                         MatchNotes();
+
+                    if (SyncAppointments)
+                        MatchAppointments();
 
 #if debug
                         this.DebugContacts();
@@ -994,6 +1050,20 @@ namespace GoContactSyncMod
                         CleanUpGoogleCategories();
                     }
 
+                    if (SyncAppointments)
+                    {
+                        if (Appointments == null)
+                            return;
+
+                        TotalCount += Appointments.Count;
+
+                        Logger.Log("Syncing appointments...", EventType.Information);
+                        AppointmentsMatcher.SyncAppointments(this);
+
+                        DeleteAppointments(Appointments);
+
+                    }
+
                 }
                 finally
                 {
@@ -1003,15 +1073,180 @@ namespace GoContactSyncMod
                         Marshal.ReleaseComObject(OutlookContacts);
                         OutlookContacts = null;
                     }
+                    if (OutlookNotes != null)
+                    {
+                        Marshal.ReleaseComObject(OutlookNotes);
+                        OutlookNotes = null;
+                    }
+                    if (OutlookAppointments != null)
+                    {
+                        Marshal.ReleaseComObject(OutlookAppointments);
+                        OutlookAppointments = null;
+                    }
                     GoogleContacts = null;
+                    GoogleNotes = null;
+                    GoogleAppointments = null;
                     OutlookContactDuplicates = null;
                     GoogleContactDuplicates = null;
                     GoogleGroups = null;
                     Contacts = null;
+                    Notes = null;
+                    Appointments = null;
 
                 }
             }
 		}
+
+        public void DeleteAppointments(List<AppointmentMatch> appointments)
+        {
+            foreach (AppointmentMatch match in appointments)
+            {
+                try
+                {
+                    DeleteAppointment(match);
+                }
+                catch (Exception ex)
+                {
+                    if (ErrorEncountered != null)
+                    {
+                        ErrorCount++;
+                        SyncedCount--;
+                        string message = String.Format("Failed to synchronize appointment: {0}:\n{1}", match.OutlookAppointment != null ? match.OutlookAppointment.Subject + "(" + match.OutlookAppointment.Start + ")" : match.GoogleAppointment.Subject + "(" + match.GoogleAppointment.Start + ")", ex.Message);
+                        Exception newEx = new Exception(message, ex);
+                        ErrorEncountered("Error", newEx, EventType.Error);
+                    }
+                    else
+                        throw;
+                }
+            }
+        }
+
+        // NOTE: Outlook appointments are not saved here anymore, they have already been saved and counted
+        public void DeleteAppointment(AppointmentMatch match)
+        {
+            if (match.GoogleAppointment != null && match.OutlookAppointment != null)
+            {
+                ////bool googleChanged, outlookChanged;
+                ////SaveAppointmentGroups(match, out googleChanged, out outlookChanged);
+                //if (!match.GoogleAppointment.Saved)
+                //{
+                //    //Google appointment was modified. save.
+                //    SyncedCount++;
+                //    AppointmentPropertiesUtils.SetProperty(match.GoogleAppointment, Syncronizer.OutlookAppointmentsFolder, match.OutlookAppointment.EntryID);
+                //    match.GoogleAppointment.Save();
+                //    Logger.Log("Updated Google appointment from Outlook: \"" + match.GoogleAppointment.Subject + "\".", EventType.Information);
+                //}
+
+                //if (!match.OutlookAppointment.Saved)// || outlookChanged)
+                //{
+                //    //outlook appointment was modified. save.
+                //    SyncedCount++;
+                //    AppointmentPropertiesUtils.SetProperty(match.OutlookAppointment, Syncronizer.GoogleAppointmentsFolder, match.GoogleAppointment.EntryID);
+                //    match.OutlookAppointment.Save();
+                //    Logger.Log("Updated Outlook appointment from Google: \"" + match.OutlookAppointment.Subject + "\".", EventType.Information);
+                //}                
+            }
+            else if (match.GoogleAppointment == null && match.OutlookAppointment != null)
+            {
+                var propertyName = string.Format(Syncronizer.OutlookUserPropertyTemplate, Syncronizer.GoogleAppointmentsFolder.GetHashCode().ToString(), Syncronizer.OutlookUserPropertyTemplateId);
+                if (match.OutlookAppointment.ItemProperties[propertyName] != null)
+                {
+                    string name = match.OutlookAppointment.Subject;
+                    if (_syncOption == SyncOption.OutlookToGoogleOnly)
+                    {
+                        SkippedCount++;
+                        Logger.Log("Skipped Deletion of Outlook appointment because of SyncOption " + _syncOption + ":" + name + ".", EventType.Information);
+                    }
+                    else if (!SyncDelete)
+                    {
+                        SkippedCount++;
+                        Logger.Log("Skipped Deletion of Outlook appointment because SyncDeletion is switched off: " + name + ".", EventType.Information);
+                    }
+                    else
+                    {
+                        // Google appointment was deleted, delete outlook appointment
+                        Outlook.AppointmentItem item = match.OutlookAppointment;
+                        //try
+                        //{
+                        string outlookAppointmentId = AppointmentPropertiesUtils.GetOutlookGoogleAppointmentId(sync, match.OutlookAppointment);
+                        try
+                        {
+                            //First reset OutlookGoogleContactId to restore it later from trash
+                            AppointmentPropertiesUtils.ResetOutlookGoogleAppointmentId(sync, item);
+                            item.Save();
+                        }
+                        catch (Exception)
+                        {
+                            Logger.Log("Error resetting match for Outlook appointment: \"" + name + "\".", EventType.Warning);
+                        }
+
+                        item.Delete();
+
+                        DeletedCount++;
+                        Logger.Log("Deleted Outlook appointment: \"" + name + "\".", EventType.Information);
+                        //}
+                        //finally
+                        //{
+                        //    Marshal.ReleaseComObject(outlookContact);
+                        //    outlookContact = null;
+                        //}
+                    }
+                }
+            }
+            else if (match.GoogleAppointment != null && match.OutlookAppointment == null)
+            {
+                var propertyName = string.Format(Syncronizer.OutlookUserPropertyTemplate, Syncronizer.OutlookAppointmentsFolder.GetHashCode().ToString(), Syncronizer.OutlookUserPropertyTemplateId);
+                if (match.GoogleAppointment.ItemProperties[propertyName] != null)
+                {
+                    string name = match.GoogleAppointment.Subject;
+                    if (_syncOption == SyncOption.OutlookToGoogleOnly)
+                    {
+                        SkippedCount++;
+                        Logger.Log("Skipped Deletion of Google appointment because of SyncOption " + _syncOption + ":" + name + ".", EventType.Information);
+                    }
+                    else if (!SyncDelete)
+                    {
+                        SkippedCount++;
+                        Logger.Log("Skipped Deletion of Google appointment because SyncDeletion is switched off: " + name + ".", EventType.Information);
+                    }
+                    else
+                    {
+                        // outlook appointment was deleted, delete Google appointment
+                        Outlook.AppointmentItem item = match.GoogleAppointment;
+                        //try
+                        //{
+                        string outlookAppointmentId = AppointmentPropertiesUtils.GetGoogleOutlookAppointmentId(syncProfile, match.GoogleAppointment);
+                        try
+                        {
+                            //First reset OutlookGoogleContactId to restore it later from trash
+                            AppointmentPropertiesUtils.ResetOutlookGoogleAppointmentId(sync, item);
+                            item.Save();
+                        }
+                        catch (Exception)
+                        {
+                            Logger.Log("Error resetting match for Google appointment: \"" + name + "\".", EventType.Warning);
+                        }
+
+                        item.Delete();
+
+                        DeletedCount++;
+                        Logger.Log("Deleted Google appointment: \"" + name + "\".", EventType.Information);
+                        //}
+                        //finally
+                        //{
+                        //    Marshal.ReleaseComObject(outlookContact);
+                        //    outlookContact = null;
+                        //}
+                    }
+                }
+            }
+            else
+            {
+                //TODO: ignore for now: 
+                throw new ArgumentNullException("To save appointments, at least a GoogleAppointment or OutlookAppointment must be present.");
+                //Logger.Log("Both Google and Outlook appointment: \"" + match.OutlookAppointment.FileAs + "\" have been changed! Not implemented yet.", EventType.Warning);
+            }
+        }
 
 		public void SaveContacts(List<ContactMatch> contacts)
 		{
@@ -1027,7 +1262,7 @@ namespace GoContactSyncMod
 					{
                         ErrorCount++;
                         SyncedCount--;
-                        string message = String.Format("Failed to synchronize contact: {0}. \nPlease check the contact, if any Email already exists on Google contacts side or if there is too much or invalid data in the notes field. \nIf the problem persists, please try recreating the contact or report the error on SourceForge:\n{1}", match.OutlookContact != null ? match.OutlookContact.FileAs : match.GoogleContact.Title, ex.Message);
+                        string message = String.Format("Failed to synchronize contact: {0}. \nPlease check the contact, if any Email already exists on Google contacts side or if there is too much or invalid data in the notes field. \nIf the problem persists, please try recreating the contact or report the error on OutlookForge:\n{1}", match.OutlookContact != null ? match.OutlookContact.FileAs : match.GoogleContact.Title, ex.Message);
 						Exception newEx = new Exception(message, ex);
 						ErrorEncountered("Error", newEx, EventType.Error);
 					}
@@ -1060,6 +1295,8 @@ namespace GoContactSyncMod
                 }
             }
         }
+
+
 
         // NOTE: Outlook contacts are not saved here anymore, they have already been saved and counted
         public void SaveContact(ContactMatch match)
@@ -1269,7 +1506,7 @@ namespace GoContactSyncMod
                     else
                     {
                         // peer outlook note was deleted, delete google note
-                        DocumentsRequest.Delete(new Uri(Google.GData.Documents.DocumentsListQuery.documentsBaseUri + "/" + match.GoogleNote.ResourceId), match.GoogleNote.ETag);
+                        DocumentsRequest.Delete(new Uri(Google.GData.Documents.DocumentsListQuery.documentsBaseUri + "/" + match.GoogleNote.ReoutlookId), match.GoogleNote.ETag);
                         //DocumentsRequest.Service.Delete(match.GoogleNote.DocumentEntry); //ToDo: Currently, the Delete only removes the Notes label from the document but keeps the document in the root folder, therefore I use the URI Delete above for now: "https://docs.google.com/feeds/default/private/full"
                         //DocumentsRequest.Delete(match.GoogleNote);
 
@@ -1296,6 +1533,23 @@ namespace GoContactSyncMod
                 throw new ArgumentNullException("To save notes, at least a GoogleContacat or OutlookNote must be present.");
                 //Logger.Log("Both Google and Outlook note: \"" + match.OutlookNote.FileAs + "\" have been changed! Not implemented yet.", EventType.Warning);
             }
+        }
+
+        /// <summary>
+        /// Updates Outlook appointment from master to slave (including groups/categories)
+        /// </summary>
+        public void SaveAppointment(Outlook.AppointmentItem master, Outlook.AppointmentItem slave, string outlook)
+        {
+            AppointmentSync.Update(master, slave);
+
+            AppointmentPropertiesUtils.SetOutlookGoogleAppointmentId(Sync, slave,master);
+            slave.Save();
+
+            AppointmentPropertiesUtils.SetSyncId(master, (outlook == Syncronizer.Outlook ? Syncronizer.GoogleAppointmentsFolder : Syncronizer.OutlookAppointmentsFolder), slave.EntryID);
+            master.Save();
+
+            SyncedCount++;
+            Logger.Log("Updated Outlook appointment from " + outlook + " to " + (outlook == Outlook ? Google : Outlook) + ": \"" + master.Subject + "(" + master.Start + ")" + "\".", EventType.Information);
         }
 
         private void SaveOutlookContact(ref Contact googleContact, Outlook.ContactItem outlookContact)
@@ -1381,7 +1635,7 @@ namespace GoContactSyncMod
                 string oldOutlookGoogleNoteId = NotePropertiesUtils.GetOutlookGoogleNoteId(this, outlookNoteItem);
                 if (match.GoogleNote.DocumentEntry.Id.Uri != null)
                 {
-                    //DocumentsRequest.Delete(new Uri(Google.GData.Documents.DocumentsListQuery.documentsBaseUri + "/" + match.GoogleNote.ResourceId), match.GoogleNote.ETag);
+                    //DocumentsRequest.Delete(new Uri(Google.GData.Documents.DocumentsListQuery.documentsBaseUri + "/" + match.GoogleNote.ReoutlookId), match.GoogleNote.ETag);
                     ////DocumentsRequest.Delete(match.GoogleNote); //ToDo: Currently, the Delete only removes the Notes label from the document but keeps the document in the root folder
                     //NotePropertiesUtils.ResetOutlookGoogleNoteId(this, outlookNoteItem);                                        
 
@@ -1478,7 +1732,7 @@ namespace GoContactSyncMod
             //{
             //    foreach (string parentFolder in newNote.ParentFolders)
             //        if (parentFolder != googleNotesFolder.Self)
-            //            DocumentsRequest.Delete(new Uri(googleNotesFolder.DocumentEntry.Content.AbsoluteUri + "/" + newNote.ResourceId),newNote.ETag);
+            //            DocumentsRequest.Delete(new Uri(googleNotesFolder.DocumentEntry.Content.AbsoluteUri + "/" + newNote.ReoutlookId),newNote.ETag);
             //}
 
             //first delete the note from all categories, the still valid categories are assigned again later           
@@ -1486,7 +1740,7 @@ namespace GoContactSyncMod
                 if (parentFolder != googleNotesFolder.Self) //Except for Notes root folder
                 {
                     Document deletedNote = LoadGoogleNotes(parentFolder + "/contents", newNote.DocumentEntry.Id);
-                    //DocumentsRequest.Delete(new Uri(parentFolder + "/contents/" + newNote.ResourceId), newNote.ETag);
+                    //DocumentsRequest.Delete(new Uri(parentFolder + "/contents/" + newNote.ReoutlookId), newNote.ETag);
                     DocumentsRequest.Delete(deletedNote); //Just delete it from this category
                 }
 
@@ -1927,11 +2181,11 @@ namespace GoContactSyncMod
 
             string fileName = NotePropertiesUtils.CreateNoteFile(master.EntryID, master.Body, SyncProfile);
 
-            string contentType = MediaFileSource.GetContentTypeForFileName(fileName);
+            string contentType = MediaFileOutlook.GetContentTypeForFileName(fileName);
 
             //ToDo: Somewhow, the content is not uploaded to Google, only an empty document
             //Therefoe I use DocumentService.UploadDocument instead.
-            slave.MediaSource = new MediaFileSource(fileName, contentType);
+            slave.MediaOutlook = new MediaFileOutlook(fileName, contentType);
 
         }
 
@@ -2262,6 +2516,98 @@ namespace GoContactSyncMod
         //}
 
         /// <summary>
+        /// Resets associations of Source appointments with target appointments via user props
+        /// and vice versa
+        /// </summary>
+        public void ResetAppointmentMatches()
+        {
+            Debug.Assert(SourceAppointments != null, "Outlook Appointments object is null - this should not happen. Please inform Developers.");
+
+            //try
+            //{
+
+            lock (_syncRoot)
+            {
+                Logger.Log("Resetting Target Appointment matches...", EventType.Information);
+
+                for (int i = 0; i < TargetAppointments.Count; i++)
+                {
+                    Outlook.AppointmentItem targetAppointment = null;
+
+                    try
+                    {
+                        targetAppointment = TargetAppointments[i] as Outlook.AppointmentItem;
+                        if (targetAppointment == null)
+                        {
+                            Logger.Log("Empty Target Appointment found (maybe distribution list). Skipping", EventType.Warning);
+                            continue;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        //this is needed because some appointments throw exceptions
+                        Logger.Log("Accessing Target Appointment threw and exception. Skipping: " + ex.Message, EventType.Warning);
+                        continue;
+                    }
+
+                    try
+                    {
+                        ResetMatch(targetAppointment, SourceAppointmentsFolder);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log("The match of Target appointment " + targetAppointment.Subject + " couldn't be reset: " + ex.Message, EventType.Warning);
+                    }
+                }
+
+
+                Logger.Log("Resetting Source Appointment matches...", EventType.Information);
+                //1 based array
+                for (int i = 1; i <= SourceAppointments.Count; i++)
+                {
+                    Outlook.AppointmentItem sourceAppointment = null;
+
+                    try
+                    {
+                        sourceAppointment = SourceAppointments[i] as Outlook.AppointmentItem;
+                        if (sourceAppointment == null)
+                        {
+                            Logger.Log("Empty Source Appointment found (maybe distribution list). Skipping", EventType.Warning);
+                            continue;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        //this is needed because some appointments throw exceptions
+                        Logger.Log("Accessing Source Appointment threw and exception. Skipping: " + ex.Message, EventType.Warning);
+                        continue;
+                    }
+
+                    try
+                    {
+                        ResetMatch(sourceAppointment, TargetAppointmentsFolder);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log("The match of Source appointment " + sourceAppointment.Subject + " couldn't be reset: " + ex.Message, EventType.Warning);
+                    }
+                }
+
+            }
+            //}
+            //finally
+            //{
+            //    if (SourceContacts != null)
+            //    {
+            //        Marshal.ReleaseComObject(SourceContacts);
+            //        SourceContacts = null;
+            //    }
+            //    TargetContacts = null;
+            //}
+
+        }
+
+        /// <summary>
         /// Reset the match link between Google and Outlook contact        
         /// </summary>
         public Contact ResetMatch(Contact googleContact)
@@ -2317,6 +2663,31 @@ namespace GoContactSyncMod
                 //{
                 //    Marshal.ReleaseComObject(outlookNote);
                 //    outlookNote = null;
+                //}
+
+            }
+
+
+        }
+
+
+        /// <summary>
+        /// Reset the match link between Source and Target appointment
+        /// </summary>
+        public void ResetMatch(Outlook.AppointmentItem outlookAppointment, string partnerFolder)
+        {
+
+            if (outlookAppointment != null)
+            {
+                //try
+                //{
+                AppointmentPropertiesUtils.ResetSyncId(outlookAppointment, partnerFolder);
+                outlookAppointment.Save();
+                //}
+                //finally
+                //{
+                //    Marshal.ReleaseComObject(SourceAppointment);
+                //    SourceAppointment = null;
                 //}
 
             }
@@ -2486,6 +2857,15 @@ namespace GoContactSyncMod
 
                 MessageBox.Show(string.Format(msg, oCount, gCount, mCount), "DEBUG INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+
+            if (SyncAppointments)
+            {
+                string oCount = "Source Appointments Count: " + OutlookAppointments.Count;
+                string gCount = "Target Appointments Count: " + GoogleAppointments.Count;
+                string mCount = "Matches Count: " + Appointments.Count;
+
+                MessageBox.Show(string.Format(msg, oCount, gCount, mCount), "DEBUG INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
 		}
         public static Outlook.ContactItem CreateOutlookContactItem(string syncContactsFolder)
         {
@@ -2527,6 +2907,28 @@ namespace GoContactSyncMod
                 if (notesFolder != null) Marshal.ReleaseComObject(notesFolder);
             }
             return outlookNote;
+        }
+	
+
+        public static Outlook.AppointmentItem CreateOutlookAppointmentItem(string syncAppointmentsFolder)
+        {
+            //SourceAppointment = OutlookApplication.CreateItem(Outlook.OlItemType.olAppointmentItem) as Outlook.AppointmentItem; //This will only create it in the default folder, but we have to consider the selected folder
+            Outlook.AppointmentItem outlookAppointment = null;
+            Outlook.MAPIFolder appointmentsFolder = null;
+            Outlook.Items items = null;
+
+            try
+            {
+                appointmentsFolder = OutlookNameSpace.GetFolderFromID(syncAppointmentsFolder);
+                items = appointmentsFolder.Items;
+                outlookAppointment = items.Add(Outlook.OlItemType.olAppointmentItem) as Outlook.AppointmentItem;
+            }
+            finally
+            {
+                if (items != null) Marshal.ReleaseComObject(items);
+                if (appointmentsFolder != null) Marshal.ReleaseComObject(appointmentsFolder);
+            }
+            return outlookAppointment;
         }
 	}
 
