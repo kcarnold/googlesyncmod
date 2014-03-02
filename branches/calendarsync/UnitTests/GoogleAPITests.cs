@@ -226,12 +226,13 @@ namespace GoContactSyncMod.UnitTests
             //First, check if there is a folder called GCSMTestContacts and GCSMTestNotes available, if yes, use them
             ArrayList outlookContactFolders = new ArrayList();
             ArrayList outlookNoteFolders = new ArrayList();
+            ArrayList outlookAppointmentFolders = new ArrayList();
             Microsoft.Office.Interop.Outlook.Folders folders = Syncronizer.OutlookNameSpace.Folders;
             foreach (Microsoft.Office.Interop.Outlook.Folder folder in folders)
             {
                 try
                 {
-                    SettingsForm.GetOutlookMAPIFolders(outlookContactFolders, outlookNoteFolders, folder);
+                    SettingsForm.GetOutlookMAPIFolders(outlookContactFolders, outlookNoteFolders, outlookAppointmentFolders, folder);
                 }
                 catch (Exception e)
                 {

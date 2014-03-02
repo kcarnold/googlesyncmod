@@ -56,6 +56,7 @@ namespace GoContactSyncMod
 
         private string syncContactsFolder = "";
         private string syncNotesFolder = "";
+        private string syncAppointmentsFolder = "";
         private string syncProfile
         {
             get
@@ -107,6 +108,7 @@ namespace GoContactSyncMod
             Logger.Log("Started application " + Application.ProductName + " " + Application.ProductVersion + " on " + VersionInformation.GetWindowsMainVersion().ToString(), EventType.Information);
             ContactsMatcher.NotificationReceived += new ContactsMatcher.NotificationHandler(OnNotificationReceived);
             NotesMatcher.NotificationReceived += new NotesMatcher.NotificationHandler(OnNotificationReceived);
+            AppointmentsMatcher.NotificationReceived += new AppointmentsMatcher.NotificationHandler(OnNotificationReceived);
 			PopulateSyncOptionBox();            
 
             if (fillSyncProfileItems()) 
@@ -152,15 +154,17 @@ namespace GoContactSyncMod
         {
             lock (syncRoot)
             {
-                if (this.contactFoldersComboBox.Items.Count == 0 || this.noteFoldersComboBox.Items.Count == 0)
+                if (this.contactFoldersComboBox.Items.Count == 0 || this.noteFoldersComboBox.Items.Count == 0 || this.appointmentFoldersComboBox.Items.Count == 0)
                 {
                     Logger.Log("Loading Outlook folders...", EventType.Information);
 
                     this.contactFoldersComboBox.Visible = btSyncContacts.Checked;
                     this.noteFoldersComboBox.Visible = btSyncNotes.Checked;
+                    this.appointmentFoldersComboBox.Visible = btSyncAppointments.Checked;
                     this.cmbSyncProfile.Visible = true;
                     ArrayList outlookContactFolders = new ArrayList();
                     ArrayList outlookNoteFolders = new ArrayList();
+                    ArrayList outlookAppointmentFolders = new ArrayList();
                     try
                     {
                         Cursor = Cursors.WaitCursor;
@@ -174,7 +178,7 @@ namespace GoContactSyncMod
                         {
                             try
                             {
-                                GetOutlookMAPIFolders(outlookContactFolders, outlookNoteFolders, folder);
+                                GetOutlookMAPIFolders(outlookContactFolders, outlookNoteFolders, outlookAppointmentFolders, folder);
                             }
                             catch (Exception e)
                             {
@@ -183,6 +187,7 @@ namespace GoContactSyncMod
                         }
                         outlookContactFolders.Sort();
                         outlookNoteFolders.Sort();
+                        outlookAppointmentFolders.Sort();
 
                         this.contactFoldersComboBox.DataSource = outlookContactFolders;
                         this.contactFoldersComboBox.DisplayMember = "DisplayName";
@@ -192,11 +197,17 @@ namespace GoContactSyncMod
                         this.noteFoldersComboBox.DisplayMember = "DisplayName";
                         this.noteFoldersComboBox.ValueMember = "FolderID";
 
+                        this.appointmentFoldersComboBox.DataSource = outlookAppointmentFolders;
+                        this.appointmentFoldersComboBox.DisplayMember = "DisplayName";
+                        this.appointmentFoldersComboBox.ValueMember = "FolderID";
+
                         this.contactFoldersComboBox.EndUpdate();
                         this.noteFoldersComboBox.EndUpdate();
+                        this.appointmentFoldersComboBox.EndUpdate();
 
                         this.contactFoldersComboBox.SelectedValue = "";
                         this.noteFoldersComboBox.SelectedValue = "";
+                        this.appointmentFoldersComboBox.SelectedValue = "";
 
                         //Select Default Folder per Default
                         foreach (OutlookFolder folder in contactFoldersComboBox.Items)
@@ -211,6 +222,14 @@ namespace GoContactSyncMod
                             if (folder.IsDefaultFolder)
                             {
                                 this.noteFoldersComboBox.SelectedItem = folder;
+                                break;
+                            }
+
+                        //Select Default Folder per Default
+                        foreach (OutlookFolder folder in appointmentFoldersComboBox.Items)
+                            if (folder.IsDefaultFolder)
+                            {
+                                this.appointmentFoldersComboBox.SelectedItem = folder;
                                 break;
                             }
 
@@ -232,7 +251,7 @@ namespace GoContactSyncMod
             }
         }
 
-        public static void GetOutlookMAPIFolders(ArrayList outlookContactFolders, ArrayList outlookNoteFolders, Microsoft.Office.Interop.Outlook.MAPIFolder folder)
+        public static void GetOutlookMAPIFolders(ArrayList outlookContactFolders, ArrayList outlookNoteFolders, ArrayList outlookAppointmentFolders, Microsoft.Office.Interop.Outlook.MAPIFolder folder)
         {
             foreach (Microsoft.Office.Interop.Outlook.MAPIFolder mapi in folder.Folders)
             {
@@ -246,10 +265,16 @@ namespace GoContactSyncMod
                     bool isDefaultFolder = mapi.EntryID.Equals(Syncronizer.OutlookNameSpace.GetDefaultFolder(Microsoft.Office.Interop.Outlook.OlDefaultFolders.olFolderNotes).EntryID);
                     outlookNoteFolders.Add(new OutlookFolder(folder.Name + " - " + mapi.Name, mapi.EntryID, isDefaultFolder));
                 }
+                if (mapi.DefaultItemType == Microsoft.Office.Interop.Outlook.OlItemType.olAppointmentItem)
+                {
+                    bool isDefaultFolder = mapi.EntryID.Equals(Syncronizer.OutlookNameSpace.GetDefaultFolder(Microsoft.Office.Interop.Outlook.OlDefaultFolders.olFolderCalendar).EntryID);
+                    outlookAppointmentFolders.Add(new OutlookFolder(folder.Name + " - " + mapi.Name, mapi.EntryID, isDefaultFolder));
+                }
 
                 if (mapi.DefaultItemType == Microsoft.Office.Interop.Outlook.OlItemType.olContactItem ||
-                    mapi.DefaultItemType == Microsoft.Office.Interop.Outlook.OlItemType.olNoteItem)
-                    GetOutlookMAPIFolders(outlookContactFolders, outlookNoteFolders, mapi);
+                    mapi.DefaultItemType == Microsoft.Office.Interop.Outlook.OlItemType.olNoteItem ||
+                    mapi.DefaultItemType == Microsoft.Office.Interop.Outlook.OlItemType.olAppointmentItem)
+                    GetOutlookMAPIFolders(outlookContactFolders, outlookNoteFolders, outlookAppointmentFolders, mapi);
 
             }
         }
@@ -318,7 +343,9 @@ namespace GoContactSyncMod
             if (regKeyAppRoot.GetValue("SyncDeletion") != null)
                 btSyncDelete.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("SyncDeletion"));
             if (regKeyAppRoot.GetValue("PromptDeletion") != null)
-                btPromptDelete.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("PromptDeletion"));        
+                btPromptDelete.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("PromptDeletion"));
+            if (regKeyAppRoot.GetValue("SyncAppointments") != null)
+                btSyncAppointments.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("SyncAppointments"));
             if (regKeyAppRoot.GetValue("SyncNotes") != null)
                 btSyncNotes.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("SyncNotes"));
             if (regKeyAppRoot.GetValue("SyncContacts") != null)
@@ -344,6 +371,8 @@ namespace GoContactSyncMod
                 contactFoldersComboBox.SelectedValue = regKeyAppRoot.GetValue("SyncContactsFolder") as string;
             if (regKeyAppRoot.GetValue("SyncNotesFolder") != null)
                 noteFoldersComboBox.SelectedValue = regKeyAppRoot.GetValue("SyncNotesFolder") as string;
+            if (regKeyAppRoot.GetValue("SyncAppointmentsFolder") != null)
+                appointmentFoldersComboBox.SelectedValue = regKeyAppRoot.GetValue("SyncAppointmentsFolder") as string;
         }
 
 		private void SaveSettings()
@@ -371,6 +400,7 @@ namespace GoContactSyncMod
                 regKeyAppRoot.SetValue("ReportSyncResult", reportSyncResultCheckBox.Checked);
                 regKeyAppRoot.SetValue("SyncDeletion", btSyncDelete.Checked);
                 regKeyAppRoot.SetValue("PromptDeletion", btPromptDelete.Checked);
+                regKeyAppRoot.SetValue("SyncAppointments", btSyncAppointments.Checked);
                 regKeyAppRoot.SetValue("SyncNotes", btSyncNotes.Checked);
                 regKeyAppRoot.SetValue("SyncContacts", btSyncContacts.Checked);
                 regKeyAppRoot.SetValue("UseFileAs", chkUseFileAs.Checked);
@@ -393,12 +423,15 @@ namespace GoContactSyncMod
                                                  && contactFoldersComboBox.SelectedIndex < contactFoldersComboBox.Items.Count) || !btSyncContacts.Checked;
                 bool syncNoteFolderIsValid = (noteFoldersComboBox.SelectedIndex >= 0 && noteFoldersComboBox.SelectedIndex < noteFoldersComboBox.Items.Count)
                                              || !btSyncNotes.Checked;
+                bool syncAppointmentFolderIsValid = (appointmentFoldersComboBox.SelectedIndex >= 0 && appointmentFoldersComboBox.SelectedIndex < appointmentFoldersComboBox.Items.Count)
+                                            || !btSyncAppointments.Checked;
 
                 //ToDo: Coloring doesn'T Work for these combos
                 setBgColor(contactFoldersComboBox, syncContactFolderIsValid);
                 setBgColor(noteFoldersComboBox, syncNoteFolderIsValid);
+                setBgColor(appointmentFoldersComboBox, syncAppointmentFolderIsValid);
 
-                return syncContactFolderIsValid && syncNoteFolderIsValid;
+                return syncContactFolderIsValid && syncNoteFolderIsValid && syncAppointmentFolderIsValid;
             }
 
 
@@ -496,18 +529,22 @@ namespace GoContactSyncMod
                     RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey + "\\" + syncProfile);
                     string oldSyncContactsFolder = regKeyAppRoot.GetValue("SyncContactsFolder") as string;
                     string oldSyncNotesFolder = regKeyAppRoot.GetValue("SyncNotesFolder") as string;
+                    string oldSyncAppointmentsFolder = regKeyAppRoot.GetValue("SyncAppointmentsFolder") as string;
 
                     //only reset notes if NotesFolder changed and reset contacts if ContactsFolder changed
                     bool syncContacts = !string.IsNullOrEmpty(oldSyncContactsFolder) && !oldSyncContactsFolder.Equals(this.syncContactsFolder) && btSyncContacts.Checked;
                     bool syncNotes = !string.IsNullOrEmpty(oldSyncNotesFolder) && !oldSyncNotesFolder.Equals(this.syncNotesFolder) && btSyncNotes.Checked;
-                    if (syncContacts || syncNotes)
-                        ResetMatches(syncContacts, syncNotes);
+                    bool syncAppointments = !string.IsNullOrEmpty(oldSyncAppointmentsFolder) && !oldSyncAppointmentsFolder.Equals(this.syncAppointmentsFolder) && btSyncAppointments.Checked;
+                    if (syncContacts || syncNotes || syncAppointments)
+                        ResetMatches(syncContacts, syncNotes, syncAppointments);
 
                     //Then save the Contacts and Notes Folders used at last sync
                     if (btSyncContacts.Checked)
                         regKeyAppRoot.SetValue("SyncContactsFolder", this.syncContactsFolder);
                     if (btSyncNotes.Checked)
                         regKeyAppRoot.SetValue("SyncNotesFolder", this.syncNotesFolder);
+                    if (btSyncAppointments.Checked)
+                        regKeyAppRoot.SetValue("SyncAppointmentsFolder", this.syncAppointmentsFolder);
 
                     SetLastSyncText("Syncing...");
                     notifyIcon.Text = Application.ProductName + "\nSyncing...";                    
@@ -531,6 +568,7 @@ namespace GoContactSyncMod
                     sync.SyncProfile = syncProfile;
                     Syncronizer.SyncContactsFolder = this.syncContactsFolder;
                     Syncronizer.SyncNotesFolder = this.syncNotesFolder;
+                    Syncronizer.SyncAppointmentsFolder = this.syncAppointmentsFolder;
 
                     sync.SyncOption = syncOption;
                     sync.SyncDelete = btSyncDelete.Checked;
@@ -538,13 +576,14 @@ namespace GoContactSyncMod
                     sync.UseFileAs = chkUseFileAs.Checked;
                     sync.SyncNotes = btSyncNotes.Checked;
                     sync.SyncContacts = btSyncContacts.Checked;
+                    sync.SyncAppointments = btSyncAppointments.Checked;
 
-                    if (!sync.SyncContacts && !sync.SyncNotes)
+                    if (!sync.SyncContacts && !sync.SyncNotes && !sync.SyncAppointments)
                     {
                         SetLastSyncText("Sync failed.");
                         notifyIcon.Text = Application.ProductName + "\nSync failed";
 
-                        string messageText = "Neither notes nor contacts are switched on for syncing. Please choose at least one option. Sync aborted!";
+                        string messageText = "Neither notes nor contacts  nor appointments are switched on for syncing. Please choose at least one option. Sync aborted!";
                         Logger.Log(messageText, EventType.Error);
                         ShowForm();
                         ShowBalloonToolTip("Error", messageText, ToolTipIcon.Error, 5000, true);
@@ -963,7 +1002,7 @@ namespace GoContactSyncMod
 			try
 			{
                 this.cancelButton.Enabled = false; //Cancel is only working for sync currently, not for reset
-                ResetMatches(btSyncContacts.Checked,btSyncNotes.Checked);                
+                ResetMatches(btSyncContacts.Checked,btSyncNotes.Checked, btSyncAppointments.Checked);
 			}
 			catch (Exception ex)
             {
@@ -986,7 +1025,7 @@ namespace GoContactSyncMod
 			}
 		}
 
-        private void ResetMatches(bool syncContacts, bool syncNotes)
+        private void ResetMatches(bool syncContacts, bool syncNotes, bool syncAppointments)
         {
             TimerSwitch(false);
 
@@ -1008,9 +1047,11 @@ namespace GoContactSyncMod
 
             sync.SyncNotes = syncNotes;
             sync.SyncContacts = syncContacts;
+            sync.SyncAppointments = syncAppointments;
 
             Syncronizer.SyncContactsFolder = syncContactsFolder;
             Syncronizer.SyncNotesFolder = syncNotesFolder;
+            Syncronizer.SyncAppointmentsFolder = syncAppointmentsFolder;
             sync.SyncProfile = syncProfile;
 
             sync.LoginToGoogle(UserName.Text, Password.Text);
@@ -1031,6 +1072,12 @@ namespace GoContactSyncMod
             {
                 sync.LoadNotes();
                 sync.ResetNoteMatches();
+            }
+
+            if (sync.SyncAppointments)
+            {
+                sync.LoadAppointments();
+                sync.ResetAppointmentMatches();
             }
 
 
@@ -1212,9 +1259,9 @@ namespace GoContactSyncMod
 
         private void btSyncContacts_CheckedChanged(object sender, EventArgs e)
         {
-            if (!btSyncContacts.Checked && !btSyncNotes.Checked)
+            if (!btSyncContacts.Checked && !btSyncNotes.Checked && !btSyncAppointments.Checked)
             {
-                MessageBox.Show("Neither notes nor contacts are switched on for syncing. Please choose at least one option (automatically switched on notes for syncing now).", "No sync switched on");
+                MessageBox.Show("Neither notes nor contacts nor appointments are switched on for syncing. Please choose at least one option (automatically switched on notes for syncing now).", "No sync switched on");
                 btSyncNotes.Checked = true;
             }
             contactFoldersComboBox.Visible = btSyncContacts.Checked;
@@ -1222,12 +1269,22 @@ namespace GoContactSyncMod
 
         private void btSyncNotes_CheckedChanged(object sender, EventArgs e)
         {
-            if (!btSyncContacts.Checked && !btSyncNotes.Checked)
+            if (!btSyncContacts.Checked && !btSyncNotes.Checked && !btSyncAppointments.Checked)
             {
-                MessageBox.Show("Neither notes nor contacts are switched on for syncing. Please choose at least one option (automatically switched on contacts for syncing now).", "No sync switched on");
-                btSyncContacts.Checked = true;
+                MessageBox.Show("Neither notes nor contacts nor appointments are switched on for syncing. Please choose at least one option (automatically switched on appointments for syncing now).", "No sync switched on");
+                btSyncAppointments.Checked = true;
             }
             noteFoldersComboBox.Visible = btSyncNotes.Checked;
+        }
+
+        private void btSyncAppointments_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!btSyncContacts.Checked && !btSyncNotes.Checked && !btSyncAppointments.Checked)
+            {
+                MessageBox.Show("Neither notes nor contacts nor appointments are switched on for syncing. Please choose at least one option (automatically switched on contacts for syncing now).", "No sync switched on");
+                btSyncContacts.Checked = true;
+            }
+            appointmentFoldersComboBox.Visible = btSyncAppointments.Checked;
         }
     	
         private void cmbSyncProfile_SelectedIndexChanged(object sender, EventArgs e)
@@ -1298,6 +1355,25 @@ namespace GoContactSyncMod
             ValidateSyncButton();
 
             
+        }
+
+        private void appointmentFoldersComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string message = "Select the Outlook Appointments folder you want to sync";
+            if ((sender as ComboBox).SelectedIndex >= 0 && (sender as ComboBox).SelectedIndex < (sender as ComboBox).Items.Count && (sender as ComboBox).SelectedItem is OutlookFolder)
+            {
+                syncAppointmentsFolder = (sender as ComboBox).SelectedValue.ToString();
+                toolTip.SetToolTip((sender as ComboBox), message + ":\r\n" + ((OutlookFolder)(sender as ComboBox).SelectedItem).DisplayName);
+            }
+            else
+            {
+                syncAppointmentsFolder = "";
+                toolTip.SetToolTip((sender as ComboBox), message);
+            }
+
+            ValidateSyncButton();
+
+
         }
 
         private void btSyncDelete_CheckedChanged(object sender, EventArgs e)

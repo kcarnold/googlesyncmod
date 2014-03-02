@@ -35,18 +35,46 @@ namespace GoContactSyncMod
 
         public static void SetGoogleOutlookAppointmentId(string syncProfile, EventEntry googleAppointment, string outlookAppointmentId)
         {
-            // check if exists            
-            if (string.IsNullOrEmpty(googleAppointment.GetExtensionValue("gos:oid:", syncProfile)))
-                googleAppointment.SetExtensionValue("gos:oid", syncProfile, outlookAppointmentId);                
+            // check if exists
+            bool found = false;
+            foreach (var p in googleAppointment.ExtensionElements)
+            {
+                if (p is ExtendedProperty && ((ExtendedProperty)p).Name == "gos:oid:" + syncProfile + "")
+                {
+                    ((ExtendedProperty)p).Value = outlookAppointmentId;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                Google.GData.Extensions.ExtendedProperty prop = new ExtendedProperty(outlookAppointmentId, "gos:oid:" + syncProfile + "");
+                prop.Value = outlookAppointmentId;
+                googleAppointment.ExtensionElements.Add(prop);
+            }
         }
         public static string GetGoogleOutlookAppointmentId(string syncProfile, EventEntry googleAppointment)
         {
-            return googleAppointment.GetExtensionValue("gos:oid", syncProfile);
+            // get extended prop
+            foreach (var p in googleAppointment.ExtensionElements)
+            {
+                if (p is ExtendedProperty && ((ExtendedProperty)p).Name == "gos:oid:" + syncProfile + "")
+                    return ((ExtendedProperty)p).Value;
+            }
+            return null;
         }
         public static void ResetGoogleOutlookAppointmentId(string syncProfile, EventEntry googleAppointment)
         {
-            //ToDo: Find a better way how to delete an extension
-            googleAppointment.DeleteExtensions("gos:oid", syncProfile); 
+            // get extended prop
+            foreach (var p in googleAppointment.ExtensionElements)
+            {
+                if (p is ExtendedProperty && ((ExtendedProperty)p).Name == "gos:oid:" + syncProfile + "")
+                {
+                    // remove 
+                    googleAppointment.ExtensionElements.Remove(p);
+                    return;
+                }
+            }
         }
 
         /// <summary>
