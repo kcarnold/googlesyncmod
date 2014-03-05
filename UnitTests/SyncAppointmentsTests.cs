@@ -43,16 +43,18 @@ namespace GoContactSyncMod.UnitTests
             string gmailUsername;
             string gmailPassword;
             string syncProfile;
-            string syncAppointmentsFolder;
+            string syncContactsFolder;
             string syncNotesFolder;
+            string syncAppointmentsFolder;
 
-            GoogleAPITests.LoadSettings(out gmailUsername, out gmailPassword, out syncProfile, out syncAppointmentsFolder, out syncNotesFolder);
+            GoogleAPITests.LoadSettings(out gmailUsername, out gmailPassword, out syncProfile, out syncContactsFolder, out syncNotesFolder, out syncAppointmentsFolder);
 
             sync = new Syncronizer();
             sync.SyncAppointments = true;
             sync.SyncNotes = false;
             sync.SyncContacts = false;
             sync.SyncProfile = syncProfile;
+            Assert.IsNotNull(syncAppointmentsFolder);
             Syncronizer.SyncAppointmentsFolder = syncAppointmentsFolder;
             Syncronizer.MonthsInPast = 1;
             Syncronizer.MonthsInFuture = 1;
@@ -74,11 +76,13 @@ namespace GoContactSyncMod.UnitTests
         {
             sync.LoadAppointments();
 
-
             Outlook.AppointmentItem outlookAppointment = sync.OutlookAppointments.Find("[Subject] = '" + name + "'") as Outlook.AppointmentItem;
-            if (outlookAppointment != null)
+            while (outlookAppointment != null)
+            {
                 DeleteTestAppointment(outlookAppointment);
-            
+                outlookAppointment = sync.OutlookAppointments.Find("[Subject] = '" + name + "'") as Outlook.AppointmentItem;
+            }
+
             foreach (EventEntry googleAppointment in sync.GoogleAppointments)
             {
                 if (googleAppointment != null &&
@@ -121,22 +125,25 @@ namespace GoContactSyncMod.UnitTests
             sync.SyncOption = SyncOption.OutlookToGoogleOnly;
 
             var googleAppointment = new EventEntry();
-            sync.UpdateAppointment(outlookAppointment, googleAppointment);
-            //AppointmentMatch match = new AppointmentMatch(outlookAppointment, googleAppointment);
+            sync.UpdateAppointment(outlookAppointment, ref googleAppointment);
 
-            //save appointment to google.
-            sync.SaveGoogleAppointment(googleAppointment);
             googleAppointment = null;
 
             sync.SyncOption = SyncOption.GoogleToOutlookOnly;
             //load the same appointment from google.
             MatchAppointments(sync);
-            AppointmentMatch match = FindMatch(googleAppointment);
+            AppointmentMatch match = FindMatch(outlookAppointment);
+
+            Assert.IsNotNull(match);
+            Assert.IsNotNull(match.GoogleAppointment);
+            Assert.IsNotNull(match.OutlookAppointment);
 
             Outlook.AppointmentItem recreatedOutlookAppointment = Syncronizer.CreateOutlookAppointmentItem(Syncronizer.SyncAppointmentsFolder);
-            AppointmentSync.UpdateAppointment(match.GoogleAppointment, recreatedOutlookAppointment);
-
+            sync.UpdateAppointment(ref match.GoogleAppointment, recreatedOutlookAppointment);
+            Assert.IsNotNull(outlookAppointment);
+            Assert.IsNotNull(recreatedOutlookAppointment);
             // match recreatedOutlookAppointment with outlookAppointment
+
             Assert.AreEqual(outlookAppointment.Subject, recreatedOutlookAppointment.Subject);
 
             Assert.AreEqual(outlookAppointment.Start, recreatedOutlookAppointment.Start);
@@ -166,21 +173,23 @@ namespace GoContactSyncMod.UnitTests
             sync.SyncOption = SyncOption.OutlookToGoogleOnly;
 
             var googleAppointment = new EventEntry();
-            sync.UpdateAppointment(outlookAppointment, googleAppointment);
-            //AppointmentMatch match = new AppointmentMatch(outlookAppointment, googleAppointment);
-
-            //save appointment to google.
-            sync.SaveGoogleAppointment(googleAppointment);
+            sync.UpdateAppointment(outlookAppointment, ref googleAppointment);
+           
             googleAppointment = null;
 
             sync.SyncOption = SyncOption.GoogleToOutlookOnly;
             //load the same appointment from google.
             MatchAppointments(sync);
-            AppointmentMatch match = FindMatch(googleAppointment);
+            AppointmentMatch match = FindMatch(outlookAppointment);
+
+            Assert.IsNotNull(match);
+            Assert.IsNotNull(match.GoogleAppointment);
+            Assert.IsNotNull(match.OutlookAppointment);
 
             Outlook.AppointmentItem recreatedOutlookAppointment = Syncronizer.CreateOutlookAppointmentItem(Syncronizer.SyncAppointmentsFolder);
-            AppointmentSync.UpdateAppointment(match.GoogleAppointment, recreatedOutlookAppointment);
-
+            sync.UpdateAppointment(ref match.GoogleAppointment, recreatedOutlookAppointment);            
+            Assert.IsNotNull(outlookAppointment);
+            Assert.IsNotNull(recreatedOutlookAppointment);
             // match recreatedOutlookAppointment with outlookAppointment
             Assert.AreEqual(outlookAppointment.Subject, recreatedOutlookAppointment.Subject);
 
@@ -209,7 +218,7 @@ namespace GoContactSyncMod.UnitTests
             outlookAppointment.Save();
 
             var googleAppointment = new EventEntry();
-            sync.UpdateAppointment(outlookAppointment, googleAppointment);
+            sync.UpdateAppointment(outlookAppointment, ref googleAppointment);
                       
             Assert.AreEqual(name, googleAppointment.Title.Text);
 
@@ -305,7 +314,7 @@ namespace GoContactSyncMod.UnitTests
         //    sync.UpdateAppointment(match);
 
         //    // delete google appointment
-        //    sync.CalendarService.Delete(match.GoogleAppointment);
+        //    GoogleAppointment.Delete();
 
         //    // sync
         //    MatchAppointments(sync);
@@ -629,7 +638,7 @@ namespace GoContactSyncMod.UnitTests
         //    AppointmentsMatcher.SyncAppointment(match, sync);
 
         //    // delete google appointment           
-        //    sync.CalendarService.Delete(match.GoogleAppointment);
+        //    match.GoogleAppointment.Delete();
         //    match.GoogleAppointment = null;
 
         //    //load the same appointment from google.
@@ -690,7 +699,7 @@ namespace GoContactSyncMod.UnitTests
         {
             if (googleAppointment != null && !googleAppointment.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.CANCELED))
             {
-                sync.CalendarService.Delete(googleAppointment);
+                googleAppointment.Delete();
                 Logger.Log("Deleted Google test appointment: " + googleAppointment.Title.Text, EventType.Information);
                 Thread.Sleep(2000);
             }
