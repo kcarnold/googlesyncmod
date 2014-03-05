@@ -45,8 +45,9 @@ namespace GoContactSyncMod.UnitTests
             string syncProfile;
             string syncContactsFolder;
             string syncNotesFolder;
+            string syncAppointmentsFolder;
 
-            GoogleAPITests.LoadSettings(out gmailUsername, out gmailPassword, out syncProfile, out syncContactsFolder, out syncNotesFolder);
+            GoogleAPITests.LoadSettings(out gmailUsername, out gmailPassword, out syncProfile, out syncContactsFolder, out syncNotesFolder, out syncAppointmentsFolder);
 
             sync = new Syncronizer();
             sync.SyncContacts = true;
@@ -73,27 +74,28 @@ namespace GoContactSyncMod.UnitTests
         {
             sync.LoadContacts();
 
-            //foreach (Outlook.ContactItem outlookContact in sync.OutlookContacts)
-            //{
-            //    if (outlookContact != null && 
-            //        ((outlookContact.Email1Address != null && outlookContact.Email1Address == email) ||
-            //          outlookContact.FileAs == name))
-            //    {
-            //            DeleteTestContact(outlookContact);
-            //    }
-            //}
+           
 
             Outlook.ContactItem outlookContact = sync.OutlookContacts.Find("[Email1Address] = '" + email + "'") as Outlook.ContactItem;
-            if (outlookContact != null)
+            while (outlookContact != null)
+            {
                 DeleteTestContact(outlookContact);
+                outlookContact = sync.OutlookContacts.Find("[Email1Address] = '" + email + "'") as Outlook.ContactItem;
+            }
 
             outlookContact = sync.OutlookContacts.Find("[FileAs] = '" + name + "'") as Outlook.ContactItem;
-            if (outlookContact != null)
+            while (outlookContact != null)
+            {
                 DeleteTestContact(outlookContact);
+                outlookContact = sync.OutlookContacts.Find("[FileAs] = '" + name + "'") as Outlook.ContactItem;
+            }
 
             outlookContact = sync.OutlookContacts.Find("[FileAs] = 'SaveAs'") as Outlook.ContactItem;
-            if (outlookContact != null)
+            while (outlookContact != null)
+            {
                 DeleteTestContact(outlookContact);
+                outlookContact = sync.OutlookContacts.Find("[FileAs] = 'SaveAs'") as Outlook.ContactItem;
+            }
 
             foreach (Contact googleContact in sync.GoogleContacts)
             {

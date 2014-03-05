@@ -276,12 +276,13 @@ namespace GoContactSyncMod.UnitTests
             }
         }
 
-        internal static void LoadSettings(out string gmailUsername, out string gmailPassword, out string syncProfile, out string syncContactsFolder, out string syncNotesFolder)
+        internal static void LoadSettings(out string gmailUsername, out string gmailPassword, out string syncProfile, out string syncContactsFolder, out string syncNotesFolder, out string syncAppointmentsFolder)
         {
             Microsoft.Win32.RegistryKey regKeyAppRoot = LoadSettings(out gmailUsername, out gmailPassword, out syncProfile);
 
             syncContactsFolder = "";
             syncNotesFolder = "";
+            syncAppointmentsFolder = "";
 
             //First, check if there is a folder called GCSMTestContacts and GCSMTestNotes available, if yes, use them
             ArrayList outlookContactFolders = new ArrayList();
@@ -319,12 +320,25 @@ namespace GoContactSyncMod.UnitTests
                 }
             }
 
+            foreach (OutlookFolder folder in outlookAppointmentFolders)
+            {
+                if (folder.FolderName.ToUpper().Contains("GCSMTestAppointments".ToUpper()))
+                {
+                    Logger.Log("Uses Test folder: " + folder.DisplayName, EventType.Information);
+                    syncAppointmentsFolder = folder.FolderID;
+                    break;
+                }
+            }
+
             if (string.IsNullOrEmpty(syncContactsFolder))
                 if (regKeyAppRoot.GetValue("SyncContactsFolder") != null)
                     syncContactsFolder = regKeyAppRoot.GetValue("SyncContactsFolder") as string;
             if (string.IsNullOrEmpty(syncNotesFolder))
                 if (regKeyAppRoot.GetValue("SyncNotesFolder") != null)
-                    syncNotesFolder = regKeyAppRoot.GetValue("SyncNotesFolder") as string;           
+                    syncNotesFolder = regKeyAppRoot.GetValue("SyncNotesFolder") as string;
+            if (string.IsNullOrEmpty(syncAppointmentsFolder))
+                if (regKeyAppRoot.GetValue("SyncAppointmentsFolder") != null)
+                    syncAppointmentsFolder = regKeyAppRoot.GetValue("SyncAppointmentsFolder") as string;           
         }
 
         private static Microsoft.Win32.RegistryKey LoadSettings(out string gmailUsername, out string gmailPassword, out string syncProfile)

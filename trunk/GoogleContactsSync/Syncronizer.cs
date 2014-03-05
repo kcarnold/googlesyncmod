@@ -881,16 +881,6 @@ namespace GoContactSyncMod
         {
             LoadAppointments();
             Appointments = AppointmentsMatcher.MatchAppointments(this);
-            /*DuplicateDataException duplicateDataException;
-            _matches = ContactsMatcher.MatchContacts(this, out duplicateDataException);
-            if (duplicateDataException != null)
-            {
-
-                if (DuplicatesFound != null)
-                    DuplicatesFound("Google duplicates found", duplicateDataException.Message);
-                else
-                    Logger.Log(duplicateDataException.Message, EventType.Warning);
-            }*/
             Logger.Log("Appointment Matches Found: " + Appointments.Count, EventType.Debug);
         }
 
@@ -1606,7 +1596,7 @@ namespace GoContactSyncMod
         /// <summary>
         /// Updates Outlook appointment from master to slave (including groups/categories)
         /// </summary>
-        public void UpdateAppointment(Outlook.AppointmentItem master, EventEntry slave)
+        public void UpdateAppointment(Outlook.AppointmentItem master, ref EventEntry slave)
         {
             AppointmentSync.UpdateAppointment(master, slave);
 
@@ -1623,7 +1613,7 @@ namespace GoContactSyncMod
         /// <summary>
         /// Updates Outlook appointment from master to slave (including groups/categories)
         /// </summary>
-        public void UpdateAppointment(EventEntry master, Outlook.AppointmentItem slave)
+        public void UpdateAppointment(ref EventEntry master, Outlook.AppointmentItem slave)
         {
             AppointmentSync.UpdateAppointment(master, slave);
 
