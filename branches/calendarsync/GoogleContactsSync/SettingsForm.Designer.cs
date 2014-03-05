@@ -55,6 +55,8 @@ namespace GoContactSyncMod
             this.nextSyncLabel = new System.Windows.Forms.Label();
             this.syncTimer = new System.Windows.Forms.Timer(this.components);
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.futureMonthTextBox = new System.Windows.Forms.TextBox();
+            this.pastMonthTextBox = new System.Windows.Forms.TextBox();
             this.btSyncAppointments = new System.Windows.Forms.CheckBox();
             this.appointmentFoldersComboBox = new System.Windows.Forms.ComboBox();
             this.btSyncNotes = new System.Windows.Forms.CheckBox();
@@ -345,6 +347,8 @@ namespace GoContactSyncMod
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.futureMonthTextBox);
+            this.groupBox2.Controls.Add(this.pastMonthTextBox);
             this.groupBox2.Controls.Add(this.btSyncAppointments);
             this.groupBox2.Controls.Add(this.appointmentFoldersComboBox);
             this.groupBox2.Controls.Add(this.btSyncNotes);
@@ -363,6 +367,28 @@ namespace GoContactSyncMod
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Sync Options";
+            // 
+            // futureMonthTextBox
+            // 
+            this.futureMonthTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.futureMonthTextBox.Location = new System.Drawing.Point(556, 120);
+            this.futureMonthTextBox.Name = "futureMonthTextBox";
+            this.futureMonthTextBox.Size = new System.Drawing.Size(33, 21);
+            this.futureMonthTextBox.TabIndex = 12;
+            this.futureMonthTextBox.Text = "1";
+            this.toolTip.SetToolTip(this.futureMonthTextBox, "How many months into the future (0 if all)");
+            this.futureMonthTextBox.Validating += new System.ComponentModel.CancelEventHandler(this.futureMonthTextBox_Validating);
+            // 
+            // pastMonthTextBox
+            // 
+            this.pastMonthTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.pastMonthTextBox.Location = new System.Drawing.Point(520, 120);
+            this.pastMonthTextBox.Name = "pastMonthTextBox";
+            this.pastMonthTextBox.Size = new System.Drawing.Size(33, 21);
+            this.pastMonthTextBox.TabIndex = 11;
+            this.pastMonthTextBox.Text = "1";
+            this.toolTip.SetToolTip(this.pastMonthTextBox, "How many months into the past (0 if all)");
+            this.pastMonthTextBox.Validating += new System.ComponentModel.CancelEventHandler(this.pastMonthTextBox_Validating);
             // 
             // btSyncAppointments
             // 
@@ -384,7 +410,7 @@ namespace GoContactSyncMod
             this.appointmentFoldersComboBox.FormattingEnabled = true;
             this.appointmentFoldersComboBox.Location = new System.Drawing.Point(6, 119);
             this.appointmentFoldersComboBox.Name = "appointmentFoldersComboBox";
-            this.appointmentFoldersComboBox.Size = new System.Drawing.Size(583, 21);
+            this.appointmentFoldersComboBox.Size = new System.Drawing.Size(507, 21);
             this.appointmentFoldersComboBox.TabIndex = 9;
             this.toolTip.SetToolTip(this.appointmentFoldersComboBox, "Select the Outlook Appointments folder you want to sync");
             this.appointmentFoldersComboBox.SelectedIndexChanged += new System.EventHandler(this.appointmentFoldersComboBox_SelectedIndexChanged);
@@ -810,6 +836,8 @@ namespace GoContactSyncMod
         private System.Windows.Forms.Timer iconTimer;
         private System.Windows.Forms.ComboBox appointmentFoldersComboBox;
         private System.Windows.Forms.CheckBox btSyncAppointments;
+        private System.Windows.Forms.TextBox futureMonthTextBox;
+        private System.Windows.Forms.TextBox pastMonthTextBox;
 
     }
 }

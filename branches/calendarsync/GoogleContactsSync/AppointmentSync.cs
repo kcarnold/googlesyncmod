@@ -10,7 +10,8 @@ namespace GoContactSyncMod
 
     internal static class AppointmentSync
     {
-
+        private const string dateFormat = "yyyyMMdd";
+        private const string timeFormat = "HHmmss";
         internal static DateTime outlookDateMin = new DateTime(4501, 1, 1);
         internal static DateTime outlookDateMax = new DateTime(4500, 12, 31);
 
@@ -23,7 +24,24 @@ namespace GoContactSyncMod
         const string MONTHLY = "MONTHLY";
         const string YEARLY = "YEARLY";
 
+        const string BYMONTH = "BYMONTH";
+        const string BYMONTHDAY = "BYMONTHDAY";
+        const string BYDAY = "BYDAY";
 
+        const string VALUE = "VALUE";
+        const string DATE = "DATE";
+        const string DATETIME = "DATE-TIME";
+        const string INTERVAL = "INTERVAL";
+        const string COUNT = "COUNT";
+        const string UNTIL = "UNTIL";
+
+        const string MO = "MO";
+        const string TU = "TU";
+        const string WE = "WE";
+        const string TH = "TH";
+        const string FR = "FR";
+        const string SA = "SA";
+        const string SU = "SU";
 
         /// <summary>
         /// Updates Outlook appointments (calendar) to Google Calendar
@@ -41,7 +59,7 @@ namespace GoContactSyncMod
             if (master.BusyStatus.Equals(Outlook.OlBusyStatus.olTentative))
                 slave.Status = Google.GData.Calendar.EventEntry.EventStatus.TENTATIVE;
             
-            //slave.Categories = master.Categories;
+            //ToDo:slave.Categories = master.Categories;
             //slave.Duration = master.Duration;
 
             var location = new Google.GData.Extensions.Where();
@@ -62,7 +80,7 @@ namespace GoContactSyncMod
             {
              
                 var participant = new Who();
-                participant.Email=recipient.Address;
+                participant.Email = recipient.Name;
 
                 participant.Rel = (i == 0 ? Who.RelType.EVENT_ORGANIZER : Who.RelType.EVENT_ATTENDEE);
                 slave.Participants.Add(participant);
@@ -143,7 +161,8 @@ namespace GoContactSyncMod
             }
             //slave.RequiredAttendees = master.RequiredAttendees;
             //slave.OptionalAttendees = master.OptionalAttendees;
-          
+            //slave.Resources = master.Resources;
+
             slave.ReminderSet = false;
             if (master.Reminder != null && !master.Reminder.Method.Equals(Google.GData.Extensions.Reminder.ReminderMethod.none) && master.Reminder.AbsoluteTime >= DateTime.Now)
             { 
@@ -151,10 +170,10 @@ namespace GoContactSyncMod
                 slave.ReminderMinutesBeforeStart = master.Reminder.Minutes;
             }
 
-            //ToDo: slave.Resources = master.Resources;
+            
             //slave.RTFBody = master.RTFBody;
 
-            //ToDo: Check, why some appointments are created twice (e.g. SCRUM Master Certification, ...) and don't keep olRecurDaily
+  
             //ToDo: Check Exceptions, how to sync
             
             UpdateRecurrence(master, slave);
@@ -181,12 +200,12 @@ namespace GoContactSyncMod
                 var slaveRecurrence = new Recurrence();
                 
 
-                string format = "yyyyMMdd";
-                string key = "VALUE" + "=" + "DATE";
+                string format = dateFormat;
+                string key = VALUE + "=" + DATE;
                 if (!master.AllDayEvent)
                 {
-                    format += "'T'HHmmss";
-                    key = "VALUE" + "=" + "DATE-TIME";
+                    format += "'T'"+timeFormat;
+                    key = VALUE + "=" + DATETIME;
                 }
 
                 //ToDo: Find a way how to handle timezones, per default GMT (UTC+0:00) is taken
@@ -218,32 +237,32 @@ namespace GoContactSyncMod
 
                 string byDay = string.Empty;
                 if ((masterRecurrence.DayOfWeekMask & Outlook.OlDaysOfWeek.olMonday) == Outlook.OlDaysOfWeek.olMonday)
-                    byDay = "MO";
+                    byDay = MO;
                 if ((masterRecurrence.DayOfWeekMask & Outlook.OlDaysOfWeek.olTuesday) == Outlook.OlDaysOfWeek.olTuesday)
-                    byDay += (string.IsNullOrEmpty(byDay) ? "" : ",") + "TU";
+                    byDay += (string.IsNullOrEmpty(byDay) ? "" : ",") + TU;
                 if ((masterRecurrence.DayOfWeekMask & Outlook.OlDaysOfWeek.olWednesday) == Outlook.OlDaysOfWeek.olWednesday)
-                    byDay += (string.IsNullOrEmpty(byDay) ? "" : ",") + "WE";
+                    byDay += (string.IsNullOrEmpty(byDay) ? "" : ",") + WE;
                 if ((masterRecurrence.DayOfWeekMask & Outlook.OlDaysOfWeek.olThursday) == Outlook.OlDaysOfWeek.olThursday)
-                    byDay += (string.IsNullOrEmpty(byDay) ? "" : ",") + "TH";
+                    byDay += (string.IsNullOrEmpty(byDay) ? "" : ",") + TH;
                 if ((masterRecurrence.DayOfWeekMask & Outlook.OlDaysOfWeek.olFriday) == Outlook.OlDaysOfWeek.olFriday)
-                    byDay += (string.IsNullOrEmpty(byDay) ? "" : ",") + "FR";
+                    byDay += (string.IsNullOrEmpty(byDay) ? "" : ",") + FR;
                 if ((masterRecurrence.DayOfWeekMask & Outlook.OlDaysOfWeek.olSaturday) == Outlook.OlDaysOfWeek.olSaturday)
-                   byDay += (string.IsNullOrEmpty(byDay) ? "" : ",") + "SA";
+                   byDay += (string.IsNullOrEmpty(byDay) ? "" : ",") + SA;
                 if ((masterRecurrence.DayOfWeekMask & Outlook.OlDaysOfWeek.olSunday) == Outlook.OlDaysOfWeek.olSunday)
-                   byDay += (string.IsNullOrEmpty(byDay) ? "" : ",") + "SU";
+                   byDay += (string.IsNullOrEmpty(byDay) ? "" : ",") + SU;
 
                 if (!string.IsNullOrEmpty(byDay))
                 {
                     if (masterRecurrence.Instance > 0)
                         byDay = masterRecurrence.Instance + byDay;
-                    slaveRecurrence.Value += ";BYDAY=" + byDay;
+                    slaveRecurrence.Value += ";" + BYDAY + "=" + byDay;
                 }
 
                 if (masterRecurrence.DayOfMonth != 0)
-                    slaveRecurrence.Value += ";BYMONTHDAY=" + masterRecurrence.DayOfMonth;
+                    slaveRecurrence.Value += ";" + BYMONTHDAY + "=" + masterRecurrence.DayOfMonth;
 
                 if (masterRecurrence.MonthOfYear != 0)
-                    slaveRecurrence.Value += ";BYMONTH=" + masterRecurrence.MonthOfYear;
+                    slaveRecurrence.Value += ";" + BYMONTH + "=" + masterRecurrence.MonthOfYear;
 
                 if (masterRecurrence.RecurrenceType != Outlook.OlRecurrenceType.olRecursYearly && 
                     masterRecurrence.RecurrenceType != Outlook.OlRecurrenceType.olRecursYearNth &&
@@ -252,20 +271,20 @@ namespace GoContactSyncMod
                 {
                     if (masterRecurrence.RecurrenceType != Outlook.OlRecurrenceType.olRecursYearly &&
                         masterRecurrence.RecurrenceType != Outlook.OlRecurrenceType.olRecursYearNth)
-                        slaveRecurrence.Value += ";INTERVAL=" + masterRecurrence.Interval;
+                        slaveRecurrence.Value += ";" + INTERVAL+ "=" + masterRecurrence.Interval;
                     else
-                        slaveRecurrence.Value += ";INTERVAL=" + masterRecurrence.Interval/12;
+                        slaveRecurrence.Value += ";" + INTERVAL + "=" + masterRecurrence.Interval/12;
                 }
                 
-                format = "yyyyMMdd";
+                format = dateFormat;
                 if (masterRecurrence.PatternEndDate.Date != outlookDateMin &&
                     masterRecurrence.PatternEndDate.Date != outlookDateMax)
                 {
-                    slaveRecurrence.Value += ";UNTIL=" + masterRecurrence.PatternEndDate.Date.ToString(format);
+                    slaveRecurrence.Value += ";" + UNTIL + "=" + masterRecurrence.PatternEndDate.Date.ToString(format);
                 }
                 else if (masterRecurrence.Occurrences > 0)
                 {
-                    slaveRecurrence.Value += ";COUNT=" + masterRecurrence.Occurrences;
+                    slaveRecurrence.Value += ";" + COUNT + "=" + masterRecurrence.Occurrences;
                 }
 
                 slave.Recurrence = slaveRecurrence;
@@ -279,7 +298,7 @@ namespace GoContactSyncMod
         }
 
         /// <summary>
-        /// http://tools.ietf.org/html/rfc2445
+        /// Update Recurrence pattern from Google by parsing the string, see also specification http://tools.ietf.org/html/rfc2445
         /// </summary>
         /// <param name="master"></param>
         /// <param name="slave"></param>
@@ -306,8 +325,8 @@ namespace GoContactSyncMod
                 {
                     if (pattern.StartsWith(DTSTART)) 
                     {
-                        //Todo: consider also DTSTART;VALUE=DATE:20070501
-                        //Currently: DTSTART;TZID=US-Eastern:19970905T090000
+                        //DTSTART;VALUE=DATE:20070501
+                        //DTSTART;TZID=US-Eastern:19970905T090000
                         string[] parts = pattern.Split(new char[] {';',':'});
                         
                         slaveRecurrence.StartTime = GetDateTime(parts[parts.Length-1]);
@@ -337,7 +356,7 @@ namespace GoContactSyncMod
                         int instance = 0;
                         foreach (string part in parts)
                         {
-                            if (part.StartsWith("BYDAY"))
+                            if (part.StartsWith(BYDAY))
                             {
                                 string[] days = part.Split(',');
                                 foreach (string day in days)
@@ -354,16 +373,16 @@ namespace GoContactSyncMod
 
                                     switch (dayValue.Trim(new char[] { '1', '2', '3', '4', ' ' }))
                                     {
-                                        case "MO": slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olMonday; break;
-                                        case "TU": slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olTuesday; break;
-                                        case "WE": slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olWednesday; break;
-                                        case "TH": slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olThursday; break;
-                                        case "FR": slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olFriday; break;
-                                        case "SA": slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olSaturday; break;
-                                        case "SO": slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olSunday; break;
+                                        case MO: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olMonday; break;
+                                        case TU: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olTuesday; break;
+                                        case WE: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olWednesday; break;
+                                        case TH: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olThursday; break;
+                                        case FR: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olFriday; break;
+                                        case SA: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olSaturday; break;
+                                        case SU: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olSunday; break;
 
                                     }
-                                    //Don't break because multiple days;
+                                    //Don't break because multiple days possible;
                                 }
 
                                 break;
@@ -379,17 +398,17 @@ namespace GoContactSyncMod
                                 {
                                     case DAILY: slaveRecurrence.RecurrenceType = Outlook.OlRecurrenceType.olRecursDaily; break;
                                     case WEEKLY: slaveRecurrence.RecurrenceType = Outlook.OlRecurrenceType.olRecursWeekly; break;
-                                    case MONTHLY: 
+                                    case MONTHLY:
                                         if (instance == 0)
-                                            slaveRecurrence.RecurrenceType = Outlook.OlRecurrenceType.olRecursMonthly; 
+                                            slaveRecurrence.RecurrenceType = Outlook.OlRecurrenceType.olRecursMonthly;
                                         else
-                                            slaveRecurrence.RecurrenceType = Outlook.OlRecurrenceType.olRecursMonthNth; 
+                                            slaveRecurrence.RecurrenceType = Outlook.OlRecurrenceType.olRecursMonthNth;
                                         break;
-                                    case YEARLY: 
-                                         if (instance == 0)
+                                    case YEARLY:
+                                        if (instance == 0)
                                             slaveRecurrence.RecurrenceType = Outlook.OlRecurrenceType.olRecursYearly;
                                         else
-                                            slaveRecurrence.RecurrenceType = Outlook.OlRecurrenceType.olRecursYearNth; 
+                                            slaveRecurrence.RecurrenceType = Outlook.OlRecurrenceType.olRecursYearNth;
                                         break;
                                     default: throw new NotSupportedException("RecurrenceType not supported by Outlook: " + part);
                                     //ToDo: Outlook.OlRecurrenceType.olRecursMonthNth
@@ -397,19 +416,19 @@ namespace GoContactSyncMod
                                 }
                                 break;
                             }
-                            
+
                         }
 
                         foreach (string part in parts)
                         {
-                            if (part.StartsWith("COUNT"))
+                            if (part.StartsWith(COUNT))
                             {
                                 if (master.Times.Count > 0)
                                     slaveRecurrence.PatternStartDate = master.Times[0].StartTime;
                                 slaveRecurrence.Occurrences = int.Parse(part.Substring(part.IndexOf('=') + 1));
                                 break;
                             }
-                            else if (part.StartsWith("UNTIL"))
+                            else if (part.StartsWith(UNTIL))
                             {
                                 //either UNTIL or COUNT may appear in a 'recur',
                                 //but UNTIL and COUNT MUST NOT occur in the same 'recur'
@@ -420,74 +439,40 @@ namespace GoContactSyncMod
 
                         foreach (string part in parts)
                         {
-                            if (part.StartsWith("INTERVAL"))
+                            if (part.StartsWith(INTERVAL))
                             {
                                 slaveRecurrence.Interval = int.Parse(part.Substring(part.IndexOf('=') + 1));
                                 break;
                             }
 
                         }
-                        
-                       
 
-                       
+
+
+
 
                         foreach (string part in parts)
                         {
-                            if (part.StartsWith("BYMONTHDAY"))
+                            if (part.StartsWith(BYMONTHDAY))
                             {
                                 slaveRecurrence.DayOfMonth = int.Parse(part.Substring(part.IndexOf('=') + 1));
                                 break;
-                            }                               
+                            }
                         }
 
                         foreach (string part in parts)
                         {
-                            if (part.StartsWith("BYMONTH="))
+                            if (part.StartsWith(BYMONTH + "="))
                             {
                                 slaveRecurrence.MonthOfYear = int.Parse(part.Substring(part.IndexOf('=') + 1));
                                 break;
                             }
                         }
 
-                        foreach (string part in parts)
-                        {
-                            if (part.StartsWith("BYMONTHDAY"))
-                            {
-                                slaveRecurrence.DayOfMonth = int.Parse(part.Substring(part.IndexOf('=') + 1));
-                                break;
-                            }
-                        }
 
-                        //foreach (string part in parts)
-                        //{
-                            //ToDo: Every Second Wednesday comes back as BYDAY=2WE
-                            //if (part.StartsWith("BYDAY"))
-                            //{
-                            //    slave.DayOfMonth = int.Parse(part.Substring(part.IndexOf('=')+1,1));
-                            //    switch (part.Substring(part.IndexOf('=') + 2))
-                            //    {
-                            //        case "MO": slave.DayOfWeekMask = Outlook.OlDaysOfWeek.olMonday; break;
-                            //        case "TU": slave.DayOfWeekMask = Outlook.OlDaysOfWeek.olTuesday; break;
-                            //        case "WE": slave.DayOfWeekMask = Outlook.OlDaysOfWeek.olWednesday; break;
-                            //        case "TH": slave.DayOfWeekMask = Outlook.OlDaysOfWeek.olThursday; break;
-                            //        case "FR": slave.DayOfWeekMask = Outlook.OlDaysOfWeek.olFriday; break;
-                            //        case "SA": slave.DayOfWeekMask = Outlook.OlDaysOfWeek.olSaturday; break;
-                            //        case "SO": slave.DayOfWeekMask = Outlook.OlDaysOfWeek.olSunday; break;
+                        break;
+                    }
 
-
-                            //    }
-                            //    break ;
-                            //}
-
-                        //}
-
-                    break;
-                }
-
-                    
-
-                
                 }
             }
             catch (Exception ex)
@@ -500,9 +485,9 @@ namespace GoContactSyncMod
 
         private static DateTime GetDateTime(string dateTime)
         {
-            string format = "yyyyMMdd";
+            string format = dateFormat;
             if (dateTime.Contains("T"))
-                format += "'T'HHmmss";
+                format += "'T'"+timeFormat;
             if (dateTime.EndsWith("Z"))
                 format += "'Z'";
             return DateTime.ParseExact(dateTime, format, new System.Globalization.CultureInfo("en-US"));

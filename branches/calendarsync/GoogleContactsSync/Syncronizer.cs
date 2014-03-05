@@ -96,7 +96,8 @@ namespace GoContactSyncMod
         public static string SyncContactsFolder { get; set; }
         public static string SyncNotesFolder { get; set; }
         public static string SyncAppointmentsFolder { get; set; }
-        public static string Timezone { get; private set; }
+        public static ushort MonthsInPast { get; set; }
+        public static ushort MonthsInFuture { get; set; }
 
 		//private ConflictResolution? _conflictResolution;
 		//public ConflictResolution? CResolution
@@ -640,9 +641,10 @@ namespace GoContactSyncMod
                 query.StartIndex = 0;                               
 
                 //Only Load events from last month
-                //ToDo: Make it configurable
-                query.StartTime = DateTime.Now.AddMonths(-1);
-                query.EndTime = DateTime.Now;            
+                if (MonthsInPast != 0)
+                    query.StartTime = DateTime.Now.AddMonths(-MonthsInPast);
+                if (MonthsInFuture != 0)
+                    query.EndTime = DateTime.Now.AddMonths(MonthsInFuture);            
 
                 
 

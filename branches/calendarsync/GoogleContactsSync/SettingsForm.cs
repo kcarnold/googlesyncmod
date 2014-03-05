@@ -344,6 +344,10 @@ namespace GoContactSyncMod
                 btSyncDelete.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("SyncDeletion"));
             if (regKeyAppRoot.GetValue("PromptDeletion") != null)
                 btPromptDelete.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("PromptDeletion"));
+            if (regKeyAppRoot.GetValue("SyncAppointmentsMonthsInPast") != null)
+                pastMonthTextBox.Text = regKeyAppRoot.GetValue("SyncAppointmentsMonthsInPast") as string;
+            if (regKeyAppRoot.GetValue("SyncAppointmentsMonthsInFuture") != null)
+                futureMonthTextBox.Text = regKeyAppRoot.GetValue("SyncAppointmentsMonthsInFuture") as string;
             if (regKeyAppRoot.GetValue("SyncAppointments") != null)
                 btSyncAppointments.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("SyncAppointments"));
             if (regKeyAppRoot.GetValue("SyncNotes") != null)
@@ -400,6 +404,8 @@ namespace GoContactSyncMod
                 regKeyAppRoot.SetValue("ReportSyncResult", reportSyncResultCheckBox.Checked);
                 regKeyAppRoot.SetValue("SyncDeletion", btSyncDelete.Checked);
                 regKeyAppRoot.SetValue("PromptDeletion", btPromptDelete.Checked);
+                regKeyAppRoot.SetValue("SyncAppointmentsMonthsInPast", pastMonthTextBox.Text);
+                regKeyAppRoot.SetValue("SyncAppointmentsMonthsInFuture", futureMonthTextBox.Text);
                 regKeyAppRoot.SetValue("SyncAppointments", btSyncAppointments.Checked);
                 regKeyAppRoot.SetValue("SyncNotes", btSyncNotes.Checked);
                 regKeyAppRoot.SetValue("SyncContacts", btSyncContacts.Checked);
@@ -569,6 +575,8 @@ namespace GoContactSyncMod
                     Syncronizer.SyncContactsFolder = this.syncContactsFolder;
                     Syncronizer.SyncNotesFolder = this.syncNotesFolder;
                     Syncronizer.SyncAppointmentsFolder = this.syncAppointmentsFolder;
+                    Syncronizer.MonthsInPast = Convert.ToUInt16(this.pastMonthTextBox.Text);
+                    Syncronizer.MonthsInFuture = Convert.ToUInt16(this.futureMonthTextBox.Text);
 
                     sync.SyncOption = syncOption;
                     sync.SyncDelete = btSyncDelete.Checked;
@@ -576,7 +584,7 @@ namespace GoContactSyncMod
                     sync.UseFileAs = chkUseFileAs.Checked;
                     sync.SyncNotes = btSyncNotes.Checked;
                     sync.SyncContacts = btSyncContacts.Checked;
-                    sync.SyncAppointments = btSyncAppointments.Checked;
+                    sync.SyncAppointments = btSyncAppointments.Checked;                    
 
                     if (!sync.SyncContacts && !sync.SyncNotes && !sync.SyncAppointments)
                     {
@@ -1498,6 +1506,30 @@ namespace GoContactSyncMod
                 return Icon30;
         }
         #endregion
+
+        private void futureMonthTextBox_Validating(object sender, CancelEventArgs e)
+        {
+            ushort value;
+            if (!ushort.TryParse(futureMonthTextBox.Text, out value))
+            {
+                MessageBox.Show("only positive integer numbers allowed");
+                futureMonthTextBox.Text = "1";
+                e.Cancel = true;
+            }
+
+        }
+
+        private void pastMonthTextBox_Validating(object sender, CancelEventArgs e)
+        {
+            ushort value;
+            if (!ushort.TryParse(pastMonthTextBox.Text, out value))
+            {
+                MessageBox.Show("only positive integer numbers allowed");
+                pastMonthTextBox.Text = "1";
+                e.Cancel = true;
+            }
+        }
+
 
     }
 }
