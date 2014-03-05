@@ -5,6 +5,7 @@ using Google.Contacts;
 using Google.Documents;
 using System.Reflection;
 using Google.GData.Extensions;
+using Google.GData.Calendar;
 
 namespace GoContactSyncMod
 {
@@ -300,6 +301,81 @@ namespace GoContactSyncMod
 
             _form.OutlookItemTextBox.Text = string.Empty;
             _form.GoogleItemTextBox.Text = NotePropertiesUtils.GetBody(sync, googleNote);
+
+            _form.keepOutlook.Text = "Keep Google";
+            _form.keepGoogle.Text = "Delete Google";
+            _form.skip.Enabled = false;
+
+            return ResolveDeletedOutlook();
+        }
+
+        public ConflictResolution Resolve(Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment, EventEntry googleAppointment, Syncronizer sync, bool isNewMatch)
+        {
+            string name = string.Empty;
+
+            _form.OutlookItemTextBox.Text = string.Empty;
+            _form.GoogleItemTextBox.Text = string.Empty;
+            if (outlookAppointment != null)
+            {
+                name = outlookAppointment.Subject;
+                _form.OutlookItemTextBox.Text = outlookAppointment.Body;
+            }
+
+            if (googleAppointment != null)
+            {
+                name = googleAppointment.Title.Text;
+                _form.GoogleItemTextBox.Text = googleAppointment.Content.Content;
+            }
+
+            if (isNewMatch)
+            {
+                _form.messageLabel.Text =
+                    "This is the first time these appointments \"" + name +
+                    "\" are synced. Choose which you would like to keep.";
+                _form.skip.Text = "Keep both";
+            }
+            else
+            {
+                _form.messageLabel.Text =
+                "Both the Outlook and Google Appointment \"" + name +
+                "\" have been changed. Choose which you would like to keep.";
+            }
+
+
+
+
+            return Resolve();
+        }
+        public DeleteResolution ResolveDelete(Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment)
+        {
+
+            _form.Text = "Google appointment deleted";
+            _form.messageLabel.Text =
+                "Google appointment \"" + outlookAppointment.Subject +
+                "\" doesn't exist aynmore. Do you want to delete it also on Outlook side?";
+
+             _form.OutlookItemTextBox.Text = outlookAppointment.Body;
+            
+
+
+            _form.keepOutlook.Text = "Keep Outlook";
+            _form.keepGoogle.Text = "Delete Outlook";
+            _form.skip.Enabled = false;
+
+            return ResolveDeletedGoogle();
+        }
+
+        public DeleteResolution ResolveDelete(EventEntry googleAppointment)
+        {
+
+            _form.Text = "Outlook appointment deleted";
+            _form.messageLabel.Text =
+                "Outlook appointment \"" + googleAppointment.Title.Text +
+                "\" doesn't exist aynmore. Do you want to delete it also on Google side?";
+
+            _form.GoogleItemTextBox.Text = googleAppointment.Content.Content;
+
+
 
             _form.keepOutlook.Text = "Keep Google";
             _form.keepGoogle.Text = "Delete Google";

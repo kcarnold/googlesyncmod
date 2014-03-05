@@ -11,6 +11,7 @@ using Google.Documents;
 using Google.GData.Client.ResumableUpload;
 using Google.GData.Documents;
 using System.Collections;
+using Google.GData.Calendar;
 
 namespace GoContactSyncMod.UnitTests
 {
@@ -103,6 +104,65 @@ namespace GoContactSyncMod.UnitTests
             service.Delete(createdEntry);
 
             Logger.Log("Deleted Google contact", EventType.Information);
+        }
+
+        [Test]
+        public void CreateNewAppointment()
+        {
+            string gmailUsername;
+            string gmailPassword;
+            string syncProfile;
+            GoogleAPITests.LoadSettings(out gmailUsername, out gmailPassword, out syncProfile);
+
+            RequestSettings rs = new RequestSettings("GoogleContactSyncMod", gmailUsername, gmailPassword);
+            CalendarService service = new CalendarService("GoogleContactSyncMod");
+            service.setUserCredentials(gmailUsername, gmailPassword);
+
+
+            #region Delete previously created test contact.
+            EventQuery query = new EventQuery("https://www.google.com/calendar/feeds/default/private/full");
+            query.NumberToRetrieve = 500;
+            query.StartDate = DateTime.Now.AddDays(-10);
+            query.EndDate = DateTime.Now.AddDays(10);
+            query.Query = "GCSM Test Appointment";
+
+            EventFeed feed = service.Query(query);
+            Logger.Log("Loaded Google appointments", EventType.Information);
+            foreach (EventEntry entry in feed.Entries)
+            {
+                if (entry.Title != null && entry.Title.Text.Contains("GCSM Test Appointment") && !entry.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.CANCELED))
+                {
+                    Logger.Log("Deleting Google appointment:" +entry.Title.Text + " - " + (entry.Times.Count==0?null:entry.Times[0].StartTime.ToString()), EventType.Information);
+                    service.Delete(entry,true);
+                    Logger.Log("Deleted Google appointment", EventType.Information);
+                    //break;
+                }
+            }
+
+                   
+            
+            #endregion
+
+            var newEntry = new EventEntry();
+            newEntry.Title.Text = "GCSM Test Appointment";
+            newEntry.Times.Add(new When(DateTime.Now, DateTime.Now, true));
+                        
+            Uri feedUri = new Uri("https://www.google.com/calendar/feeds/default/private/full");
+
+            var createdEntry = service.Insert(feedUri, newEntry);
+
+            Logger.Log("Created Google appointment", EventType.Information);
+
+            Assert.IsNotNull(createdEntry.Id.Uri);
+
+            var updatedEntry = service.Update(createdEntry);
+
+            Logger.Log("Updated Google appointment", EventType.Information);
+
+            //delete test contacts
+            service.Delete(updatedEntry, true);
+
+            Logger.Log("Deleted Google appointment", EventType.Information);
         }
 
 
@@ -226,12 +286,13 @@ namespace GoContactSyncMod.UnitTests
             //First, check if there is a folder called GCSMTestContacts and GCSMTestNotes available, if yes, use them
             ArrayList outlookContactFolders = new ArrayList();
             ArrayList outlookNoteFolders = new ArrayList();
+            ArrayList outlookAppointmentFolders = new ArrayList();
             Microsoft.Office.Interop.Outlook.Folders folders = Syncronizer.OutlookNameSpace.Folders;
             foreach (Microsoft.Office.Interop.Outlook.Folder folder in folders)
             {
                 try
                 {
-                    SettingsForm.GetOutlookMAPIFolders(outlookContactFolders, outlookNoteFolders, folder);
+                    SettingsForm.GetOutlookMAPIFolders(outlookContactFolders, outlookNoteFolders, outlookAppointmentFolders, folder);
                 }
                 catch (Exception e)
                 {

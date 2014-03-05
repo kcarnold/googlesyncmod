@@ -49,6 +49,7 @@ namespace GoContactSyncMod.UnitTests
             sync = new Syncronizer();
             sync.SyncContacts = false;
             sync.SyncNotes = true;
+            sync.SyncAppointments = false;
             sync.SyncProfile = syncProfile;
             Syncronizer.SyncNotesFolder = syncNotesFolder;           
 
@@ -563,7 +564,7 @@ namespace GoContactSyncMod.UnitTests
         {
             foreach (NoteMatch match in sync.Notes)
             {
-                if (match.OutlookNote.EntryID == outlookNoteId)
+                if (match.OutlookNote != null && match.OutlookNote.EntryID == outlookNoteId)
                     return match;
             }
             return null;
