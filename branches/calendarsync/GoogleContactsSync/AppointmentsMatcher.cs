@@ -85,30 +85,7 @@ namespace GoContactSyncMod
                         EventEntry foundAppointment = sync.GetGoogleAppointmentById(googleAppointmentId);
                         var match = new AppointmentMatch(ola, null);
 
-                        //Check first, that this is not a duplicate 
-                        //e.g. by copying an existing Outlook appointment
-                        //or by Outlook checked this as duplicate, but the user selected "Add new"
-                        //    Collection<OutlookAppointmentInfo> duplicates = sync.OutlookAppointmentByProperty(sync.OutlookPropertyNameId, googleAppointmentId);
-                        //    if (duplicates.Count > 1)
-                        //    {
-                        //        foreach (OutlookAppointmentInfo duplicate in duplicates)
-                        //        {
-                        //            if (!string.IsNullOrEmpty(googleAppointmentId))
-                        //            {
-                        //                Logger.Log("Duplicate Outlook appointment found, resetting match and try to match again: " + duplicate.FileAs, EventType.Warning);
-                        //                idProp.Value = "";
-                        //            }
-                        //        }
-
-                        //        if (foundAppointment != null && !foundAppointment.Deleted)
-                        //        {
-                        //            AppointmentPropertiesUtils.ResetGoogleOutlookAppointmentId(sync.SyncProfile, foundAppointment);
-                        //        }
-
-                        //        OutlookAppointmentsWithoutSyncId.Add(olci);
-                        //    }
-                        //    else
-                        //    {
+                        
 
                         if (foundAppointment != null)
                         {
@@ -120,25 +97,12 @@ namespace GoContactSyncMod
                         }
                         else
                         {
-                            ////If no match found, is the appointment either deleted on Google side or was a copy on Outlook side 
-                            ////If it is a copy on Outlook side, the idProp.Value must be emptied to assure, the appointment is created on Google side and not deleted on Outlook side
-                            ////bool matchIsDuplicate = false;
-                            //foreach (AppointmentMatch existingMatch in result)
-                            //{
-                            //    if (existingMatch.OutlookAppointment.UserProperties[sync.OutlookPropertyNameId].Value.Equals(idProp.Value))
-                            //    {
-                            //        //matchIsDuplicate = true;
-                            //        idProp.Value = "";
-                            //        break;
-                            //    }
-
-                            //}
+                        
                             OutlookAppointmentsWithoutSyncId.Add(ola);
 
-                            //if (!matchIsDuplicate)
-                            //    result.Add(match);
+                        
                         }
-                        //    }
+                      
                     }
                     else
                         OutlookAppointmentsWithoutSyncId.Add(ola);
@@ -149,13 +113,7 @@ namespace GoContactSyncMod
                         Marshal.ReleaseComObject(idProp);
                     Marshal.ReleaseComObject(userProperties);
                 }
-                //}
-
-                //finally
-                //{
-                //    Marshal.ReleaseComObject(ola);
-                //    ola = null;
-                //}
+                
 
             }
             #endregion
@@ -186,91 +144,14 @@ namespace GoContactSyncMod
 
                 }
 
-                //    if (match.AllGoogleAppointmentMatches == null || match.AllGoogleAppointmentMatches.Count == 0)
-                //    {
-                //        //Check, if this Outlook appointment has a match in the target duplicates
-                //        bool duplicateFound = false;
-                //        foreach (AppointmentMatch duplicate in sync.GoogleAppointmentDuplicates)
-                //        {
-                //            if (duplicate.AllGoogleAppointmentMatches.Count > 0 &&
-                //                (!string.IsNullOrEmpty(olci.FileAs) && !string.IsNullOrEmpty(duplicate.AllGoogleAppointmentMatches[0].Title) && olci.FileAs.Equals(duplicate.AllGoogleAppointmentMatches[0].Title, StringComparison.InvariantCultureIgnoreCase) ||  //Replace twice to not replace a \r\n by \r\r\n. This is necessary because \r\n are saved as \n only to google
-                //                 !string.IsNullOrEmpty(olci.FileAs) && !string.IsNullOrEmpty(duplicate.AllGoogleAppointmentMatches[0].Name.FullName) && olci.FileAs.Equals(duplicate.AllGoogleAppointmentMatches[0].Name.FullName, StringComparison.InvariantCultureIgnoreCase) ||
-                //                 !string.IsNullOrEmpty(olci.FullName) && !string.IsNullOrEmpty(duplicate.AllGoogleAppointmentMatches[0].Name.FullName) && olci.FullName.Equals(duplicate.AllGoogleAppointmentMatches[0].Name.FullName, StringComparison.InvariantCultureIgnoreCase) ||
-                //                 !string.IsNullOrEmpty(olci.Email1Address) && duplicate.AllGoogleAppointmentMatches[0].Emails.Count > 0 && olci.Email1Address.Equals(duplicate.AllGoogleAppointmentMatches[0].Emails[0].Address, StringComparison.InvariantCultureIgnoreCase) ||
-                //                //!string.IsNullOrEmpty(olci.Email2Address) && FindEmail(olci.Email2Address, duplicate.AllGoogleAppointmentMatches[0].Emails) != null ||
-                //                //!string.IsNullOrEmpty(olci.Email3Address) && FindEmail(olci.Email3Address, duplicate.AllGoogleAppointmentMatches[0].Emails) != null ||
-                //                 olci.MobileTelephoneNumber != null && FindPhone(olci.MobileTelephoneNumber, duplicate.AllGoogleAppointmentMatches[0].Phonenumbers) != null ||
-                //                 !string.IsNullOrEmpty(olci.FileAs) && string.IsNullOrEmpty(duplicate.AllGoogleAppointmentMatches[0].Title) && duplicate.AllGoogleAppointmentMatches[0].Organizations.Count > 0 && olci.FileAs.Equals(duplicate.AllGoogleAppointmentMatches[0].Organizations[0].Name, StringComparison.InvariantCultureIgnoreCase)
-                //                ) ||
-                //                !string.IsNullOrEmpty(olci.FileAs) && olci.FileAs.Equals(duplicate.OutlookAppointment.Subject, StringComparison.InvariantCultureIgnoreCase) ||
-                //                !string.IsNullOrEmpty(olci.FullName) && olci.FullName.Equals(duplicate.OutlookAppointment.FullName, StringComparison.InvariantCultureIgnoreCase) ||
-                //                !string.IsNullOrEmpty(olci.Email1Address) && olci.Email1Address.Equals(duplicate.OutlookAppointment.Email1Address, StringComparison.InvariantCultureIgnoreCase) ||
-                //                //                                              olci.Email1Address.Equals(duplicate.OutlookAppointment.Email2Address, StringComparison.InvariantCultureIgnoreCase) ||
-                //                //                                              olci.Email1Address.Equals(duplicate.OutlookAppointment.Email3Address, StringComparison.InvariantCultureIgnoreCase)
-                //                //                                              ) ||
-                //                //!string.IsNullOrEmpty(olci.Email2Address) && (olci.Email2Address.Equals(duplicate.OutlookAppointment.Email1Address, StringComparison.InvariantCultureIgnoreCase) ||
-                //                //                                              olci.Email2Address.Equals(duplicate.OutlookAppointment.Email2Address, StringComparison.InvariantCultureIgnoreCase) ||
-                //                //                                              olci.Email2Address.Equals(duplicate.OutlookAppointment.Email3Address, StringComparison.InvariantCultureIgnoreCase)
-                //                //                                              ) ||
-                //                //!string.IsNullOrEmpty(olci.Email3Address) && (olci.Email3Address.Equals(duplicate.OutlookAppointment.Email1Address, StringComparison.InvariantCultureIgnoreCase) ||
-                //                //                                              olci.Email3Address.Equals(duplicate.OutlookAppointment.Email2Address, StringComparison.InvariantCultureIgnoreCase) ||
-                //                //                                              olci.Email3Address.Equals(duplicate.OutlookAppointment.Email3Address, StringComparison.InvariantCultureIgnoreCase)
-                //                //                                              ) ||
-                //                olci.MobileTelephoneNumber != null && olci.MobileTelephoneNumber.Equals(duplicate.OutlookAppointment.MobileTelephoneNumber) ||
-                //                !string.IsNullOrEmpty(olci.FileAs) && string.IsNullOrEmpty(duplicate.GoogleAppointment.Title) && duplicate.GoogleAppointment.Organizations.Count > 0 && olci.FileAs.Equals(duplicate.GoogleAppointment.Organizations[0].Name, StringComparison.InvariantCultureIgnoreCase)
-                //               )
-                //            {
-                //                duplicateFound = true;
-                //                sync.OutlookAppointmentDuplicates.Add(match);
-                //                if (string.IsNullOrEmpty(duplicateOutlookAppointments))
-                //                    duplicateOutlookAppointments = "Outlook appointment found that has been already identified as duplicate Google appointment (either same email, Mobile or FullName) and cannot be synchronized. Please delete or resolve duplicates of:";
-
-                //                string str = olci.FileAs + " (" + olci.Email1Address + ", " + olci.MobileTelephoneNumber + ")";
-                //                if (!duplicateOutlookAppointments.Contains(str))
-                //                    duplicateOutlookAppointments += Environment.NewLine + str;
-                //            }
-                //        }
-
-                //        if (!duplicateFound)
                 if (match.GoogleAppointment == null)
                     Logger.Log(string.Format("No match found for outlook appointment ({0}) => {1}", match.OutlookAppointment.Subject + " - " + match.OutlookAppointment.Start, (AppointmentPropertiesUtils.GetOutlookGoogleAppointmentId(sync, match.OutlookAppointment) != null ? "Delete from Outlook" : "Add to Google")), EventType.Information);
 
-                //    }
-                //    else
-                //    {
-                //        //Remember Google duplicates to later react to it when resetting matches or syncing
-                //        //ResetMatches: Also reset the duplicates
-                //        //Sync: Skip duplicates (don't sync duplicates to be fail safe)
-                //        if (match.AllGoogleAppointmentMatches.Count > 1)
-                //        {
-                //            sync.GoogleAppointmentDuplicates.Add(match);
-                //            foreach (Appointment googleAppointment in match.AllGoogleAppointmentMatches)
-                //            {
-                //                //Create message for duplicatesFound exception
-                //                if (string.IsNullOrEmpty(duplicateTargetMatches))
-                //                    duplicateTargetMatches = "Outlook appointments matching with multiple Google appointments have been found (either same email, Mobile, FullName or company) and cannot be synchronized. Please delete or resolve duplicates of:";
-
-                //                string str = olci.FileAs + " (" + olci.Email1Address + ", " + olci.MobileTelephoneNumber + ")";
-                //                if (!duplicateTargetMatches.Contains(str))
-                //                    duplicateTargetMatches += Environment.NewLine + str;
-                //            }
-                //        }
-
-
-
-                //    }                
-
-                result.Add(match);
+                                result.Add(match);
             }
             #endregion
 
-            //if (!string.IsNullOrEmpty(duplicateTargetMatches) || !string.IsNullOrEmpty(duplicateOutlookAppointments))
-            //    duplicatesFound = new DuplicateDataException(duplicateTargetMatches + Environment.NewLine + Environment.NewLine + duplicateOutlookAppointments);
-            //else
-            //    duplicatesFound = null;
-
-            //return result;
-
+            
             //for each Google appointment that's left (they will be nonmatched) create a new match pair without outlook appointment. 
             for (int i = 0; i < sync.GoogleAppointments.Count; i++)
             {
@@ -278,12 +159,6 @@ namespace GoContactSyncMod
                 if (NotificationReceived != null)
                     NotificationReceived(String.Format("Adding new Google appointment {0} of {1} by unique properties: {2} ...", i + 1, sync.GoogleAppointments.Count, googleAppointment.Title.Text));
 
-                //string syncId = AppointmentPropertiesUtils.GetGoogleOutlookAppointmentId(sync.SyncProfile, googleAppointment);
-                //if (!String.IsNullOrEmpty(syncId) && skippedOutlookIds.Contains(syncId))
-                //{
-                //    Logger.Log("Skipped GoogleAppointment because Outlook appointment couldn't be matched beacause of previous problem (see log): " + googleAppointment.Title, EventType.Warning);
-                //}
-                //else 
                 if (string.IsNullOrEmpty(googleAppointment.Title.Text) || googleAppointment.Times.Count == 0 || googleAppointment.Times[0].StartTime == default(DateTime))
                 {
                     // no title or time
@@ -291,9 +166,16 @@ namespace GoContactSyncMod
                     sync.SkippedCountNotMatches++;
                     Logger.Log("Skipped GoogleAppointment because no unique property found (Subject or StartDate):" + googleAppointment.Title.Text + " - " + (googleAppointment.Times.Count==0?null:googleAppointment.Times[0].StartTime.ToString()), EventType.Warning);
                 }
+                else if (googleAppointment.OriginalEvent != null)
+                {
+                    sync.SkippedCount++;
+                    sync.SkippedCountNotMatches++;
+                   
+                    Logger.Log("Google Appointment with OriginalEvent found (maybe already covered by recurrence): " + googleAppointment.Title.Text + " - " + (googleAppointment.Times.Count == 0 ? null : googleAppointment.Times[0].StartTime.ToString()), EventType.Warning);
+                }
                 else
                 {
-                    Logger.Log(string.Format("No match found for Google appointment ({0}) => {1}", (googleAppointment.Title==null?null:googleAppointment.Title.Text) + " - "+(googleAppointment.Times.Count == 0?null:googleAppointment.Times[0].StartTime.ToString()), (!string.IsNullOrEmpty(AppointmentPropertiesUtils.GetGoogleOutlookAppointmentId(sync.SyncProfile, googleAppointment)) ? "Delete from Google" : "Add to Outlook")), EventType.Information);
+                    Logger.Log(string.Format("No match found for Google appointment ({0}) => {1}", (googleAppointment.Title == null ? null : googleAppointment.Title.Text) + " - " + (googleAppointment.Times.Count == 0 ? null : googleAppointment.Times[0].StartTime.ToString()), (!string.IsNullOrEmpty(AppointmentPropertiesUtils.GetGoogleOutlookAppointmentId(sync.SyncProfile, googleAppointment)) ? "Delete from Google" : "Add to Outlook")), EventType.Information);
                     var match = new AppointmentMatch(null, googleAppointment);
                     result.Add(match);
                 }

@@ -96,6 +96,7 @@ namespace GoContactSyncMod
         public static string SyncContactsFolder { get; set; }
         public static string SyncNotesFolder { get; set; }
         public static string SyncAppointmentsFolder { get; set; }
+        public static string Timezone { get; private set; }
 
 		//private ConflictResolution? _conflictResolution;
 		//public ConflictResolution? CResolution
@@ -636,7 +637,7 @@ namespace GoContactSyncMod
 
                 EventQuery query = new EventQuery("https://www.google.com/calendar/feeds/default/private/full");
                 query.NumberToRetrieve = 256;
-                query.StartIndex = 0;
+                query.StartIndex = 0;                               
 
                 //Only Load events from last month
                 //ToDo: Make it configurable
