@@ -51,6 +51,7 @@ namespace GoContactSyncMod.UnitTests
             sync = new Syncronizer();
             sync.SyncContacts = true;
             sync.SyncNotes = false;
+            sync.SyncAppointments = false;
             sync.SyncProfile = syncProfile;
             Syncronizer.SyncContactsFolder = syncContactsFolder;  
 
@@ -1560,7 +1561,7 @@ namespace GoContactSyncMod.UnitTests
         {
             foreach (ContactMatch match in sync.Contacts)
             {
-                if (match.OutlookContact.EntryID == outlookContact.EntryID)
+                if (match.OutlookContact != null && match.OutlookContact.EntryID == outlookContact.EntryID)
                     return match;
             }
             return null;
