@@ -1606,9 +1606,9 @@ namespace GoContactSyncMod
         /// <summary>
         /// Updates Outlook appointment from master to slave (including groups/categories)
         /// </summary>
-        public void SaveAppointment(Outlook.AppointmentItem master, EventEntry slave)
+        public void UpdateAppointment(Outlook.AppointmentItem master, EventEntry slave)
         {
-            AppointmentSync.Update(master, slave);
+            AppointmentSync.UpdateAppointment(master, slave);
 
             AppointmentPropertiesUtils.SetGoogleOutlookAppointmentId(SyncProfile, slave, master);
             slave = SaveGoogleAppointment(slave);
@@ -1623,9 +1623,9 @@ namespace GoContactSyncMod
         /// <summary>
         /// Updates Outlook appointment from master to slave (including groups/categories)
         /// </summary>
-        public void SaveAppointment(EventEntry master, Outlook.AppointmentItem slave)
+        public void UpdateAppointment(EventEntry master, Outlook.AppointmentItem slave)
         {
-            AppointmentSync.Update(master, slave);
+            AppointmentSync.UpdateAppointment(master, slave);
 
             AppointmentPropertiesUtils.SetOutlookGoogleAppointmentId(this, slave, master);
             slave.Save();

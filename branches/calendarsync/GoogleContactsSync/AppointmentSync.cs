@@ -46,7 +46,7 @@ namespace GoContactSyncMod
         /// <summary>
         /// Updates Outlook appointments (calendar) to Google Calendar
         /// </summary>
-        public static void Update(Outlook.AppointmentItem master, EventEntry slave)
+        public static void UpdateAppointment(Outlook.AppointmentItem master, EventEntry slave)
         {            
             slave.Title.Text = master.Subject;
             
@@ -111,7 +111,7 @@ namespace GoContactSyncMod
         /// <summary>
         /// Updates Outlook appointments (calendar) to Google Calendar
         /// </summary>
-        public static void Update(EventEntry master, Outlook.AppointmentItem slave)
+        public static void UpdateAppointment(EventEntry master, Outlook.AppointmentItem slave)
         {
             slave.Subject = master.Title.Text;            
 
