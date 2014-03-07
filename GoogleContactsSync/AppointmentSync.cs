@@ -34,6 +34,7 @@ namespace GoContactSyncMod
         const string INTERVAL = "INTERVAL";
         const string COUNT = "COUNT";
         const string UNTIL = "UNTIL";
+        const string TZID = "TZID";
 
         const string MO = "MO";
         const string TU = "TU";
@@ -80,7 +81,7 @@ namespace GoContactSyncMod
             {
              
                 var participant = new Who();
-                participant.Email = recipient.Name;
+                participant.Email = recipient.Address!=null? recipient.Address:recipient.Name;
 
                 participant.Rel = (i == 0 ? Who.RelType.EVENT_ORGANIZER : Who.RelType.EVENT_ATTENDEE);
                 slave.Participants.Add(participant);
@@ -156,10 +157,17 @@ namespace GoContactSyncMod
                 slave.Recipients.Remove(i);
 
             foreach (Who participant in master.Participants)
-            {                
-                slave.Recipients.Add(participant.Email);
+            {
+                //ToDo: Doesn't Work, because Organizer cannot be set on Outlook side. Maybe somehow at least on behalf?
+                //if (participant.Rel == Who.RelType.EVENT_ORGANIZER)               
+                //    slave.GetOrganizer().Address = participant.Email;
+                //else
+                    slave.Recipients.Add(participant.Email);
+
+                    
             }
-            //slave.RequiredAttendees = master.RequiredAttendees;
+            //slave.RequiredAttendees = master.RequiredAttendees;		master.Title.Text	"Rodeln"	string
+
             //slave.OptionalAttendees = master.OptionalAttendees;
             //slave.Resources = master.Resources;
 
@@ -209,8 +217,8 @@ namespace GoContactSyncMod
                 }
 
                 //ToDo: Find a way how to handle timezones, per default GMT (UTC+0:00) is taken
-                if (master.StartTimeZone.ID == "W. Europe Standard Time");
-                    key = "TZID" + "=" + "Europe/Berlin";
+                if (master.StartTimeZone.ID == "W. Europe Standard Time")
+                    key = TZID + "=" + "Europe/Berlin";
 
                 DateTime date = masterRecurrence.PatternStartDate.Date;
                 DateTime time = new DateTime(date.Year, date.Month, date.Day, masterRecurrence.StartTime.Hour, masterRecurrence.StartTime.Minute, masterRecurrence.StartTime.Second);
