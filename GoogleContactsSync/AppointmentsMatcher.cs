@@ -29,12 +29,7 @@ namespace GoContactSyncMod
         public static List<AppointmentMatch> MatchAppointments(Syncronizer sync)
         {
             Logger.Log("Matching Outlook and Google appointments...", EventType.Information);
-            var result = new List<AppointmentMatch>();
-
-            //string duplicateTargetMatches = "";
-            //string duplicateOutlookAppointments = "";
-            //sync.GoogleAppointmentDuplicates = new Collection<AppointmentMatch>();
-            //sync.OutlookAppointmentDuplicates = new Collection<AppointmentMatch>();
+            var result = new List<AppointmentMatch>();          
 
             //for each outlook appointment try to get Google appointment id from user properties
             //if no match - try to match by properties
@@ -48,13 +43,31 @@ namespace GoContactSyncMod
                 try
                 {
                     ola = sync.OutlookAppointments[i] as Outlook.AppointmentItem;
-                    if (ola == null || string.IsNullOrEmpty(ola.Subject))
+                    if (ola == null || string.IsNullOrEmpty(ola.Subject) && ola.Start == AppointmentSync.outlookDateMin)
                     {
                         Logger.Log("Empty Outlook appointment found. Skipping", EventType.Warning);
                         sync.SkippedCount++;
                         sync.SkippedCountNotMatches++;
                         continue;
                     }
+                    else if (ola.MeetingStatus == Outlook.OlMeetingStatus.olMeetingCanceled || ola.MeetingStatus == Outlook.OlMeetingStatus.olMeetingReceivedAndCanceled)
+                    {
+                        Logger.Log("Skipping Outlook appointment found because it is cancelled: " + ola.Subject + " - " + ola.Start, EventType.Information);
+                        sync.SkippedCount++;
+                        sync.SkippedCountNotMatches++;
+                        continue;
+                    }
+                    else if (Syncronizer.MonthsInPast > 0 && 
+                             (ola.IsRecurring && ola.GetRecurrencePattern().PatternEndDate < DateTime.Now.AddMonths(-Syncronizer.MonthsInPast) ||
+                             !ola.IsRecurring && ola.End < DateTime.Now.AddMonths(-Syncronizer.MonthsInPast)) ||
+                        Syncronizer.MonthsInFuture > 0 && 
+                             (ola.IsRecurring && ola.GetRecurrencePattern().PatternStartDate > DateTime.Now.AddMonths(Syncronizer.MonthsInFuture) ||
+                             !ola.IsRecurring && ola.Start > DateTime.Now.AddMonths(Syncronizer.MonthsInFuture)))
+                    {
+                        Logger.Log("Skipping Outlook appointment because it is out of months range to sync:" + ola.Subject + " - " + ola.Start, EventType.Debug);                       
+                        continue;
+                    }
+
                 }
                 catch (Exception ex)
                 {
