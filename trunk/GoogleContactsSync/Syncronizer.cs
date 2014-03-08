@@ -25,7 +25,7 @@ namespace GoContactSyncMod
 		public const string OutlookUserPropertyTemplate = "g/con/{0}/";
         internal const string myContactsGroup = "System Group: My Contacts";
 		private static object _syncRoot = new object();
-        private static string UserName;
+        internal static string UserName;
 
         public int TotalCount { get; private set; }
 		public int SyncedCount { get; private set; }
@@ -1587,8 +1587,12 @@ namespace GoContactSyncMod
         public void UpdateAppointment(Outlook.AppointmentItem master, ref EventEntry slave)
         {
             bool updated = false;
-            if (master.Recipients.Count == 0 || master.Organizer == null || master.Organizer.Equals(master.Session.CurrentUser.Name))
-            {
+            if (master.Recipients.Count == 0 || 
+                master.Organizer == null || 
+                AppointmentSync.IsOrganizer(AppointmentSync.GetOrganizer(master), master)||
+                slave.Id.Uri == null
+                )
+            {//Only update, if this appointment was organized on Outlook side or freshly created during tis sync
                 updated = true;
                 AppointmentSync.UpdateAppointment(master, slave);
             }
@@ -1622,27 +1626,12 @@ namespace GoContactSyncMod
             
 
             bool updated = false;
-            if (slave.MeetingStatus != Outlook.OlMeetingStatus.olMeeting)
-            {                
-                SkippedCount++;
-                Logger.Log("Skipped Updating appointment from Google to Outlook because meeting status is "+slave.MeetingStatus+": \"" + master.Title.Text + " - " + (master.Times.Count==0?null:master.Times[0].StartTime.ToString()) + "\".", EventType.Information);
-            }
-            else if (master.Participants.Count > 1)
+            if (master.Participants.Count > 1)
             {
-                bool organizerIsGoogle = true;
-
-                foreach (var person in master.Participants)
-                {
-
-                    if (person.Rel == Who.RelType.EVENT_ORGANIZER && person.Email.Trim().Equals(Syncronizer.UserName.Trim(), StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        organizerIsGoogle = true;
-                        break;
-                    }
-                }
-
-                if (organizerIsGoogle)
-                {
+                bool organizerIsGoogle = AppointmentSync.IsOrganizer(AppointmentSync.GetOrganizer(master));
+                
+                if (organizerIsGoogle || AppointmentPropertiesUtils.GetOutlookGoogleAppointmentId(this, slave) == null)
+                {//Only update, if this appointment was organized on Google side or freshly created during tis sync
                     AppointmentSync.UpdateAppointment(master, slave);
                     updated = true;
                 }

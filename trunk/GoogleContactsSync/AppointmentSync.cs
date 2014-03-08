@@ -158,13 +158,20 @@ namespace GoContactSyncMod
 
             foreach (Who participant in master.Participants)
             {
-                //ToDo: Doesn't Work, because Organizer cannot be set on Outlook side. Maybe somehow at least on behalf?
-                //if (participant.Rel == Who.RelType.EVENT_ORGANIZER)               
-                //    slave.GetOrganizer().Address = participant.Email;
-                //else
+
+                if (participant.Rel == Who.RelType.EVENT_ORGANIZER && participant.Email != Syncronizer.UserName)
+                    //ToDo: Doesn't Work, because Organizer cannot be set on Outlook side. Maybe somehow at least on behalf?
+                    //slave.GetOrganizer().Address = participant.Email;
+                    //Workaround: Assign organizer at least as first participant                    
+                    slave.Recipients.Add(participant.Email);                
+                    
+            }
+            foreach (Who participant in master.Participants)
+            {
+
+                if (participant.Rel != Who.RelType.EVENT_ORGANIZER && participant.Email != Syncronizer.UserName)                    
                     slave.Recipients.Add(participant.Email);
 
-                    
             }
             //slave.RequiredAttendees = master.RequiredAttendees;		master.Title.Text	"Rodeln"	string
 
@@ -185,6 +192,9 @@ namespace GoContactSyncMod
             //ToDo: Check Exceptions, how to sync
             
             UpdateRecurrence(master, slave);
+            
+            if (!IsOrganizer(GetOrganizer(master)) || !IsOrganizer(GetOrganizer(slave), slave))
+                slave.MeetingStatus = Outlook.OlMeetingStatus.olMeetingReceived;
             
         }
 
@@ -379,18 +389,8 @@ namespace GoContactSyncMod
                                     else if (dayValue.StartsWith("4"))
                                         instance = 4;
 
-                                    switch (dayValue.Trim(new char[] { '1', '2', '3', '4', ' ' }))
-                                    {
-                                        case MO: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olMonday; break;
-                                        case TU: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olTuesday; break;
-                                        case WE: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olWednesday; break;
-                                        case TH: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olThursday; break;
-                                        case FR: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olFriday; break;
-                                        case SA: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olSaturday; break;
-                                        case SU: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olSunday; break;
 
-                                    }
-                                    //Don't break because multiple days possible;
+                                    break;
                                 }
 
                                 break;
@@ -422,6 +422,34 @@ namespace GoContactSyncMod
                                     //ToDo: Outlook.OlRecurrenceType.olRecursMonthNth
                                     //ToDo: Outlook.OlRecurrenceType.olRecursYearNth                                        
                                 }
+                                break;
+                            }
+
+                        }
+
+                        foreach (string part in parts)
+                        {
+                            if (part.StartsWith(BYDAY))
+                            {
+                                string[] days = part.Split(',');
+                                foreach (string day in days)
+                                {
+                                    string dayValue = day.Substring(day.IndexOf("=") + 1);
+                                    
+                                    switch (dayValue.Trim(new char[] { '1', '2', '3', '4', ' ' }))
+                                    {
+                                        case MO: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olMonday; break;
+                                        case TU: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olTuesday; break;
+                                        case WE: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olWednesday; break;
+                                        case TH: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olThursday; break;
+                                        case FR: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olFriday; break;
+                                        case SA: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olSaturday; break;
+                                        case SU: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olSunday; break;
+
+                                    }
+                                    //Don't break because multiple days possible;
+                                }
+
                                 break;
                             }
 
@@ -500,5 +528,54 @@ namespace GoContactSyncMod
                 format += "'Z'";
             return DateTime.ParseExact(dateTime, format, new System.Globalization.CultureInfo("en-US"));
         }
+
+        internal static Who GetOrganizer(EventEntry googleAppointment)
+        {
+            foreach (var person in googleAppointment.Participants)
+            {
+
+                if (person.Rel == Who.RelType.EVENT_ORGANIZER)
+                {
+                    return person;
+                }
+            }
+            return null;
+        }
+
+        internal static bool IsOrganizer(Who person)
+        {
+            if (person != null && person.Email != null && person.Email.Trim().Equals(Syncronizer.UserName.Trim(), StringComparison.InvariantCultureIgnoreCase))
+                return true;
+            else
+                return false;
+        }
+
+        internal static string GetOrganizer(Outlook.AppointmentItem outlookAppointment)
+        {
+            Outlook.AddressEntry organizer = outlookAppointment.GetOrganizer();
+            if (organizer != null)
+            {
+                if (string.IsNullOrEmpty(organizer.Address))
+                    return organizer.Address;
+                else
+                    return organizer.Name;
+            }
+
+            return outlookAppointment.Organizer;            
+
+
+        }
+
+        internal static bool IsOrganizer(string person, Outlook.AppointmentItem outlookAppointment)
+        {
+            if (!string.IsNullOrEmpty(person) && 
+                (person.Trim().Equals(outlookAppointment.Session.CurrentUser.Address, StringComparison.InvariantCultureIgnoreCase) || 
+                person.Trim().Equals(outlookAppointment.Session.CurrentUser.Name, StringComparison.InvariantCultureIgnoreCase)
+                ))
+                return true;
+            else
+                return false;
+        }
+
     }
 }
