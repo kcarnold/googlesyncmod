@@ -2686,7 +2686,7 @@ namespace GoContactSyncMod
         /// Resets associations of Outlook appointments with Google appointments via user props
         /// and vice versa
         /// </summary>
-        public void ResetAppointmentMatches()
+        public void ResetAppointmentMatches(bool deleteOutlookAppointments, bool deleteGoogleAppointments)
         {
             Debug.Assert(OutlookAppointments != null, "Outlook Appointments object is null - this should not happen. Please inform Developers.");
 
@@ -2717,20 +2717,27 @@ namespace GoContactSyncMod
                         continue;
                     }
 
-                    try
+                    if (deleteGoogleAppointments)
                     {
-                        ResetMatch(googleAppointment);
+                        googleAppointment.Delete();
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Logger.Log("The match of Google appointment " + googleAppointment.Title.Text + " couldn't be reset: " + ex.Message, EventType.Warning);
+                        try
+                        {
+                            ResetMatch(googleAppointment);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Log("The match of Google appointment " + googleAppointment.Title.Text + " couldn't be reset: " + ex.Message, EventType.Warning);
+                        }
                     }
                 }
 
 
                 Logger.Log("Resetting Outlook appointment matches...", EventType.Information);
                 //1 based array
-                for (int i = 1; i <= OutlookAppointments.Count; i++)
+                for (int i = OutlookAppointments.Count; i >=1; i--)
                 {
                     Outlook.AppointmentItem outlookAppointment = null;
 
@@ -2750,13 +2757,20 @@ namespace GoContactSyncMod
                         continue;
                     }
 
-                    try
+                    if (deleteOutlookAppointments)
                     {
-                        ResetMatch(outlookAppointment);
+                        outlookAppointment.Delete();
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Logger.Log("The match of Outlook appointment " + outlookAppointment.Subject + " couldn't be reset: " + ex.Message, EventType.Warning);
+                        try
+                        {
+                            ResetMatch(outlookAppointment);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Log("The match of Outlook appointment " + outlookAppointment.Subject + " couldn't be reset: " + ex.Message, EventType.Warning);
+                        }
                     }
                 }
 
