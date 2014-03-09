@@ -1065,9 +1065,27 @@ namespace GoContactSyncMod
             sync.LoginToGoogle(UserName.Text, Password.Text);
             sync.LoginToOutlook();
 
-            
-
-            //Load matches, but match them by properties, not sync id
+           
+            if (sync.SyncAppointments)
+            {
+                bool deleteOutlookAppointments = false;
+                bool deleteGoogleAppointments = false;                
+                switch (MessageBox.Show(this, "Do you want to delete all Outlook Calendar entries?", Application.ProductName, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2))
+                {
+                    case DialogResult.Yes: deleteOutlookAppointments = true; break;
+                    case DialogResult.No: deleteOutlookAppointments = false; break;
+                    default: return;
+                }
+                switch (MessageBox.Show(this, "Do you want to delete all Google Calendar entries?", Application.ProductName, MessageBoxButtons.YesNoCancel,MessageBoxIcon.Question,MessageBoxDefaultButton.Button2 ))
+                {
+                    case DialogResult.Yes: deleteGoogleAppointments = true; break;
+                    case DialogResult.No: deleteGoogleAppointments = false; break;
+                    default: return;
+                }
+                
+                sync.LoadAppointments();
+                sync.ResetAppointmentMatches(deleteOutlookAppointments, deleteGoogleAppointments);
+            }
 
             if (sync.SyncContacts)
             {
@@ -1082,11 +1100,7 @@ namespace GoContactSyncMod
                 sync.ResetNoteMatches();
             }
 
-            if (sync.SyncAppointments)
-            {
-                sync.LoadAppointments();
-                sync.ResetAppointmentMatches();
-            }
+            
 
 
 
