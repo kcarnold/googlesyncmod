@@ -1610,6 +1610,10 @@ namespace GoContactSyncMod
             AppointmentPropertiesUtils.SetOutlookGoogleAppointmentId(this, master,slave);
             master.Save();
 
+            //After saving Google Appointment => also sync recurrence exceptions and save again
+            if (updated && master.IsRecurring && AppointmentSync.UpdateRecurrenceExceptions(master, slave))
+                slave = SaveGoogleAppointment(slave);                          
+
             if (updated)
             {
                 SyncedCount++;
@@ -1617,13 +1621,13 @@ namespace GoContactSyncMod
             }
         }
 
+        
+
         /// <summary>
         /// Updates Outlook appointment from master to slave (including groups/categories)
         /// </summary>
         public void UpdateAppointment(ref EventEntry master, Outlook.AppointmentItem slave)
-        {
-            
-            
+        {                        
 
             bool updated = false;
             if (master.Participants.Count > 1)

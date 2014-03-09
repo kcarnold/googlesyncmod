@@ -27,6 +27,7 @@ namespace GoContactSyncMod
         const string BYMONTH = "BYMONTH";
         const string BYMONTHDAY = "BYMONTHDAY";
         const string BYDAY = "BYDAY";
+        const string BYSETPOS= "BYSETPOS";
 
         const string VALUE = "VALUE";
         const string DATE = "DATE";
@@ -106,6 +107,7 @@ namespace GoContactSyncMod
             //slave.RTFBody = master.RTFBody;
 
             UpdateRecurrence(master, slave);
+
             
         }
 
@@ -124,7 +126,7 @@ namespace GoContactSyncMod
             slave.BusyStatus = Outlook.OlBusyStatus.olBusy;
             if (master.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.TENTATIVE))
                 slave.BusyStatus = Outlook.OlBusyStatus.olTentative;
-             if (master.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.CANCELED))
+             else if (master.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.CANCELED))
                 slave.BusyStatus = Outlook.OlBusyStatus.olFree;
                   
             //slave.Categories = master.Categories;
@@ -271,8 +273,12 @@ namespace GoContactSyncMod
 
                 if (!string.IsNullOrEmpty(byDay))
                 {
-                    if (masterRecurrence.Instance > 0)
+                    if (masterRecurrence.Instance >= 1 && masterRecurrence.Instance <= 4)
                         byDay = masterRecurrence.Instance + byDay;
+                    else if (masterRecurrence.Instance == 5)
+                        slaveRecurrence.Value += ";" + BYSETPOS + "=-1";
+                    else
+                        throw new NotSupportedException("Outlook Appointment Instances 1-4 and 5 (last) are allowed but was: " + masterRecurrence.Instance);
                     slaveRecurrence.Value += ";" + BYDAY + "=" + byDay;
                 }
 
@@ -309,7 +315,7 @@ namespace GoContactSyncMod
             }
             catch (Exception ex)
             {
-                throw ex;
+                ErrorHandler.Handle(ex);
             }
 
 
@@ -419,8 +425,7 @@ namespace GoContactSyncMod
                                             slaveRecurrence.RecurrenceType = Outlook.OlRecurrenceType.olRecursYearNth;
                                         break;
                                     default: throw new NotSupportedException("RecurrenceType not supported by Outlook: " + part);
-                                    //ToDo: Outlook.OlRecurrenceType.olRecursMonthNth
-                                    //ToDo: Outlook.OlRecurrenceType.olRecursYearNth                                        
+                                                                        
                                 }
                                 break;
                             }
@@ -453,6 +458,15 @@ namespace GoContactSyncMod
                                 break;
                             }
 
+                            if (part.StartsWith(BYSETPOS))
+                            {
+                                string pos = part.Substring(part.IndexOf("=") + 1);
+
+                                if (pos.Trim() == "-1")
+                                    slaveRecurrence.Instance = 5;
+                                else
+                                    throw new Exception("Only 'BYSETPOS=-1' is allowed by Outlook, but it was: " +part);
+                            }
                         }
 
                         foreach (string part in parts)
@@ -513,10 +527,53 @@ namespace GoContactSyncMod
             }
             catch (Exception ex)
             {
-                throw ex;
+                ErrorHandler.Handle(ex);
             }
 
 
+        }
+
+        public static bool UpdateRecurrenceExceptions(Outlook.AppointmentItem master, EventEntry slave)
+        {
+            
+            bool ret = false;
+
+            Outlook.Exceptions exceptions = master.GetRecurrencePattern().Exceptions;
+
+            if (exceptions == null || exceptions.Count == 0)
+                ret= false;
+            else
+            {
+                foreach (Outlook.Exception exception in exceptions)
+                {
+                    if (!exception.Deleted)
+                    {//Add exception time (but only if in 
+                        if ((Syncronizer.MonthsInPast == 0 ||
+                             exception.AppointmentItem.End >= DateTime.Now.AddMonths(-Syncronizer.MonthsInPast)) &&
+                             (Syncronizer.MonthsInFuture == 0 ||
+                             exception.AppointmentItem.Start <= DateTime.Now.AddMonths(Syncronizer.MonthsInFuture)))
+                        {
+                            slave.Times.Add(new Google.GData.Extensions.When(exception.AppointmentItem.Start, exception.AppointmentItem.Start, exception.AppointmentItem.AllDayEvent));
+                            ret = true;
+                        }
+                    }
+                    else
+                    {//ToDo: Delete exception time
+                        //for (int i=slave.Times.Count;i>0;i--)
+                        //{
+                        //    When time = slave.Times[i-1];
+                        //    if (time.StartTime.Equals(exception.AppointmentItem.Start))
+                        //    {
+                        //        slave.Times.Remove(time);
+                        //        ret = true;
+                        //        break;
+                        //    }
+                        //}
+                    }
+                }
+            }
+
+            return ret;
         }
 
         private static DateTime GetDateTime(string dateTime)
