@@ -375,7 +375,7 @@ namespace GoContactSyncMod
             this.futureMonthTextBox.Name = "futureMonthTextBox";
             this.futureMonthTextBox.Size = new System.Drawing.Size(33, 21);
             this.futureMonthTextBox.TabIndex = 12;
-            this.futureMonthTextBox.Text = "1";
+            this.futureMonthTextBox.Text = "0";
             this.toolTip.SetToolTip(this.futureMonthTextBox, "How many months into the future (0 if all)");
             this.futureMonthTextBox.Validating += new System.ComponentModel.CancelEventHandler(this.futureMonthTextBox_Validating);
             // 

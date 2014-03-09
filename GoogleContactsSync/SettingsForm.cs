@@ -1526,8 +1526,8 @@ namespace GoContactSyncMod
             ushort value;
             if (!ushort.TryParse(futureMonthTextBox.Text, out value))
             {
-                MessageBox.Show("only positive integer numbers allowed");
-                futureMonthTextBox.Text = "1";
+                MessageBox.Show("only positive integer numbers or 0 (i.e. all) allowed");
+                futureMonthTextBox.Text = "0";
                 e.Cancel = true;
             }
 
@@ -1538,7 +1538,7 @@ namespace GoContactSyncMod
             ushort value;
             if (!ushort.TryParse(pastMonthTextBox.Text, out value))
             {
-                MessageBox.Show("only positive integer numbers allowed");
+                MessageBox.Show("only positive integer numbers or 0 (i.e. all) allowed");
                 pastMonthTextBox.Text = "1";
                 e.Cancel = true;
             }

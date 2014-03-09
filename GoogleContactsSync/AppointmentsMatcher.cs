@@ -66,7 +66,7 @@ namespace GoContactSyncMod
                     {
                         Logger.Log("Skipping Outlook appointment because it is out of months range to sync:" + ola.Subject + " - " + ola.Start, EventType.Debug);                       
                         continue;
-                    }
+                    }                    
 
                 }
                 catch (Exception ex)
