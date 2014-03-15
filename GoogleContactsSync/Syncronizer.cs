@@ -1615,7 +1615,7 @@ namespace GoContactSyncMod
             master.Save();
 
             //After saving Google Appointment => also sync recurrence exceptions and save again
-            if (updated && master.IsRecurring && AppointmentSync.UpdateRecurrenceExceptions(master, slave, this))
+            if (updated && master.IsRecurring && master.RecurrenceState == Outlook.OlRecurrenceState.olApptMaster && AppointmentSync.UpdateRecurrenceExceptions(master, slave, this))
                 slave = SaveGoogleAppointment(slave);                          
 
             if (updated)
