@@ -64,8 +64,7 @@ namespace GoContactSyncMod
         public Outlook.Items OutlookNotes { get; private set; }
         public Outlook.Items OutlookAppointments { get; private set; }
         public Collection<ContactMatch> OutlookContactDuplicates { get; set; }
-        public Collection<ContactMatch> GoogleContactDuplicates { get; set; }
-        public Collection<EventEntry> GoogleAppointmentExceptions { get; set; }
+        public Collection<ContactMatch> GoogleContactDuplicates { get; set; }        
         public Collection<Contact> GoogleContacts { get; private set; }
         public Collection<Document> GoogleNotes { get; private set; }
         public Collection<EventEntry> GoogleAppointments { get; private set; }
@@ -967,7 +966,7 @@ namespace GoContactSyncMod
                         if (Notes == null)
                             return;
 
-                        TotalCount += Notes.Count;
+                        TotalCount += Notes.Count + SkippedCountNotMatches;
 
                         Logger.Log("Syncing notes...", EventType.Information);
                         NotesMatcher.SyncNotes(this);
@@ -1000,13 +999,10 @@ namespace GoContactSyncMod
                         if (Appointments == null)
                             return;
 
-                        TotalCount += Appointments.Count;                        
+                        TotalCount += Appointments.Count + SkippedCountNotMatches; ;                        
 
                         Logger.Log("Syncing appointments...", EventType.Information);
-                        AppointmentsMatcher.SyncAppointments(this);
-
-                        Logger.Log("Resolving appointment recurrence exceptions...", EventType.Information);
-                        AppointmentsMatcher.ResolveRecurrenceAppointments(this);
+                        AppointmentsMatcher.SyncAppointments(this);                        
 
                         DeleteAppointments(Appointments);
 
@@ -1619,7 +1615,7 @@ namespace GoContactSyncMod
             master.Save();
 
             //After saving Google Appointment => also sync recurrence exceptions and save again
-            if (updated && master.IsRecurring && AppointmentSync.UpdateRecurrenceExceptions(master, slave))
+            if (updated && master.IsRecurring && AppointmentSync.UpdateRecurrenceExceptions(master, slave, this))
                 slave = SaveGoogleAppointment(slave);                          
 
             if (updated)
@@ -1634,7 +1630,7 @@ namespace GoContactSyncMod
         /// <summary>
         /// Updates Outlook appointment from master to slave (including groups/categories)
         /// </summary>
-        public void UpdateAppointment(ref EventEntry master, Outlook.AppointmentItem slave)
+        public void UpdateAppointment(ref EventEntry master, Outlook.AppointmentItem slave, List<EventEntry> googleAppointmentExceptions)
         {                        
 
             bool updated = false;
@@ -1666,11 +1662,21 @@ namespace GoContactSyncMod
             AppointmentPropertiesUtils.SetGoogleOutlookAppointmentId(SyncProfile, master, slave);
             master = SaveGoogleAppointment(master);
 
-            SyncedCount++;
+
 
             if (updated)
-                Logger.Log("Updated appointment from Google to Outlook: \"" + (master.Title == null ? null : master.Title.Text) + " - " + (master.Times.Count==0?null:master.Times[0].StartTime.ToString()) + "\".", EventType.Information);
+            {
+                SyncedCount++;
+                Logger.Log("Updated appointment from Google to Outlook: \"" + (master.Title == null ? null : master.Title.Text) + " - " + (master.Times.Count == 0 ? null : master.Times[0].StartTime.ToString()) + "\".", EventType.Information);
+            }
+
+            //After saving Outlook Appointment => also sync recurrence exceptions and increase SyncCount
+            if (updated && master.Recurrence != null && googleAppointmentExceptions != null && AppointmentSync.UpdateRecurrenceExceptions(googleAppointmentExceptions, slave, this))
+               SyncedCount++;
+               
+            
         }
+        
 
         private void SaveOutlookContact(ref Contact googleContact, Outlook.ContactItem outlookContact)
         {
