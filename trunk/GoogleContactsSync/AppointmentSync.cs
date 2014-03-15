@@ -154,31 +154,81 @@ namespace GoContactSyncMod
             //slave.StartInStartTimeZone = master.StartInStartTimeZone;
             //slave.StartTimeZone = master.StartTimeZone;
             //slave.StartUTC = master.StartUTC;
-           
+
+            if (!IsOrganizer(GetOrganizer(master)) || !IsOrganizer(GetOrganizer(slave), slave))
+                slave.MeetingStatus = Outlook.OlMeetingStatus.olMeetingReceived;
+
             for (int i = slave.Recipients.Count; i > 0; i--)
                 slave.Recipients.Remove(i);
 
+
+            //Add Organizer
             foreach (Who participant in master.Participants)
             {
-
                 if (participant.Rel == Who.RelType.EVENT_ORGANIZER && participant.Email != Syncronizer.UserName)
-                    //ToDo: Doesn't Work, because Organizer cannot be set on Outlook side. Maybe somehow at least on behalf?
+                {
+                    //ToDo: Doesn't Work, because Organizer cannot be set on Outlook side (it is ignored)
                     //slave.GetOrganizer().Address = participant.Email;
-                    //Workaround: Assign organizer at least as first participant                    
-                    slave.Recipients.Add(participant.Email);                
-                    
+                    //slave.GetOrganizer().Name = participant.Email;
+                    //Workaround: Assign organizer at least as first participant and as sent on behalf
+                    Outlook.Recipient recipient = slave.Recipients.Add(participant.Email);
+                    recipient.Type = (int)Outlook.OlMeetingRecipientType.olOrganizer; //Doesn't work (is ignored):
+                    if (recipient.Resolve())
+                    {
+
+                        const string PR_SENT_ON_BEHALF = "http://schemas.microsoft.com/mapi/proptag/0x0042001F"; //-->works, but only on behalf, not organizer
+                        //const string PR_SENT_REPRESENTING_ENTRYID = "http://schemas.microsoft.com/mapi/proptag/0x00410102";
+                        //const string PR_SENDER_ADDRTYPE = "http://schemas.microsoft.com/mapi/proptag/0x0C1E001F";//-->Doesn't work: ComException, operation failed
+                        //const string PR_SENDER_ENTRYID = "http://schemas.microsoft.com/mapi/proptag/0x0C190102";//-->Doesn't work: ComException, operation failed
+                        //const string PR_SENDER_NAME = "http://schemas.microsoft.com/mapi/proptag/0x0C1A001F"; //-->Doesn't work: ComException, operation failed
+                        //const string PR_SENDER_EMAIL = "http://schemas.microsoft.com/mapi/proptag/0x0C1F001F";//-->Doesn't work: ComException, operation failed
+                      
+                        Microsoft.Office.Interop.Outlook.PropertyAccessor accessor = slave.PropertyAccessor;
+                        accessor.SetProperty(PR_SENT_ON_BEHALF, participant.Email);
+
+                        //const string PR_RECIPIENT_FLAGS = "http://schemas.microsoft.com/mapi/proptag/0x5FFD0003"; //-->Doesn't work: UnauthorizedAccessException, operation not allowed
+                        //Microsoft.Office.Interop.Outlook.PropertyAccessor accessor = recipient.PropertyAccessor;
+                        //accessor.SetProperty(PR_RECIPIENT_FLAGS, 3);
+                        //object test = accessor.GetProperty(PR_RECIPIENT_FLAGS);
+                    }
+
+                    break; //One Organizer is enough
+                }
+
             }
+
+            //Add remaining particpants
             foreach (Who participant in master.Participants)
             {
+                if (participant.Rel != Who.RelType.EVENT_ORGANIZER && participant.Email != Syncronizer.UserName)
+                {
+                    Outlook.Recipient recipient = slave.Recipients.Add(participant.Email);
+                    recipient.Resolve();
 
-                if (participant.Rel != Who.RelType.EVENT_ORGANIZER && participant.Email != Syncronizer.UserName)                    
-                    slave.Recipients.Add(participant.Email);
+                    //ToDo: Doesn't work because MeetingResponseStatus is readonly, maybe use PropertyAccessor?
+                    //switch (participant.Attendee_Status.Value)
+                    //{
+                    //    case Google.GData.Extensions.Who.AttendeeStatus.EVENT_ACCEPTED: recipient.MeetingResponseStatus = (int)Outlook.OlMeetingResponse.olMeetingAccepted; break;
+                    //    case Google.GData.Extensions.Who.AttendeeStatus.EVENT_DECLINED: recipient.MeetingResponseStatus = (int)Outlook.OlMeetingResponse.olMeetingDeclined; break;
+                    //    case Google.GData.Extensions.Who.AttendeeStatus.EVENT_TENTATIVE: recipient.MeetingResponseStatus = (int)Outlook.OlMeetingResponse.olMeetingTentative;
+                    //}
+                    if (participant.Attendee_Type != null)
+                    {
+                        switch (participant.Attendee_Type.Value)
+                        {
+                            case Google.GData.Extensions.Who.AttendeeType.EVENT_OPTIONAL: recipient.Type = (int)Outlook.OlMeetingRecipientType.olOptional; break;
+                            case Google.GData.Extensions.Who.AttendeeType.EVENT_REQUIRED: recipient.Type = (int)Outlook.OlMeetingRecipientType.olRequired; break;
+                        }
+                    }
+
+                }
 
             }
-            //slave.RequiredAttendees = master.RequiredAttendees;		master.Title.Text	"Rodeln"	string
+            //slave.RequiredAttendees = master.RequiredAttendees;
 
             //slave.OptionalAttendees = master.OptionalAttendees;
             //slave.Resources = master.Resources;
+            
 
             slave.ReminderSet = false;
             if (master.Reminder != null && !master.Reminder.Method.Equals(Google.GData.Extensions.Reminder.ReminderMethod.none) && master.Reminder.AbsoluteTime >= DateTime.Now)
@@ -195,8 +245,7 @@ namespace GoContactSyncMod
             
             UpdateRecurrence(master, slave);
             
-            if (!IsOrganizer(GetOrganizer(master)) || !IsOrganizer(GetOrganizer(slave), slave))
-                slave.MeetingStatus = Outlook.OlMeetingStatus.olMeetingReceived;
+           
             
         }
 
@@ -406,6 +455,23 @@ namespace GoContactSyncMod
 
                         foreach (string part in parts)
                         {
+
+                            if (part.StartsWith(BYSETPOS))
+                            {
+                                string pos = part.Substring(part.IndexOf("=") + 1);
+
+                                if (pos.Trim() == "-1")
+                                    instance = 5;
+                                else
+                                    throw new Exception("Only 'BYSETPOS=-1' is allowed by Outlook, but it was: " + part);
+
+                                break;
+                            }
+                        }
+
+
+                        foreach (string part in parts)
+                        {
                             if (part.StartsWith(FREQ))
                             {
                                 switch (part.Substring(part.IndexOf('=') + 1))
@@ -416,13 +482,19 @@ namespace GoContactSyncMod
                                         if (instance == 0)
                                             slaveRecurrence.RecurrenceType = Outlook.OlRecurrenceType.olRecursMonthly;
                                         else
+                                        {
                                             slaveRecurrence.RecurrenceType = Outlook.OlRecurrenceType.olRecursMonthNth;
+                                            slaveRecurrence.Instance = instance;
+                                        }
                                         break;
                                     case YEARLY:
                                         if (instance == 0)
                                             slaveRecurrence.RecurrenceType = Outlook.OlRecurrenceType.olRecursYearly;
                                         else
+                                        {
                                             slaveRecurrence.RecurrenceType = Outlook.OlRecurrenceType.olRecursYearNth;
+                                            slaveRecurrence.Instance = instance;
+                                        }
                                         break;
                                     default: throw new NotSupportedException("RecurrenceType not supported by Outlook: " + part);
                                                                         
@@ -434,40 +506,36 @@ namespace GoContactSyncMod
 
                         foreach (string part in parts)
                         {
+
                             if (part.StartsWith(BYDAY))
                             {
+                                Outlook.OlDaysOfWeek dayOfWeek = slaveRecurrence.DayOfWeekMask;
                                 string[] days = part.Split(',');
                                 foreach (string day in days)
                                 {
-                                    string dayValue = day.Substring(day.IndexOf("=") + 1);
-                                    
+                                    string dayValue = day.Substring(day.IndexOf("=") + 1);                                    
+
                                     switch (dayValue.Trim(new char[] { '1', '2', '3', '4', ' ' }))
                                     {
-                                        case MO: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olMonday; break;
-                                        case TU: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olTuesday; break;
-                                        case WE: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olWednesday; break;
-                                        case TH: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olThursday; break;
-                                        case FR: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olFriday; break;
-                                        case SA: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olSaturday; break;
-                                        case SU: slaveRecurrence.DayOfWeekMask = slaveRecurrence.DayOfWeekMask | Outlook.OlDaysOfWeek.olSunday; break;
+                                        case MO: dayOfWeek = dayOfWeek | Outlook.OlDaysOfWeek.olMonday; break;
+                                        case TU: dayOfWeek = dayOfWeek | Outlook.OlDaysOfWeek.olTuesday; break;
+                                        case WE: dayOfWeek = dayOfWeek | Outlook.OlDaysOfWeek.olWednesday; break;
+                                        case TH: dayOfWeek = dayOfWeek | Outlook.OlDaysOfWeek.olThursday; break;
+                                        case FR: dayOfWeek = dayOfWeek | Outlook.OlDaysOfWeek.olFriday; break;
+                                        case SA: dayOfWeek = dayOfWeek | Outlook.OlDaysOfWeek.olSaturday; break;
+                                        case SU: dayOfWeek = dayOfWeek | Outlook.OlDaysOfWeek.olSunday; break;
 
                                     }
                                     //Don't break because multiple days possible;
                                 }
 
+                                slaveRecurrence.DayOfWeekMask = dayOfWeek;
+
                                 break;
                             }
-
-                            if (part.StartsWith(BYSETPOS))
-                            {
-                                string pos = part.Substring(part.IndexOf("=") + 1);
-
-                                if (pos.Trim() == "-1")
-                                    slaveRecurrence.Instance = 5;
-                                else
-                                    throw new Exception("Only 'BYSETPOS=-1' is allowed by Outlook, but it was: " +part);
-                            }
                         }
+
+                        
 
                         foreach (string part in parts)
                         {

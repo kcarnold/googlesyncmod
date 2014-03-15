@@ -312,7 +312,7 @@ namespace GoContactSyncMod
             this.reportSyncResultCheckBox.AutoSize = true;
             this.reportSyncResultCheckBox.Location = new System.Drawing.Point(14, 65);
             this.reportSyncResultCheckBox.Name = "reportSyncResultCheckBox";
-            this.reportSyncResultCheckBox.Size = new System.Drawing.Size(225, 17);
+            this.reportSyncResultCheckBox.Size = new System.Drawing.Size(226, 17);
             this.reportSyncResultCheckBox.TabIndex = 6;
             this.reportSyncResultCheckBox.Text = "Re&port Sync Result in System Tray";
             this.reportSyncResultCheckBox.UseVisualStyleBackColor = true;
