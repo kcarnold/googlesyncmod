@@ -65,6 +65,7 @@ namespace GoContactSyncMod
         public Outlook.Items OutlookAppointments { get; private set; }
         public Collection<ContactMatch> OutlookContactDuplicates { get; set; }
         public Collection<ContactMatch> GoogleContactDuplicates { get; set; }
+        public Collection<EventEntry> GoogleAppointmentExceptions { get; set; }
         public Collection<Contact> GoogleContacts { get; private set; }
         public Collection<Document> GoogleNotes { get; private set; }
         public Collection<EventEntry> GoogleAppointments { get; private set; }
@@ -628,7 +629,7 @@ namespace GoContactSyncMod
             Logger.Log("Google Appointments Found: " + GoogleAppointments.Count, EventType.Debug);
         }
 
-        private EventEntry LoadGoogleAppointments(AtomId id)
+        internal EventEntry LoadGoogleAppointments(AtomId id)
         {
             string message = "Error Loading Google appointments. Cannot connect to Google.\r\nPlease ensure you are connected to the internet. If you are behind a proxy, change your proxy configuration!";
 
@@ -999,12 +1000,17 @@ namespace GoContactSyncMod
                         if (Appointments == null)
                             return;
 
-                        TotalCount += Appointments.Count;
+                        TotalCount += Appointments.Count;                        
 
                         Logger.Log("Syncing appointments...", EventType.Information);
                         AppointmentsMatcher.SyncAppointments(this);
 
+                        Logger.Log("Resolving appointment recurrence exceptions...", EventType.Information);
+                        AppointmentsMatcher.ResolveRecurrenceAppointments(this);
+
                         DeleteAppointments(Appointments);
+
+                        
 
                     }
 
@@ -1040,6 +1046,8 @@ namespace GoContactSyncMod
                 }
             }
 		}
+
+        
 
         private void ResolveDuplicateContacts(Collection<ContactMatch> googleContactDuplicates)
         {
@@ -2717,7 +2725,7 @@ namespace GoContactSyncMod
                     catch (Exception ex)
                     {
                         //this is needed because some appointments throw exceptions
-                        Logger.Log("Accessing Google appointment threw and exception. Skipping: " + ex.Message, EventType.Warning);
+                        Logger.Log("Accessing Google appointment threw an exception. Skipping: " + ex.Message, EventType.Warning);
                         continue;
                     }
 
@@ -2757,7 +2765,7 @@ namespace GoContactSyncMod
                     catch (Exception ex)
                     {
                         //this is needed because some appointments throw exceptions
-                        Logger.Log("Accessing Outlook appointment threw and exception. Skipping: " + ex.Message, EventType.Warning);
+                        Logger.Log("Accessing Outlook appointment threw an exception. Skipping: " + ex.Message, EventType.Warning);
                         continue;
                     }
 
@@ -2971,9 +2979,10 @@ namespace GoContactSyncMod
 		public Group GetGoogleGroupById(string id)
 		{
 			//return GoogleGroups.FindById(new AtomId(id)) as Group;
+            AtomId atomId = new AtomId(id);
             foreach (Group group in GoogleGroups)
             {
-                if (group.GroupEntry.Id.Equals(new AtomId(id)))
+                if (group.GroupEntry.Id.Equals(atomId))
                     return group;
             }
             return null;
@@ -2991,9 +3000,10 @@ namespace GoContactSyncMod
 
         public Contact GetGoogleContactById(string id)
         {
+            AtomId atomId = new AtomId(id);
             foreach (Contact contact in GoogleContacts)
             {
-                if (contact.ContactEntry.Id.Equals(new AtomId(id)))
+                if (contact.ContactEntry.Id.Equals(atomId))
                     return contact;
             }
             return null;
@@ -3001,9 +3011,10 @@ namespace GoContactSyncMod
 
         public Document GetGoogleNoteById(string id)
         {
+            AtomId atomId = new AtomId(id);
             foreach (Document note in GoogleNotes)
             {
-                if (note.DocumentEntry.Id.Equals(new AtomId(id)))
+                if (note.DocumentEntry.Id.Equals(atomId))
                     return note;
             }
             return null;
@@ -3011,9 +3022,10 @@ namespace GoContactSyncMod
 
         public EventEntry GetGoogleAppointmentById(string id)
         {
+            AtomId atomId = new AtomId(id);
             foreach (EventEntry appointment in GoogleAppointments)
             {
-                if (appointment.Id.Equals(new AtomId(id)))
+                if (appointment.Id.Equals(atomId))
                     return appointment;
             }
             return null;

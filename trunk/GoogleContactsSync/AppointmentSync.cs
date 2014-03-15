@@ -4,6 +4,7 @@ using System.Text;
 using Outlook = Microsoft.Office.Interop.Outlook;
 using Google.GData.Calendar;
 using Google.GData.Extensions;
+using Google.GData.Client;
 
 namespace GoContactSyncMod
 {
@@ -140,10 +141,9 @@ namespace GoContactSyncMod
                 Logger.Log("Google Appointment with multiple or no times found: " + master.Title.Text + " - " + (master.Times.Count == 0 ? null : master.Times[0].StartTime.ToString()), EventType.Warning);
 
             if (master.RecurrenceException != null)
-                Logger.Log("Google Appointment with RecurrenceException found: " + master.Title.Text + " - " + (master.Times.Count == 0 ? null : master.Times[0].StartTime.ToString()), EventType.Warning);
+                Logger.Log("Google Appointment with RecurrenceException found: " + master.Title.Text + " - " + (master.Times.Count == 0 ? null : master.Times[0].StartTime.ToString()), EventType.Warning);            
 
-
-            if (master.Times.Count == 1 || master.Recurrence == null)
+            if (master.Times.Count == 1 || master.Times.Count > 0 && master.Recurrence == null)
             {//only sync times for not recurrent events
                 //ToDo: How to sync recurrence exceptions?
                 slave.AllDayEvent = master.Times[0].AllDay;
@@ -380,7 +380,7 @@ namespace GoContactSyncMod
             Recurrence masterRecurrence = master.Recurrence;   
             if (masterRecurrence == null)
             {
-                if (slave.IsRecurring)
+                if (slave.IsRecurring && slave.RecurrenceState == Outlook.OlRecurrenceState.olApptMaster)
                     slave.ClearRecurrencePattern();
 
                 return;
@@ -529,7 +529,8 @@ namespace GoContactSyncMod
                                     //Don't break because multiple days possible;
                                 }
 
-                                slaveRecurrence.DayOfWeekMask = dayOfWeek;
+                                if (slaveRecurrence.DayOfWeekMask != dayOfWeek && dayOfWeek != 0)
+                                    slaveRecurrence.DayOfWeekMask = dayOfWeek;
 
                                 break;
                             }
