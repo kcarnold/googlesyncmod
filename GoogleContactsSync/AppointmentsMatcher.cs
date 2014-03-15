@@ -5,6 +5,7 @@ using Outlook = Microsoft.Office.Interop.Outlook;
 
 using System.Runtime.InteropServices;
 using Google.GData.Calendar;
+using Google.GData.Client;
 
 namespace GoContactSyncMod
 {
@@ -29,7 +30,9 @@ namespace GoContactSyncMod
         public static List<AppointmentMatch> MatchAppointments(Syncronizer sync)
         {
             Logger.Log("Matching Outlook and Google appointments...", EventType.Information);
-            var result = new List<AppointmentMatch>();          
+            var result = new List<AppointmentMatch>();
+            
+            sync.GoogleAppointmentExceptions = new Collection<EventEntry>();
 
             //for each outlook appointment try to get Google appointment id from user properties
             //if no match - try to match by properties
@@ -180,11 +183,23 @@ namespace GoContactSyncMod
                     Logger.Log("Skipped GoogleAppointment because no unique property found (Subject or StartDate):" + googleAppointment.Title.Text + " - " + (googleAppointment.Times.Count==0?null:googleAppointment.Times[0].StartTime.ToString()), EventType.Warning);
                 }
                 else if (googleAppointment.OriginalEvent != null)
-                {
-                    sync.SkippedCount++;
-                    sync.SkippedCountNotMatches++;
-                   
-                    Logger.Log("Google Appointment with OriginalEvent found (maybe already covered by recurrence): " + googleAppointment.Title.Text + " - " + (googleAppointment.Times.Count == 0 ? null : googleAppointment.Times[0].StartTime.ToString()), EventType.Warning);
+                {                    
+                    //EventEntry originalEvent = sync.GetGoogleAppointmentById(googleAppointment.Id.AbsoluteUri.Substring(0,googleAppointment.Id.AbsoluteUri.LastIndexOf("/")+1) + googleAppointment.OriginalEvent.IdOriginal);
+                    //if (originalEvent != null)
+                    //{
+                    //    Logger.Log("Google Appointment with OriginalEvent found, original event deleted: " + googleAppointment.Title.Text + " - " + (googleAppointment.Times.Count == 0 ? null : googleAppointment.Times[0].StartTime.ToString()), EventType.Warning);
+                    //    sync.GoogleAppointments.Remove(originalEvent);
+                    //}
+                    //else
+                    //{
+                        //sync.SkippedCount++;
+                        //sync.SkippedCountNotMatches++;
+                        //Logger.Log("Google Appointment with OriginalEvent found, but original event couldn't be deleted: " + googleAppointment.Title.Text + " - " + (googleAppointment.Times.Count == 0 ? null : googleAppointment.Times[0].StartTime.ToString()), EventType.Warning);
+                    //}
+                    Logger.Log(string.Format("No match found for Google appointment exception ({0}) => {1}", (googleAppointment.Title == null ? null : googleAppointment.Title.Text) + " - " + (googleAppointment.Times.Count == 0 ? null : googleAppointment.Times[0].StartTime.ToString()), (!string.IsNullOrEmpty(AppointmentPropertiesUtils.GetGoogleOutlookAppointmentId(sync.SyncProfile, googleAppointment)) ? "Delete from Google" : "Add to Outlook")), EventType.Information);
+                    //var match = new AppointmentMatch(null, googleAppointment);
+                    //result.Add(match);
+                    sync.GoogleAppointmentExceptions.Add(googleAppointment);
                 }
                 else
                 {
@@ -483,6 +498,74 @@ namespace GoContactSyncMod
             //}
 
         }
+
+        public static void ResolveRecurrenceAppointments(Syncronizer sync)
+        {
+            for (int i = 0; i < sync.GoogleAppointmentExceptions.Count; i++)
+            {
+                EventEntry googleAppointment = sync.GoogleAppointmentExceptions[i];
+                if (NotificationReceived != null)
+                    NotificationReceived(String.Format("Syncing appointment recurrence exception {0} of {1}: {2} ...", i + 1, sync.GoogleAppointmentExceptions.Count, googleAppointment.Title.Text));
+
+                AtomId atomId = new AtomId(googleAppointment.Id.AbsoluteUri.Substring(0, googleAppointment.Id.AbsoluteUri.LastIndexOf("/") + 1) + googleAppointment.OriginalEvent.IdOriginal);
+
+                foreach (AppointmentMatch match in sync.Appointments)
+                {
+                    if (match.GoogleAppointment.Id.Equals(atomId))
+                    {
+                        if (match.OutlookAppointment == null || !match.OutlookAppointment.IsRecurring || match.OutlookAppointment.RecurrenceState != Outlook.OlRecurrenceState.olApptMaster)
+                            Logger.Log("Google Appointment with OriginalEvent found, but Outlook is not recurring: " + googleAppointment.Title.Text + " - " + (googleAppointment.Times.Count == 0 ? null : googleAppointment.Times[0].StartTime.ToString()), EventType.Warning);
+                        else
+                        {
+                            Outlook.RecurrencePattern pattern = match.OutlookAppointment.GetRecurrencePattern();
+                            Outlook.AppointmentItem myInstance = null;
+                            try
+                            {
+                                myInstance = pattern.GetOccurrence(googleAppointment.OriginalEvent.OriginalStartTime.StartTime);
+                            }
+                            catch (Exception ignored)
+                            {
+                                Logger.Log("Google Appointment with OriginalEvent found, but Outlook occurrence not found: " + googleAppointment.Title.Text + " - " + googleAppointment.OriginalEvent.OriginalStartTime.StartTime + ": " + ignored, EventType.Debug);
+                            }
+                            //if (myInstance == null && googleAppointment.Times.Count > 0)
+                            //{
+                            //    try
+                            //    {
+                            //        myInstance = pattern.GetOccurrence(googleAppointment.Times[0].StartTime);
+                            //    }
+                            //    catch (Exception ignored)
+                            //    {
+                            //        Logger.Log("Google Appointment with OriginalEvent found, but Outlook occurrence not found: " + googleAppointment.Title.Text + " - " + (googleAppointment.Times.Count == 0 ? null : googleAppointment.Times[0].StartTime.ToString()), EventType.Information);
+                            //    }
+                                
+                            //}
+                            
+
+                            if (myInstance != null)
+                            {
+                                //myInstance.Subject = googleAppointment.Title.Text;
+                                //myInstance.Start = googleAppointment.Times[0].StartTime;
+                                //myInstance.End = googleAppointment.Times[0].EndTime;
+                                EventEntry googleAppointmentException = sync.LoadGoogleAppointments(googleAppointment.Id); //Reload, just in case it was updated by master recurrence                                
+                                sync.UpdateAppointment(ref googleAppointmentException, myInstance);
+                                //ToDo: Or better SyncAppointment? What about deleted recurrences?
+                                //SyncAppointment(new AppointmentMatch(myInstance, googleAppointmentException), sync);
+                                
+                                //Save also masters to avoid sync back later
+                                match.OutlookAppointment.Save();
+                                match.GoogleAppointment = sync.SaveGoogleAppointment(match.GoogleAppointment);                                
+                                
+                            }
+
+                            Logger.Log("Google Appointment with OriginalEvent found, recurrence exception created: " + googleAppointment.Title.Text + " - " + (googleAppointment.Times.Count == 0 ? null : googleAppointment.Times[0].StartTime.ToString()), EventType.Information);
+                        }
+
+                        break;
+                    }
+                }
+
+            }
+        }
     }
 
 
@@ -522,6 +605,7 @@ namespace GoContactSyncMod
         }
 
     }
+
 
 
 }
