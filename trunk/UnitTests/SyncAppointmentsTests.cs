@@ -139,7 +139,7 @@ namespace GoContactSyncMod.UnitTests
             Assert.IsNotNull(match.OutlookAppointment);
 
             Outlook.AppointmentItem recreatedOutlookAppointment = Syncronizer.CreateOutlookAppointmentItem(Syncronizer.SyncAppointmentsFolder);
-            sync.UpdateAppointment(ref match.GoogleAppointment, recreatedOutlookAppointment);
+            sync.UpdateAppointment(ref match.GoogleAppointment, recreatedOutlookAppointment, match.GoogleAppointmentExceptions);
             Assert.IsNotNull(outlookAppointment);
             Assert.IsNotNull(recreatedOutlookAppointment);
             // match recreatedOutlookAppointment with outlookAppointment
@@ -187,7 +187,7 @@ namespace GoContactSyncMod.UnitTests
             Assert.IsNotNull(match.OutlookAppointment);
 
             Outlook.AppointmentItem recreatedOutlookAppointment = Syncronizer.CreateOutlookAppointmentItem(Syncronizer.SyncAppointmentsFolder);
-            sync.UpdateAppointment(ref match.GoogleAppointment, recreatedOutlookAppointment);            
+            sync.UpdateAppointment(ref match.GoogleAppointment, recreatedOutlookAppointment, match.GoogleAppointmentExceptions);            
             Assert.IsNotNull(outlookAppointment);
             Assert.IsNotNull(recreatedOutlookAppointment);
             // match recreatedOutlookAppointment with outlookAppointment

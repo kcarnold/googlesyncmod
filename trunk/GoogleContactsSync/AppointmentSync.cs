@@ -71,7 +71,7 @@ namespace GoContactSyncMod
             slave.Locations.Add(location);
 
             slave.Times.Clear();
-            if (!master.IsRecurring)
+            if (!master.IsRecurring || master.RecurrenceState != Outlook.OlRecurrenceState.olApptMaster)
                 slave.Times.Add(new Google.GData.Extensions.When(master.Start, master.End, master.AllDayEvent));
             ////slave.StartInStartTimeZone = master.StartInStartTimeZone;
             ////slave.StartTimeZone = master.StartTimeZone;
@@ -353,7 +353,7 @@ namespace GoContactSyncMod
                 if (masterRecurrence.PatternEndDate.Date != outlookDateMin &&
                     masterRecurrence.PatternEndDate.Date != outlookDateMax)
                 {
-                    slaveRecurrence.Value += ";" + UNTIL + "=" + masterRecurrence.PatternEndDate.Date.AddDays(1).AddMinutes(-1).ToString(format);
+                    slaveRecurrence.Value += ";" + UNTIL + "=" + masterRecurrence.PatternEndDate.Date.AddDays(master.AllDayEvent?0:1).ToString(dateFormat);
                 }
                 //else if (masterRecurrence.Occurrences > 0)
                 //{
@@ -623,6 +623,10 @@ namespace GoContactSyncMod
                         {
                             //slave.Times.Add(new Google.GData.Extensions.When(exception.AppointmentItem.Start, exception.AppointmentItem.Start, exception.AppointmentItem.AllDayEvent));
                             var googleRecurrenceException = new EventEntry();
+                            googleRecurrenceException.OriginalEvent = new OriginalEvent();
+                            googleRecurrenceException.OriginalEvent.IdOriginal = slave.EventId;
+                            //googleRecurrenceException.OriginalEvent.Href = ???
+                            googleRecurrenceException.OriginalEvent.OriginalStartTime = new When(exception.OriginalDate, exception.OriginalDate.AddMinutes(exception.AppointmentItem.Duration), exception.AppointmentItem.AllDayEvent);
                             sync.UpdateAppointment(exception.AppointmentItem, ref googleRecurrenceException);
                             //googleRecurrenceExceptions.Add(googleRecurrenceException);
                             ret = true;
