@@ -449,6 +449,7 @@ namespace GoContactSyncMod
                         //Redundant check if exist, but in case an error occurred in MatchNotes
                         Document matchingGoogleNote = sync.GetGoogleNoteById(googleNotetId);
                         if (matchingGoogleNote == null)
+                        {
                             if (!sync.PromptDelete)
                                 sync.DeleteOutlookResolution = DeleteResolution.DeleteOutlookAlways;
                             else if (sync.DeleteOutlookResolution != DeleteResolution.DeleteOutlookAlways &&
@@ -457,19 +458,20 @@ namespace GoContactSyncMod
                                 var r = new ConflictResolver();
                                 sync.DeleteOutlookResolution = r.ResolveDelete(match.OutlookNote);
                             }
-                        switch (sync.DeleteOutlookResolution)
-                        {
-                            case DeleteResolution.KeepOutlook:
-                            case DeleteResolution.KeepOutlookAlways:
-                                NotePropertiesUtils.ResetOutlookGoogleNoteId(sync, match.OutlookNote);
-                                break;
-                            case DeleteResolution.DeleteOutlook:
-                            case DeleteResolution.DeleteOutlookAlways:
-                                //Avoid recreating a GoogleNote already existing
-                                //==> Delete this outlookNote instead if previous match existed but no match exists anymore
-                                return;
-                            default:
-                                throw new ApplicationException("Cancelled");
+                            switch (sync.DeleteOutlookResolution)
+                            {
+                                case DeleteResolution.KeepOutlook:
+                                case DeleteResolution.KeepOutlookAlways:
+                                    NotePropertiesUtils.ResetOutlookGoogleNoteId(sync, match.OutlookNote);
+                                    break;
+                                case DeleteResolution.DeleteOutlook:
+                                case DeleteResolution.DeleteOutlookAlways:
+                                    //Avoid recreating a GoogleNote already existing
+                                    //==> Delete this outlookNote instead if previous match existed but no match exists anymore
+                                    return;
+                                default:
+                                    throw new ApplicationException("Cancelled");
+                            }
                         }
                     }
 

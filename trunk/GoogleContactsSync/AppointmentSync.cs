@@ -138,14 +138,14 @@ namespace GoContactSyncMod
                 slave.Location = master.Locations[0].ValueString;
 
             if (master.Times.Count != 1 && master.Recurrence == null)
-                Logger.Log("Google Appointment with multiple or no times found: " + master.Title.Text + " - " + (master.Times.Count == 0 ? null : master.Times[0].StartTime.ToString()), EventType.Warning);
+                Logger.Log("Google Appointment with multiple or no times found: " + master.Title.Text + " - " + Syncronizer.GetTime(master), EventType.Warning);
 
             if (master.RecurrenceException != null)
-                Logger.Log("Google Appointment with RecurrenceException found: " + master.Title.Text + " - " + (master.Times.Count == 0 ? null : master.Times[0].StartTime.ToString()), EventType.Warning);            
+                Logger.Log("Google Appointment with RecurrenceException found: " + master.Title.Text + " - " + Syncronizer.GetTime(master), EventType.Warning);            
 
             if (master.Times.Count == 1 || master.Times.Count > 0 && master.Recurrence == null)
             {//only sync times for not recurrent events
-                //ToDo: How to sync recurrence exceptions?
+                //ToDo: How to sync deleted recurrences?
                 slave.AllDayEvent = master.Times[0].AllDay;
                 slave.Start = master.Times[0].StartTime;
                 slave.End = master.Times[0].EndTime;
@@ -238,15 +238,9 @@ namespace GoContactSyncMod
             }
 
             
-            //slave.RTFBody = master.RTFBody;
-
-  
-            //ToDo: Check Exceptions, how to sync
+            //slave.RTFBody = master.RTFBody; 
             
-            UpdateRecurrence(master, slave);
-            
-           
-            
+            UpdateRecurrence(master, slave);                                  
         }
 
         public static void UpdateRecurrence(Outlook.AppointmentItem master, EventEntry slave)
@@ -616,10 +610,8 @@ namespace GoContactSyncMod
                 {
                     if (!exception.Deleted)
                     {//Add exception time (but only if in given time range
-                        if ((Syncronizer.MonthsInPast == 0 ||
-                             exception.AppointmentItem.End >= DateTime.Now.AddMonths(-Syncronizer.MonthsInPast)) &&
-                             (Syncronizer.MonthsInFuture == 0 ||
-                             exception.AppointmentItem.Start <= DateTime.Now.AddMonths(Syncronizer.MonthsInFuture)))
+                        if ((Syncronizer.MonthsInPast == 0 || exception.AppointmentItem.End >= DateTime.Now.AddMonths(-Syncronizer.MonthsInPast)) &&
+                             (Syncronizer.MonthsInFuture == 0 || exception.AppointmentItem.Start <= DateTime.Now.AddMonths(Syncronizer.MonthsInFuture)))
                         {
                             //slave.Times.Add(new Google.GData.Extensions.When(exception.AppointmentItem.Start, exception.AppointmentItem.Start, exception.AppointmentItem.AllDayEvent));
                             var googleRecurrenceException = new EventEntry();
@@ -633,7 +625,8 @@ namespace GoContactSyncMod
                         }
                     }
                     else
-                    {//ToDo: Delete exception time
+                    {//Delete exception time
+
                         //for (int i=slave.Times.Count;i>0;i--)
                         //{
                         //    When time = slave.Times[i-1];
@@ -645,7 +638,6 @@ namespace GoContactSyncMod
                         //    }
                         //}
 
-                        //ToDo:
                         //for (int i = googleRecurrenceExceptions.Count; i > 0;i-- )
                         //{
                         //    if (googleRecurrenceExceptions[i-1].Times[0].StartTime.Equals(exception.OriginalDate))
@@ -654,6 +646,11 @@ namespace GoContactSyncMod
                         //        googleRecurrenceExceptions.RemoveAt(i - 1);
                         //    }
                         //}
+
+                        var googleRecurrenceException = sync.LoadGoogleAppointments(slave.Id, true, exception.OriginalDate);
+
+                        googleRecurrenceException.Delete();
+
                     }
                 }
             }
@@ -669,7 +666,7 @@ namespace GoContactSyncMod
             {
                 EventEntry googleRecurrenceException = googleRecurrenceExceptions[i];
                 //if (slave == null || !slave.IsRecurring || slave.RecurrenceState != Outlook.OlRecurrenceState.olApptMaster)
-                //    Logger.Log("Google Appointment with OriginalEvent found, but Outlook is not recurring: " + googleAppointment.Title.Text + " - " + (googleAppointment.Times.Count == 0 ? null : googleAppointment.Times[0].StartTime.ToString()), EventType.Warning);
+                //    Logger.Log("Google Appointment with OriginalEvent found, but Outlook is not recurring: " + googleAppointment.Title.Text + " - " + GetTime(googleAppointment), EventType.Warning);
                 //else
                 //{                         
                 Outlook.AppointmentItem outlookRecurrenceException = null;
@@ -681,19 +678,7 @@ namespace GoContactSyncMod
                 catch (Exception ignored)
                 {
                     Logger.Log("Google Appointment with OriginalEvent found, but Outlook occurrence not found: " + googleRecurrenceException.Title.Text + " - " + googleRecurrenceException.OriginalEvent.OriginalStartTime.StartTime + ": " + ignored, EventType.Debug);
-                }
-                //if (myInstance == null && googleAppointment.Times.Count > 0)
-                //{
-                //    try
-                //    {
-                //        myInstance = pattern.GetOccurrence(googleAppointment.Times[0].StartTime);
-                //    }
-                //    catch (Exception ignored)
-                //    {
-                //        Logger.Log("Google Appointment with OriginalEvent found, but Outlook occurrence not found: " + googleAppointment.Title.Text + " - " + (googleAppointment.Times.Count == 0 ? null : googleAppointment.Times[0].StartTime.ToString()), EventType.Information);
-                //    }
-
-                //}
+                }                
 
 
                 if (outlookRecurrenceException != null)
@@ -701,18 +686,12 @@ namespace GoContactSyncMod
                     //myInstance.Subject = googleAppointment.Title.Text;
                     //myInstance.Start = googleAppointment.Times[0].StartTime;
                     //myInstance.End = googleAppointment.Times[0].EndTime;
-                    googleRecurrenceException = sync.LoadGoogleAppointments(googleRecurrenceException.Id); //Reload, just in case it was updated by master recurrence                                
+                    googleRecurrenceException = sync.LoadGoogleAppointments(googleRecurrenceException.Id,true, null); //Reload, just in case it was updated by master recurrence                                
                     sync.UpdateAppointment(ref googleRecurrenceException, outlookRecurrenceException, null);
                     outlookRecurrenceException.Save();
                     ret = true;
-                    //ToDo: Or better SyncAppointment? What about deleted recurrences?
-                    //SyncAppointment(new AppointmentMatch(myInstance, googleAppointmentException), sync);
-
-                    //Save also masters to avoid sync back later
-                    //match.OutlookAppointment.Save();
-                    //match.GoogleAppointment = sync.SaveGoogleAppointment(match.GoogleAppointment);
-
-                    Logger.Log("Google Appointment with OriginalEvent found, recurrence exception created from Google to Outlook: " + googleRecurrenceException.Title.Text + " - " + (googleRecurrenceException.Times.Count == 0 ? null : googleRecurrenceException.Times[0].StartTime.ToString()), EventType.Information);
+                    
+                    Logger.Log("Updated recurrence exception from Google to Outlook: " + googleRecurrenceException.Title.Text + " - " + Syncronizer.GetTime(googleRecurrenceException), EventType.Information);
 
                 }
                 

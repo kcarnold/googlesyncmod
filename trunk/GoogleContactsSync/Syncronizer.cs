@@ -68,6 +68,7 @@ namespace GoContactSyncMod
         public Collection<Contact> GoogleContacts { get; private set; }
         public Collection<Document> GoogleNotes { get; private set; }
         public Collection<EventEntry> GoogleAppointments { get; private set; }
+        public Collection<EventEntry> AllGoogleAppointments { get; private set; }
         public Collection<Group> GoogleGroups { get; set; }
         internal Document googleNotesFolder;
         public string OutlookPropertyPrefix { get; private set; }
@@ -624,19 +625,18 @@ namespace GoContactSyncMod
 
         private void LoadGoogleAppointments()
         {
-            LoadGoogleAppointments(null);
+            Logger.Log("Loading Google appointments...", EventType.Information);
+            LoadGoogleAppointments(null, true, null);
             Logger.Log("Google Appointments Found: " + GoogleAppointments.Count, EventType.Debug);
         }
 
-        internal EventEntry LoadGoogleAppointments(AtomId id)
+        internal EventEntry LoadGoogleAppointments(AtomId id, bool restrictMonths, DateTime? restrictStartDate)
         {
             string message = "Error Loading Google appointments. Cannot connect to Google.\r\nPlease ensure you are connected to the internet. If you are behind a proxy, change your proxy configuration!";
 
             EventEntry ret = null;
             try
-            {
-                if (id == null) // Only log, if not specific Google Appointments are searched                    
-                    Logger.Log("Loading Google appointments...", EventType.Information);
+            {                    
 
                 GoogleAppointments = new Collection<EventEntry>();
 
@@ -644,13 +644,15 @@ namespace GoContactSyncMod
                 query.NumberToRetrieve = 256;
                 query.StartIndex = 0;                               
 
-                //Only Load events from last month
-                if (MonthsInPast != 0)
+                //Only Load events from month range, but onyl if not a distinct Google Appointment is searched for
+                if (restrictMonths && MonthsInPast != 0)
                     query.StartTime = DateTime.Now.AddMonths(-MonthsInPast);
-                if (MonthsInFuture != 0)
-                    query.EndTime = DateTime.Now.AddMonths(MonthsInFuture);            
+                if (restrictMonths && MonthsInFuture != 0)
+                    query.EndTime = DateTime.Now.AddMonths(MonthsInFuture);
 
-                
+                //Doesn't work:
+                //if (restrictStartDate != null)
+                //    query.StartDate = restrictStartDate.Value;
 
                 EventFeed feed = CalendarService.Query(query);
 
@@ -661,12 +663,16 @@ namespace GoContactSyncMod
                         if (!a.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.CANCELED))
                         {//only return not yet cancelled events
                             GoogleAppointments.Add(a);
-                            if (id != null && id.Equals(a.Id))
+                            if (restrictStartDate == null && id != null && id.Equals(a.Id))
                                 ret = a;
+                            //ToDo: Doesn't work for all recurrences
+                            else if (restrictStartDate != null && id != null && a.OriginalEvent != null &&  a.Times.Count > 0 && restrictStartDate.Value.Date.Equals(a.Times[0].StartTime.Date))
+                                if (id.Equals(new AtomId(id.AbsoluteUri.Substring(0, id.AbsoluteUri.LastIndexOf("/") + 1) + a.OriginalEvent.IdOriginal)))
+                                    ret = a;                            
                         }
                         //else
                         //{
-                        //    Logger.Log("Skipped Appointment because it was cancelled on Google side: " + (a.Title==null?null:a.Title.Text) + " - " + (a.Times.Count==0?null:a.Times[0].StartTime.ToString()), EventType.Information);
+                        //    Logger.Log("Skipped Appointment because it was cancelled on Google side: " + a.Title.Text + " - " + GetTime(a), EventType.Information);
                         //    SkippedCount++;
                         //}
                     }
@@ -686,6 +692,10 @@ namespace GoContactSyncMod
                 //Logger.Log(message, EventType.Error);
                 throw new GDataRequestException(message, new System.Net.WebException("Error accessing feed", ex));
             }
+
+            //Remember, if all Google Appointments have been loaded
+            if (!restrictMonths && restrictStartDate != null)
+                AllGoogleAppointments = GoogleAppointments;
 
             return ret;
         }
@@ -1171,7 +1181,7 @@ namespace GoContactSyncMod
                     {
                         ErrorCount++;
                         SyncedCount--;
-                        string message = String.Format("Failed to synchronize appointment: {0}:\n{1}", match.OutlookAppointment != null ? match.OutlookAppointment.Subject + "(" + match.OutlookAppointment.Start + ")" : (match.GoogleAppointment.Title==null?null:match.GoogleAppointment.Title.Text) + "(" + (match.GoogleAppointment.Times.Count==0?null:match.GoogleAppointment.Times[0].StartTime.ToString()) + ")", ex.Message);
+                        string message = String.Format("Failed to synchronize appointment: {0}:\n{1}", match.OutlookAppointment != null ? match.OutlookAppointment.Subject + " - " + match.OutlookAppointment.Start + ")" : match.GoogleAppointment.Title.Text + " - " + GetTime(match.GoogleAppointment), ex.Message);
                         Exception newEx = new Exception(message, ex);
                         ErrorEncountered("Error", newEx, EventType.Error);
                     }
@@ -1180,6 +1190,16 @@ namespace GoContactSyncMod
                 }
             }
         }
+
+        public static string GetTime(EventEntry googleAppointment)
+        {
+            if (googleAppointment.Times.Count != 0)
+                return googleAppointment.Times[0].StartTime.ToString();
+            else if (googleAppointment.Recurrence != null)
+                return "Recurrence"; //ToDo: Return Recurrence Start/End
+
+            return String.Empty;
+        }        
 
         
         public void DeleteAppointment(AppointmentMatch match)
@@ -1589,16 +1609,29 @@ namespace GoContactSyncMod
         /// Updates Outlook appointment from master to slave (including groups/categories)
         /// </summary>
         public void UpdateAppointment(Outlook.AppointmentItem master, ref EventEntry slave)
-        {
-            bool updated = false;
+        {            
             if (master.Recipients.Count == 0 || 
                 master.Organizer == null || 
                 AppointmentSync.IsOrganizer(AppointmentSync.GetOrganizer(master), master)||
                 slave.Id.Uri == null
                 )
             {//Only update, if this appointment was organized on Outlook side or freshly created during tis sync
-                updated = true;
+                
                 AppointmentSync.UpdateAppointment(master, slave);
+
+                AppointmentPropertiesUtils.SetGoogleOutlookAppointmentId(SyncProfile, slave, master);
+                slave = SaveGoogleAppointment(slave);
+
+                AppointmentPropertiesUtils.SetOutlookGoogleAppointmentId(this, master, slave);
+                master.Save();
+
+                //After saving Google Appointment => also sync recurrence exceptions and save again
+                if (master.IsRecurring && master.RecurrenceState == Outlook.OlRecurrenceState.olApptMaster && AppointmentSync.UpdateRecurrenceExceptions(master, slave, this))
+                    slave = SaveGoogleAppointment(slave);
+
+                SyncedCount++;
+                Logger.Log("Updated appointment from Outlook to Google: \"" + master.Subject + " - " + master.Start + "\".", EventType.Information);
+                
             }
             else
             {
@@ -1608,21 +1641,7 @@ namespace GoContactSyncMod
                 Logger.Log("Skipped Updating appointment from Outlook to Google because meeting was received by Outlook: \"" + master.Subject + " - " + master.Start + "\".", EventType.Information);
             }
 
-            AppointmentPropertiesUtils.SetGoogleOutlookAppointmentId(SyncProfile, slave, master);
-            slave = SaveGoogleAppointment(slave);
-
-            AppointmentPropertiesUtils.SetOutlookGoogleAppointmentId(this, master,slave);
-            master.Save();
-
-            //After saving Google Appointment => also sync recurrence exceptions and save again
-            if (updated && master.IsRecurring && master.RecurrenceState == Outlook.OlRecurrenceState.olApptMaster && AppointmentSync.UpdateRecurrenceExceptions(master, slave, this))
-                slave = SaveGoogleAppointment(slave);                          
-
-            if (updated)
-            {
-                SyncedCount++;
-                Logger.Log("Updated appointment from Outlook to Google: \"" + master.Subject + " - " + master.Start + "\".", EventType.Information);
-            }
+            
         }
 
         
@@ -1639,40 +1658,36 @@ namespace GoContactSyncMod
                 bool organizerIsGoogle = AppointmentSync.IsOrganizer(AppointmentSync.GetOrganizer(master));
                 
                 if (organizerIsGoogle || AppointmentPropertiesUtils.GetOutlookGoogleAppointmentId(this, slave) == null)
-                {//Only update, if this appointment was organized on Google side or freshly created during tis sync
-                    AppointmentSync.UpdateAppointment(master, slave);
+                {//Only update, if this appointment was organized on Google side or freshly created during tis sync                    
                     updated = true;
                 }
                 else
                 {
                     //ToDo:Maybe find as better way, e.g. to ask the user, if he wants to overwrite the invalid appointment
                     SkippedCount++;
-                    Logger.Log("Skipped Updating appointment from Google to Outlook because multiple participants found and invitations NOT sent by Google: \"" + master.Title.Text + " - " + (master.Times.Count == 0 ? null : master.Times[0].StartTime.ToString()) + "\".", EventType.Information);
+                    Logger.Log("Skipped Updating appointment from Google to Outlook because multiple participants found and invitations NOT sent by Google: \"" + master.Title.Text + " - " + Syncronizer.GetTime(master) + "\".", EventType.Information);
                 }
             }
-            else
-            {
-                AppointmentSync.UpdateAppointment(master, slave);
+            else                            
                 updated = true;
-            }
-
-            AppointmentPropertiesUtils.SetOutlookGoogleAppointmentId(this, slave, master);
-            slave.Save();
-
-            AppointmentPropertiesUtils.SetGoogleOutlookAppointmentId(SyncProfile, master, slave);
-            master = SaveGoogleAppointment(master);
-
-
 
             if (updated)
             {
-                SyncedCount++;
-                Logger.Log("Updated appointment from Google to Outlook: \"" + (master.Title == null ? null : master.Title.Text) + " - " + (master.Times.Count == 0 ? null : master.Times[0].StartTime.ToString()) + "\".", EventType.Information);
-            }
+                AppointmentSync.UpdateAppointment(master, slave);
+                AppointmentPropertiesUtils.SetOutlookGoogleAppointmentId(this, slave, master);
+                slave.Save();
 
-            //After saving Outlook Appointment => also sync recurrence exceptions and increase SyncCount
-            if (updated && master.Recurrence != null && googleAppointmentExceptions != null && AppointmentSync.UpdateRecurrenceExceptions(googleAppointmentExceptions, slave, this))
-               SyncedCount++;
+                AppointmentPropertiesUtils.SetGoogleOutlookAppointmentId(SyncProfile, master, slave);
+                master = SaveGoogleAppointment(master);
+
+                SyncedCount++;
+                Logger.Log("Updated appointment from Google to Outlook: \"" + master.Title.Text + " - " + GetTime(master) + "\".", EventType.Information);
+
+
+                //After saving Outlook Appointment => also sync recurrence exceptions and increase SyncCount
+                if (master.Recurrence != null && googleAppointmentExceptions != null && AppointmentSync.UpdateRecurrenceExceptions(googleAppointmentExceptions, slave, this))
+                    SyncedCount++;
+            }
                
             
         }
@@ -3034,6 +3049,14 @@ namespace GoContactSyncMod
                 if (appointment.Id.Equals(atomId))
                     return appointment;
             }
+
+            if (AllGoogleAppointments != null)
+                foreach (EventEntry appointment in AllGoogleAppointments)
+                {
+                    if (appointment.Id.Equals(atomId))
+                        return appointment;
+                }
+
             return null;
         }
 
