@@ -152,7 +152,7 @@ namespace GoContactSyncMod
                     var googleAppointment = sync.GoogleAppointments[j];
                     // only match if there is a appointment targetBody, else
                     // a matching Google appointment will be created at each sync                
-                    if (ola.Subject == googleAppointment.Title.Text && googleAppointment.Times.Count > 0 && ola.Start == googleAppointment.Times[0].StartTime)
+                    if (ola.Subject == googleAppointment.Title.Text && googleAppointment.Times.Count > 0 && ola.Start == googleAppointment.Times[0].StartTime)                         
                     {
                         match.AddGoogleAppointment(googleAppointment);
                         sync.GoogleAppointments.Remove(googleAppointment);
@@ -175,7 +175,7 @@ namespace GoContactSyncMod
                 if (NotificationReceived != null)
                     NotificationReceived(String.Format("Adding new Google appointment {0} of {1} by unique properties: {2} ...", i + 1, sync.GoogleAppointments.Count, googleAppointment.Title.Text));
 
-                if (string.IsNullOrEmpty(googleAppointment.Title.Text) || googleAppointment.Times.Count == 0 || googleAppointment.Times[0].StartTime == default(DateTime))
+                if (string.IsNullOrEmpty(googleAppointment.Title.Text) && (googleAppointment.Times.Count == 0 || googleAppointment.Times[0].StartTime == default(DateTime)))
                 {
                     // no title or time
                     sync.SkippedCount++;
@@ -267,7 +267,7 @@ namespace GoContactSyncMod
                         if (sync.AllGoogleAppointments != null)
                             matchingGoogleAppointment = sync.GetGoogleAppointmentById(googleAppointmentId);
                         else
-                            matchingGoogleAppointment = sync.LoadGoogleAppointments(new AtomId(googleAppointmentId),false, null);
+                            matchingGoogleAppointment = sync.LoadGoogleAppointments(new AtomId(googleAppointmentId), 0, 0, null, null, null);
                         if (matchingGoogleAppointment == null)
                         {
                             if (!sync.PromptDelete)

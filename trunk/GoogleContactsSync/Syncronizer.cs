@@ -626,11 +626,11 @@ namespace GoContactSyncMod
         private void LoadGoogleAppointments()
         {
             Logger.Log("Loading Google appointments...", EventType.Information);
-            LoadGoogleAppointments(null, true, null);
+            LoadGoogleAppointments(null, MonthsInPast, MonthsInFuture, null, null, null);
             Logger.Log("Google Appointments Found: " + GoogleAppointments.Count, EventType.Debug);
         }
 
-        internal EventEntry LoadGoogleAppointments(AtomId id, bool restrictMonths, DateTime? restrictStartDate)
+        internal EventEntry LoadGoogleAppointments(AtomId id, ushort restrictMonthsInPast, ushort restrictMonthsInFuture, DateTime? restrictStartDate, DateTime? restrictStartTime, DateTime? restrictEndTime)
         {
             string message = "Error Loading Google appointments. Cannot connect to Google.\r\nPlease ensure you are connected to the internet. If you are behind a proxy, change your proxy configuration!";
 
@@ -645,10 +645,15 @@ namespace GoContactSyncMod
                 query.StartIndex = 0;                               
 
                 //Only Load events from month range, but onyl if not a distinct Google Appointment is searched for
-                if (restrictMonths && MonthsInPast != 0)
+                if (restrictMonthsInPast != 0)
                     query.StartTime = DateTime.Now.AddMonths(-MonthsInPast);
-                if (restrictMonths && MonthsInFuture != 0)
+                if (restrictStartTime != null && (query.StartTime == default(DateTime) || restrictStartTime > query.StartTime))
+                    query.StartTime = restrictStartTime.Value;
+                if (restrictMonthsInFuture != 0)
                     query.EndTime = DateTime.Now.AddMonths(MonthsInFuture);
+                if (restrictEndTime != null && (query.EndTime == default(DateTime) ||restrictEndTime < query.EndTime))
+                    query.EndTime = restrictEndTime.Value;
+
 
                 //Doesn't work:
                 //if (restrictStartDate != null)
@@ -694,7 +699,7 @@ namespace GoContactSyncMod
             }
 
             //Remember, if all Google Appointments have been loaded
-            if (!restrictMonths && restrictStartDate != null)
+            if (restrictMonthsInPast == 0 && restrictMonthsInFuture == 0 && restrictStartTime == null && restrictEndTime == null) //restrictStartDate == null)
                 AllGoogleAppointments = GoogleAppointments;
 
             return ret;
@@ -2727,46 +2732,7 @@ namespace GoContactSyncMod
             //{
 
             lock (_syncRoot)
-            {
-                Logger.Log("Resetting Google appointment matches...", EventType.Information);
-
-                for (int i = 0; i < GoogleAppointments.Count; i++)
-                {
-                    EventEntry googleAppointment = null;
-
-                    try
-                    {
-                        googleAppointment = GoogleAppointments[i];
-                        if (googleAppointment == null)
-                        {
-                            Logger.Log("Empty Google appointment found (maybe distribution list). Skipping", EventType.Warning);
-                            continue;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        //this is needed because some appointments throw exceptions
-                        Logger.Log("Accessing Google appointment threw an exception. Skipping: " + ex.Message, EventType.Warning);
-                        continue;
-                    }
-
-                    if (deleteGoogleAppointments)
-                    {
-                        googleAppointment.Delete();
-                    }
-                    else
-                    {
-                        try
-                        {
-                            ResetMatch(googleAppointment);
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Log("The match of Google appointment " + googleAppointment.Title.Text + " couldn't be reset: " + ex.Message, EventType.Warning);
-                        }
-                    }
-                }
-
+            {                
 
                 Logger.Log("Resetting Outlook appointment matches...", EventType.Information);
                 //1 based array
@@ -2803,6 +2769,45 @@ namespace GoContactSyncMod
                         catch (Exception ex)
                         {
                             Logger.Log("The match of Outlook appointment " + outlookAppointment.Subject + " couldn't be reset: " + ex.Message, EventType.Warning);
+                        }
+                    }
+                }
+
+                Logger.Log("Resetting Google appointment matches...", EventType.Information);
+
+                for (int i = 0; i < GoogleAppointments.Count; i++)
+                {
+                    EventEntry googleAppointment = null;
+
+                    try
+                    {
+                        googleAppointment = GoogleAppointments[i];
+                        if (googleAppointment == null)
+                        {
+                            Logger.Log("Empty Google appointment found (maybe distribution list). Skipping", EventType.Warning);
+                            continue;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        //this is needed because some appointments throw exceptions
+                        Logger.Log("Accessing Google appointment threw an exception. Skipping: " + ex.Message, EventType.Warning);
+                        continue;
+                    }
+
+                    if (deleteGoogleAppointments)
+                    {
+                        googleAppointment.Delete();
+                    }
+                    else
+                    {
+                        try
+                        {
+                            ResetMatch(googleAppointment);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Log("The match of Google appointment " + googleAppointment.Title.Text + " couldn't be reset: " + ex.Message, EventType.Warning);
                         }
                     }
                 }
