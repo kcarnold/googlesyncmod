@@ -317,14 +317,14 @@ namespace GoContactSyncMod
             _form.GoogleItemTextBox.Text = string.Empty;
             if (outlookAppointment != null)
             {
-                name = outlookAppointment.Subject;
-                _form.OutlookItemTextBox.Text = outlookAppointment.Body;
+                name = outlookAppointment.Subject + " - " + outlookAppointment.Start;                
+                _form.OutlookItemTextBox.Text += outlookAppointment.Body;
             }
 
             if (googleAppointment != null)
             {
-                name = googleAppointment.Title.Text;
-                _form.GoogleItemTextBox.Text = googleAppointment.Content.Content;
+                name = googleAppointment.Title.Text + " - " + Syncronizer.GetTime(googleAppointment);                
+                _form.GoogleItemTextBox.Text += googleAppointment.Content.Content;
             }
 
             if (isNewMatch)
@@ -351,10 +351,11 @@ namespace GoContactSyncMod
 
             _form.Text = "Google appointment deleted";
             _form.messageLabel.Text =
-                "Google appointment \"" + outlookAppointment.Subject +
+                "Google appointment \"" + outlookAppointment.Subject + " - " + outlookAppointment.Start +
                 "\" doesn't exist aynmore. Do you want to delete it also on Outlook side?";
 
-             _form.OutlookItemTextBox.Text = outlookAppointment.Body;
+            _form.GoogleItemTextBox.Text = String.Empty;            
+            _form.OutlookItemTextBox.Text += outlookAppointment.Body;
             
 
 
@@ -370,11 +371,11 @@ namespace GoContactSyncMod
 
             _form.Text = "Outlook appointment deleted";
             _form.messageLabel.Text =
-                "Outlook appointment \"" + googleAppointment.Title.Text +
+                "Outlook appointment \"" + googleAppointment.Title.Text + " - " + Syncronizer.GetTime(googleAppointment) +
                 "\" doesn't exist aynmore. Do you want to delete it also on Google side?";
 
-            _form.GoogleItemTextBox.Text = googleAppointment.Content.Content;
-
+            _form.OutlookItemTextBox.Text = String.Empty;            
+            _form.GoogleItemTextBox.Text += googleAppointment.Content.Content;
 
 
             _form.keepOutlook.Text = "Keep Google";

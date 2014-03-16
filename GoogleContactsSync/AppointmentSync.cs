@@ -647,9 +647,11 @@ namespace GoContactSyncMod
                         //    }
                         //}
 
-                        var googleRecurrenceException = sync.LoadGoogleAppointments(slave.Id, true, exception.OriginalDate);
+                        //ToDo: Doesn't work for all recurrences
+                        var googleRecurrenceException = sync.LoadGoogleAppointments(slave.Id, Syncronizer.MonthsInPast, Syncronizer.MonthsInFuture, exception.OriginalDate, null, null);
 
-                        googleRecurrenceException.Delete();
+                        if (googleRecurrenceException != null)
+                            googleRecurrenceException.Delete();
 
                     }
                 }
@@ -686,12 +688,17 @@ namespace GoContactSyncMod
                     //myInstance.Subject = googleAppointment.Title.Text;
                     //myInstance.Start = googleAppointment.Times[0].StartTime;
                     //myInstance.End = googleAppointment.Times[0].EndTime;
-                    googleRecurrenceException = sync.LoadGoogleAppointments(googleRecurrenceException.Id,true, null); //Reload, just in case it was updated by master recurrence                                
-                    sync.UpdateAppointment(ref googleRecurrenceException, outlookRecurrenceException, null);
-                    outlookRecurrenceException.Save();
-                    ret = true;
-                    
-                    Logger.Log("Updated recurrence exception from Google to Outlook: " + googleRecurrenceException.Title.Text + " - " + Syncronizer.GetTime(googleRecurrenceException), EventType.Information);
+                    googleRecurrenceException = sync.LoadGoogleAppointments(googleRecurrenceException.Id, 0, 0, null, googleRecurrenceException.Times[0].StartTime, googleRecurrenceException.Times[0].EndTime); //Reload, just in case it was updated by master recurrence                                
+                    if (googleRecurrenceException != null)
+                    {
+                        sync.UpdateAppointment(ref googleRecurrenceException, outlookRecurrenceException, null);
+                        outlookRecurrenceException.Save();
+                        ret = true;
+
+                        Logger.Log("Updated recurrence exception from Google to Outlook: " + googleRecurrenceException.Title.Text + " - " + Syncronizer.GetTime(googleRecurrenceException), EventType.Information);
+                    }
+                    else
+                        Logger.Log("Error updating recurrence exception from Google to Outlook (couldn't be reload from Google): " + outlookRecurrenceException.Subject + " - " + outlookRecurrenceException.Start, EventType.Information);
 
                 }
                 
