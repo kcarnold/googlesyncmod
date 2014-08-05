@@ -156,7 +156,7 @@ namespace GoContactSyncMod
             //slave.StartUTC = master.StartUTC;
 
             if (!IsOrganizer(GetOrganizer(master)) || !IsOrganizer(GetOrganizer(slave), slave))
-                slave.MeetingStatus = Outlook.OlMeetingStatus.olMeetingReceived;
+                slave.MeetingStatus = Outlook.OlMeetingStatus.olMeetingReceived;         
 
             for (int i = slave.Recipients.Count; i > 0; i--)
                 slave.Recipients.Remove(i);
