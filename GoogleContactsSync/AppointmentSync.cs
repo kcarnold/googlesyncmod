@@ -51,8 +51,7 @@ namespace GoContactSyncMod
         /// </summary>
         public static void UpdateAppointment(Outlook.AppointmentItem master, EventEntry slave)
         {            
-            slave.Title.Text = master.Subject;
-            
+            slave.Title.Text = master.Subject;            
 
             ////foreach (Outlook.Attachment attachment in master.Attachments)
             ////    slave.Attachments.Add(master.Attachments);
@@ -77,18 +76,25 @@ namespace GoContactSyncMod
             ////slave.StartTimeZone = master.StartTimeZone;
             ////slave.StartUTC = master.StartUTC;
 
-            slave.Participants.Clear();
-            int i = 0;
-            foreach (Outlook.Recipient recipient in master.Recipients)
-            {
-             
-                var participant = new Who();
-                participant.Email = recipient.Address!=null? recipient.Address:recipient.Name;
 
-                participant.Rel = (i == 0 ? Who.RelType.EVENT_ORGANIZER : Who.RelType.EVENT_ATTENDEE);
-                slave.Participants.Add(participant);
-                i++;
-            }
+            #region participants
+            //ToDo: Commented out for now, not sync participants, because otherwise Google raises quota exceptions
+            //slave.Participants.Clear();
+            //int i = 0;
+            //foreach (Outlook.Recipient recipient in master.Recipients)
+            //{
+             
+            //    var participant = new Who();
+
+            //    participant.Email = AppointmentPropertiesUtils.GetOutlookEmailAddress(master.Subject + " - " + master.Start, recipient);
+
+            //    participant.Rel = (i == 0 ? Who.RelType.EVENT_ORGANIZER : Who.RelType.EVENT_ATTENDEE);
+            //    slave.Participants.Add(participant);
+            //    i++;
+            //}
+            //End Todo commented out
+            #endregion
+
             //slave.RequiredAttendees = master.RequiredAttendees;
             //slave.OptionalAttendees = master.OptionalAttendees;
 
@@ -99,6 +105,12 @@ namespace GoContactSyncMod
                 {
                     var reminder = new Google.GData.Extensions.Reminder();
                     reminder.Minutes = master.ReminderMinutesBeforeStart;
+                    if (reminder.Minutes > 40300)
+                    {
+                        //ToDo: Check real limit, currently 40300
+                        Logger.Log("Reminder Minutes to big (" + reminder.Minutes + "), set to maximum of 40300 minutes for appointment: " + master.Subject + " - " + master.Start, EventType.Warning);
+                        reminder.Minutes = 40300;                        
+                    }
                     reminder.Method = Google.GData.Extensions.Reminder.ReminderMethod.alert;
                     slave.Reminders.Add(reminder);
                 }
@@ -155,75 +167,81 @@ namespace GoContactSyncMod
             //slave.StartTimeZone = master.StartTimeZone;
             //slave.StartUTC = master.StartUTC;
 
-            if (!IsOrganizer(GetOrganizer(master)) || !IsOrganizer(GetOrganizer(slave), slave))
-                slave.MeetingStatus = Outlook.OlMeetingStatus.olMeetingReceived;         
+            //if (!IsOrganizer(GetOrganizer(master)) || !IsOrganizer(GetOrganizer(slave), slave))
+            //    slave.MeetingStatus = Outlook.OlMeetingStatus.olMeetingReceived;
 
-            for (int i = slave.Recipients.Count; i > 0; i--)
-                slave.Recipients.Remove(i);
+            #region Recipients
+            //ToDo: Commented out for now, not sync participants, because otherwise Google raises quota exceptions
+            //for (int i = slave.Recipients.Count; i > 0; i--)
+            //    slave.Recipients.Remove(i);
 
 
-            //Add Organizer
-            foreach (Who participant in master.Participants)
-            {
-                if (participant.Rel == Who.RelType.EVENT_ORGANIZER && participant.Email != Syncronizer.UserName)
-                {
-                    //ToDo: Doesn't Work, because Organizer cannot be set on Outlook side (it is ignored)
-                    //slave.GetOrganizer().Address = participant.Email;
-                    //slave.GetOrganizer().Name = participant.Email;
-                    //Workaround: Assign organizer at least as first participant and as sent on behalf
-                    Outlook.Recipient recipient = slave.Recipients.Add(participant.Email);
-                    recipient.Type = (int)Outlook.OlMeetingRecipientType.olOrganizer; //Doesn't work (is ignored):
-                    if (recipient.Resolve())
-                    {
+            ////Add Organizer
+            //foreach (Who participant in master.Participants)
+            //{
+            //    if (participant.Rel == Who.RelType.EVENT_ORGANIZER && participant.Email != Syncronizer.UserName)
+            //    {
+            //        //ToDo: Doesn't Work, because Organizer cannot be set on Outlook side (it is ignored)
+            //        //slave.GetOrganizer().Address = participant.Email;
+            //        //slave.GetOrganizer().Name = participant.Email;
+            //        //Workaround: Assign organizer at least as first participant and as sent on behalf
+            //        Outlook.Recipient recipient = slave.Recipients.Add(participant.Email);
+            //        recipient.Type = (int)Outlook.OlMeetingRecipientType.olOrganizer; //Doesn't work (is ignored):
+            //        if (recipient.Resolve())
+            //        {
 
-                        const string PR_SENT_ON_BEHALF = "http://schemas.microsoft.com/mapi/proptag/0x0042001F"; //-->works, but only on behalf, not organizer
-                        //const string PR_SENT_REPRESENTING_ENTRYID = "http://schemas.microsoft.com/mapi/proptag/0x00410102";
-                        //const string PR_SENDER_ADDRTYPE = "http://schemas.microsoft.com/mapi/proptag/0x0C1E001F";//-->Doesn't work: ComException, operation failed
-                        //const string PR_SENDER_ENTRYID = "http://schemas.microsoft.com/mapi/proptag/0x0C190102";//-->Doesn't work: ComException, operation failed
-                        //const string PR_SENDER_NAME = "http://schemas.microsoft.com/mapi/proptag/0x0C1A001F"; //-->Doesn't work: ComException, operation failed
-                        //const string PR_SENDER_EMAIL = "http://schemas.microsoft.com/mapi/proptag/0x0C1F001F";//-->Doesn't work: ComException, operation failed
+            //            const string PR_SENT_ON_BEHALF = "http://schemas.microsoft.com/mapi/proptag/0x0042001F"; //-->works, but only on behalf, not organizer
+            //            //const string PR_SENT_REPRESENTING_ENTRYID = "http://schemas.microsoft.com/mapi/proptag/0x00410102";
+            //            //const string PR_SENDER_ADDRTYPE = "http://schemas.microsoft.com/mapi/proptag/0x0C1E001F";//-->Doesn't work: ComException, operation failed
+            //            //const string PR_SENDER_ENTRYID = "http://schemas.microsoft.com/mapi/proptag/0x0C190102";//-->Doesn't work: ComException, operation failed
+            //            //const string PR_SENDER_NAME = "http://schemas.microsoft.com/mapi/proptag/0x0C1A001F"; //-->Doesn't work: ComException, operation failed
+            //            //const string PR_SENDER_EMAIL = "http://schemas.microsoft.com/mapi/proptag/0x0C1F001F";//-->Doesn't work: ComException, operation failed
                       
-                        Microsoft.Office.Interop.Outlook.PropertyAccessor accessor = slave.PropertyAccessor;
-                        accessor.SetProperty(PR_SENT_ON_BEHALF, participant.Email);
+            //            Microsoft.Office.Interop.Outlook.PropertyAccessor accessor = slave.PropertyAccessor;
+            //            accessor.SetProperty(PR_SENT_ON_BEHALF, participant.Email);
 
-                        //const string PR_RECIPIENT_FLAGS = "http://schemas.microsoft.com/mapi/proptag/0x5FFD0003"; //-->Doesn't work: UnauthorizedAccessException, operation not allowed
-                        //Microsoft.Office.Interop.Outlook.PropertyAccessor accessor = recipient.PropertyAccessor;
-                        //accessor.SetProperty(PR_RECIPIENT_FLAGS, 3);
-                        //object test = accessor.GetProperty(PR_RECIPIENT_FLAGS);
-                    }
+            //            //const string PR_RECIPIENT_FLAGS = "http://schemas.microsoft.com/mapi/proptag/0x5FFD0003"; //-->Doesn't work: UnauthorizedAccessException, operation not allowed
+            //            //Microsoft.Office.Interop.Outlook.PropertyAccessor accessor = recipient.PropertyAccessor;
+            //            //accessor.SetProperty(PR_RECIPIENT_FLAGS, 3);
+            //            //object test = accessor.GetProperty(PR_RECIPIENT_FLAGS);
+            //        }
 
-                    break; //One Organizer is enough
-                }
+            //        break; //One Organizer is enough
+            //    }
 
-            }
+            //}
 
-            //Add remaining particpants
-            foreach (Who participant in master.Participants)
-            {
-                if (participant.Rel != Who.RelType.EVENT_ORGANIZER && participant.Email != Syncronizer.UserName)
-                {
-                    Outlook.Recipient recipient = slave.Recipients.Add(participant.Email);
-                    recipient.Resolve();
+            ////Add remaining particpants
+            //foreach (Who participant in master.Participants)
+            //{
+            //    if (participant.Rel != Who.RelType.EVENT_ORGANIZER && participant.Email != Syncronizer.UserName)
+            //    {
+            //        Outlook.Recipient recipient = slave.Recipients.Add(participant.Email);
+            //        recipient.Resolve();
 
-                    //ToDo: Doesn't work because MeetingResponseStatus is readonly, maybe use PropertyAccessor?
-                    //switch (participant.Attendee_Status.Value)
-                    //{
-                    //    case Google.GData.Extensions.Who.AttendeeStatus.EVENT_ACCEPTED: recipient.MeetingResponseStatus = (int)Outlook.OlMeetingResponse.olMeetingAccepted; break;
-                    //    case Google.GData.Extensions.Who.AttendeeStatus.EVENT_DECLINED: recipient.MeetingResponseStatus = (int)Outlook.OlMeetingResponse.olMeetingDeclined; break;
-                    //    case Google.GData.Extensions.Who.AttendeeStatus.EVENT_TENTATIVE: recipient.MeetingResponseStatus = (int)Outlook.OlMeetingResponse.olMeetingTentative;
-                    //}
-                    if (participant.Attendee_Type != null)
-                    {
-                        switch (participant.Attendee_Type.Value)
-                        {
-                            case Google.GData.Extensions.Who.AttendeeType.EVENT_OPTIONAL: recipient.Type = (int)Outlook.OlMeetingRecipientType.olOptional; break;
-                            case Google.GData.Extensions.Who.AttendeeType.EVENT_REQUIRED: recipient.Type = (int)Outlook.OlMeetingRecipientType.olRequired; break;
-                        }
-                    }
+            //        //ToDo: Doesn't work because MeetingResponseStatus is readonly, maybe use PropertyAccessor?
+            //        //switch (participant.Attendee_Status.Value)
+            //        //{
+            //        //    case Google.GData.Extensions.Who.AttendeeStatus.EVENT_ACCEPTED: recipient.MeetingResponseStatus = (int)Outlook.OlMeetingResponse.olMeetingAccepted; break;
+            //        //    case Google.GData.Extensions.Who.AttendeeStatus.EVENT_DECLINED: recipient.MeetingResponseStatus = (int)Outlook.OlMeetingResponse.olMeetingDeclined; break;
+            //        //    case Google.GData.Extensions.Who.AttendeeStatus.EVENT_TENTATIVE: recipient.MeetingResponseStatus = (int)Outlook.OlMeetingResponse.olMeetingTentative;
+            //        //}
+            //        if (participant.Attendee_Type != null)
+            //        {
+            //            switch (participant.Attendee_Type.Value)
+            //            {
+            //                case Google.GData.Extensions.Who.AttendeeType.EVENT_OPTIONAL: recipient.Type = (int)Outlook.OlMeetingRecipientType.olOptional; break;
+            //                case Google.GData.Extensions.Who.AttendeeType.EVENT_REQUIRED: recipient.Type = (int)Outlook.OlMeetingRecipientType.olRequired; break;
+            //            }
+            //        }
 
-                }
+            //    }
 
-            }
+            //}
+            //End ToDo
+            #endregion
+
+
             //slave.RequiredAttendees = master.RequiredAttendees;
 
             //slave.OptionalAttendees = master.OptionalAttendees;
@@ -271,17 +289,27 @@ namespace GoContactSyncMod
                     key = VALUE + "=" + DATETIME;
                 }
 
+                //For Debugging only:
+                //if (master.Subject == "IFX_CMF-Alignment - [Conference Number: 44246/ Password: 37757]")
+                //     throw new Exception ("Debugging: IFX_CMF-Alignment - [Conference Number: 44246/ Password: 37757]");
+
                 //ToDo: Find a way how to handle timezones, per default GMT (UTC+0:00) is taken
-                if (master.StartTimeZone.ID == "W. Europe Standard Time")
-                    key = TZID + "=" + "Europe/Berlin";
+                //if (master.StartTimeZone.ID == "W. Europe Standard Time")                
+                //    key = TZID + "=" + "Europe/Berlin";
+                //else if (master.StartTimeZone.ID == "Singapore Standard Time")
+                //    key = TZID + "=" + "Asia/Singapore";
+                if (!string.IsNullOrEmpty(Syncronizer.Timezone))
+                    key = TZID + "=" + Syncronizer.Timezone;
 
                 DateTime date = masterRecurrence.PatternStartDate.Date;
-                DateTime time = new DateTime(date.Year, date.Month, date.Day, masterRecurrence.StartTime.Hour, masterRecurrence.StartTime.Minute, masterRecurrence.StartTime.Second);
+                //DateTime time = new DateTime(date.Year, date.Month, date.Day, masterRecurrence.StartTime.Hour, masterRecurrence.StartTime.Minute, masterRecurrence.StartTime.Second);
+                DateTime time = new DateTime(date.Year, date.Month, date.Day, master.Start.Hour, master.Start.Minute, master.Start.Second);
                 
                 slaveRecurrence.Value += DTSTART;                    
                 slaveRecurrence.Value += ";" + key + ":" + time.ToString(format) + "\r\n";
-                                
-                time = new DateTime(date.Year, date.Month, date.Day, masterRecurrence.EndTime.Hour, masterRecurrence.EndTime.Minute, masterRecurrence.EndTime.Second);               
+
+                time = time.AddMinutes(masterRecurrence.Duration);             
+                //time = new DateTime(date.Year, date.Month, date.Day, masterRecurrence.EndTime.Hour, masterRecurrence.EndTime.Minute, masterRecurrence.EndTime.Second);               
                 
                 slaveRecurrence.Value += DTEND;
                 slaveRecurrence.Value += ";"+key+":" + time.ToString(format) + "\r\n";
@@ -316,7 +344,9 @@ namespace GoContactSyncMod
 
                 if (!string.IsNullOrEmpty(byDay))
                 {
-                    if (masterRecurrence.Instance >= 1 && masterRecurrence.Instance <= 4)
+                    if (masterRecurrence.Instance == 0)
+                        ;//DoNothing
+                    else if (masterRecurrence.Instance >= 1 && masterRecurrence.Instance <= 4)
                         byDay = masterRecurrence.Instance + byDay;
                     else if (masterRecurrence.Instance == 5)
                         slaveRecurrence.Value += ";" + BYSETPOS + "=-1";
@@ -733,40 +763,40 @@ namespace GoContactSyncMod
             return null;
         }
 
-        internal static bool IsOrganizer(Who person)
-        {
-            if (person != null && person.Email != null && person.Email.Trim().Equals(Syncronizer.UserName.Trim(), StringComparison.InvariantCultureIgnoreCase))
-                return true;
-            else
-                return false;
-        }
+        //internal static bool IsOrganizer(Who person)
+        //{
+        //    if (person != null && person.Email != null && person.Email.Trim().Equals(Syncronizer.UserName.Trim(), StringComparison.InvariantCultureIgnoreCase))
+        //        return true;
+        //    else
+        //        return false;
+        //}
 
-        internal static string GetOrganizer(Outlook.AppointmentItem outlookAppointment)
-        {
-            Outlook.AddressEntry organizer = outlookAppointment.GetOrganizer();
-            if (organizer != null)
-            {
-                if (string.IsNullOrEmpty(organizer.Address))
-                    return organizer.Address;
-                else
-                    return organizer.Name;
-            }
+        //internal static string GetOrganizer(Outlook.AppointmentItem outlookAppointment)
+        //{
+        //    Outlook.AddressEntry organizer = outlookAppointment.GetOrganizer();
+        //    if (organizer != null)
+        //    {
+        //        if (string.IsNullOrEmpty(organizer.Address))
+        //            return organizer.Address;
+        //        else
+        //            return organizer.Name;
+        //    }
 
-            return outlookAppointment.Organizer;            
+        //    return outlookAppointment.Organizer;            
 
 
-        }
+        //}
 
-        internal static bool IsOrganizer(string person, Outlook.AppointmentItem outlookAppointment)
-        {
-            if (!string.IsNullOrEmpty(person) && 
-                (person.Trim().Equals(outlookAppointment.Session.CurrentUser.Address, StringComparison.InvariantCultureIgnoreCase) || 
-                person.Trim().Equals(outlookAppointment.Session.CurrentUser.Name, StringComparison.InvariantCultureIgnoreCase)
-                ))
-                return true;
-            else
-                return false;
-        }
+        //internal static bool IsOrganizer(string person, Outlook.AppointmentItem outlookAppointment)
+        //{
+        //    if (!string.IsNullOrEmpty(person) && 
+        //        (person.Trim().Equals(outlookAppointment.Session.CurrentUser.Address, StringComparison.InvariantCultureIgnoreCase) || 
+        //        person.Trim().Equals(outlookAppointment.Session.CurrentUser.Name, StringComparison.InvariantCultureIgnoreCase)
+        //        ))
+        //        return true;
+        //    else
+        //        return false;
+        //}
         
 
     }

@@ -101,6 +101,7 @@ namespace GoContactSyncMod
         public static string SyncAppointmentsFolder { get; set; }
         public static ushort MonthsInPast { get; set; }
         public static ushort MonthsInFuture { get; set; }
+        public static string Timezone { get; set; }
 
 		//private ConflictResolution? _conflictResolution;
 		//public ConflictResolution? CResolution
@@ -665,8 +666,10 @@ namespace GoContactSyncMod
                 {
                     foreach (EventEntry a in feed.Entries)
                     {
-                        if (!a.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.CANCELED))
-                        {//only return not yet cancelled events
+                        if (!a.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.CANCELED)
+                            && !GoogleAppointments.Contains(a) //ToDo: For an unknown reason, some appointments are duplicate in GoogleAppointments, therefore remove all duplicates before continuing  
+                            )
+                        {//only return not yet cancelled events and events not already in the list
                             GoogleAppointments.Add(a);
                             if (restrictStartDate == null && id != null && id.Equals(a.Id))
                                 ret = a;
@@ -1284,7 +1287,7 @@ namespace GoContactSyncMod
                 if (AppointmentPropertiesUtils.GetGoogleOutlookAppointmentId(SyncProfile, match.GoogleAppointment) != null)
                 {
                     string name = match.GoogleAppointment.Title.Text;
-                    if (_syncOption == SyncOption.OutlookToGoogleOnly)
+                    if (_syncOption == SyncOption.GoogleToOutlookOnly)
                     {
                         SkippedCount++;
                         Logger.Log("Skipped Deletion of Google appointment because of SyncOption " + _syncOption + ":" + name + ".", EventType.Information);
@@ -1615,12 +1618,12 @@ namespace GoContactSyncMod
         /// </summary>
         public void UpdateAppointment(Outlook.AppointmentItem master, ref EventEntry slave)
         {            
-            if (master.Recipients.Count == 0 || 
-                master.Organizer == null || 
-                AppointmentSync.IsOrganizer(AppointmentSync.GetOrganizer(master), master)||
-                slave.Id.Uri == null
-                )
-            {//Only update, if this appointment was organized on Outlook side or freshly created during tis sync
+            //if (master.Recipients.Count == 0 || 
+            //    master.Organizer == null || 
+            //    AppointmentSync.IsOrganizer(AppointmentSync.GetOrganizer(master), master)||
+            //    slave.Id.Uri == null
+            //    )
+            //{//Only update, if this appointment was organized on Outlook side or freshly created during this sync
                 
                 AppointmentSync.UpdateAppointment(master, slave);
 
@@ -1637,14 +1640,14 @@ namespace GoContactSyncMod
                 SyncedCount++;
                 Logger.Log("Updated appointment from Outlook to Google: \"" + master.Subject + " - " + master.Start + "\".", EventType.Information);
                 
-            }
-            else
-            {
-                //ToDo:Maybe find as better way, e.g. to ask the user, if he wants to overwrite the invalid appointment
-                SkippedCount++;
-                //Logger.Log("Skipped Updating appointment from Outlook to Google because multiple recipients found and invitations NOT sent by Outlook: \"" + master.Subject + " - " + master.Start + "\".", EventType.Information);
-                Logger.Log("Skipped Updating appointment from Outlook to Google because meeting was received by Outlook: \"" + master.Subject + " - " + master.Start + "\".", EventType.Information);
-            }
+            //}
+            //else
+            //{
+            //    //ToDo:Maybe find as better way, e.g. to ask the user, if he wants to overwrite the invalid appointment
+            //    SkippedCount++;
+            //    //Logger.Log("Skipped Updating appointment from Outlook to Google because multiple recipients found and invitations NOT sent by Outlook: \"" + master.Subject + " - " + master.Start + "\".", EventType.Information);
+            //    Logger.Log("Skipped Updating appointment from Outlook to Google because meeting was received by Outlook: \"" + master.Subject + " - " + master.Start + "\".", EventType.Information);
+            //}
 
             
         }
@@ -1658,22 +1661,31 @@ namespace GoContactSyncMod
         {                        
 
             bool updated = false;
-            if (master.Participants.Count > 1)
-            {
-                bool organizerIsGoogle = AppointmentSync.IsOrganizer(AppointmentSync.GetOrganizer(master));
+            //if (master.Participants.Count > 1)
+            //{
+            //    bool organizerIsGoogle = AppointmentSync.IsOrganizer(AppointmentSync.GetOrganizer(master));
                 
-                if (organizerIsGoogle || AppointmentPropertiesUtils.GetOutlookGoogleAppointmentId(this, slave) == null)
-                {//Only update, if this appointment was organized on Google side or freshly created during tis sync                    
-                    updated = true;
-                }
-                else
-                {
-                    //ToDo:Maybe find as better way, e.g. to ask the user, if he wants to overwrite the invalid appointment
-                    SkippedCount++;
-                    Logger.Log("Skipped Updating appointment from Google to Outlook because multiple participants found and invitations NOT sent by Google: \"" + master.Title.Text + " - " + Syncronizer.GetTime(master) + "\".", EventType.Information);
-                }
+            //    if (organizerIsGoogle || AppointmentPropertiesUtils.GetOutlookGoogleAppointmentId(this, slave) == null)
+            //    {//Only update, if this appointment was organized on Google side or freshly created during tis sync                    
+            //        updated = true;
+            //    }
+            //    else
+            //    {
+            //        //ToDo:Maybe find as better way, e.g. to ask the user, if he wants to overwrite the invalid appointment
+            //        SkippedCount++;
+            //        Logger.Log("Skipped Updating appointment from Google to Outlook because multiple participants found and invitations NOT sent by Google: \"" + master.Title.Text + " - " + Syncronizer.GetTime(master) + "\".", EventType.Information);
+            //    }
+            //}
+            //else                            
+            //    updated = true;
+
+            if (slave.Recipients.Count > 0 && AppointmentPropertiesUtils.GetOutlookGoogleAppointmentId(this, slave) != null)
+            {
+                //ToDo:Maybe find as better way, e.g. to ask the user, if he wants to overwrite the invalid appointment
+                SkippedCount++;
+                Logger.Log("Skipped Updating appointment from Google to Outlook because multiple participants found and invitations NOT sent by Google: \"" + master.Title.Text + " - " + Syncronizer.GetTime(master) + "\".", EventType.Information);
             }
-            else                            
+            else //Only update, if invitation was not sent on Outlook side or freshly created during tis sync  
                 updated = true;
 
             if (updated)
@@ -3050,7 +3062,7 @@ namespace GoContactSyncMod
         {
             AtomId atomId = new AtomId(id);
             foreach (EventEntry appointment in GoogleAppointments)
-            {
+            {                
                 if (appointment.Id.Equals(atomId))
                     return appointment;
             }

@@ -57,6 +57,8 @@ namespace GoContactSyncMod
         private string syncContactsFolder = "";
         private string syncNotesFolder = "";
         private string syncAppointmentsFolder = "";
+        private string Timezone = "";
+
         private string syncProfile
         {
             get
@@ -160,7 +162,7 @@ namespace GoContactSyncMod
 
                     this.contactFoldersComboBox.Visible = btSyncContacts.Checked;
                     this.noteFoldersComboBox.Visible = btSyncNotes.Checked;
-                    this.appointmentFoldersComboBox.Visible = btSyncAppointments.Checked;
+                    this.appointmentFoldersComboBox.Visible = this.futureMonthTextBox.Visible = this.pastMonthTextBox.Visible = this.appointmentTimezonesComboBox.Visible = btSyncAppointments.Checked;
                     this.cmbSyncProfile.Visible = true;
                     ArrayList outlookContactFolders = new ArrayList();
                     ArrayList outlookNoteFolders = new ArrayList();
@@ -348,6 +350,8 @@ namespace GoContactSyncMod
                 pastMonthTextBox.Text = regKeyAppRoot.GetValue("SyncAppointmentsMonthsInPast") as string;
             if (regKeyAppRoot.GetValue("SyncAppointmentsMonthsInFuture") != null)
                 futureMonthTextBox.Text = regKeyAppRoot.GetValue("SyncAppointmentsMonthsInFuture") as string;
+            if (regKeyAppRoot.GetValue("SyncAppointmentsTimezone") != null)
+                appointmentTimezonesComboBox.Text = regKeyAppRoot.GetValue("SyncAppointmentsTimezone") as string;
             if (regKeyAppRoot.GetValue("SyncAppointments") != null)
                 btSyncAppointments.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("SyncAppointments"));
             if (regKeyAppRoot.GetValue("SyncNotes") != null)
@@ -406,6 +410,7 @@ namespace GoContactSyncMod
                 regKeyAppRoot.SetValue("PromptDeletion", btPromptDelete.Checked);
                 regKeyAppRoot.SetValue("SyncAppointmentsMonthsInPast", pastMonthTextBox.Text);
                 regKeyAppRoot.SetValue("SyncAppointmentsMonthsInFuture", futureMonthTextBox.Text);
+                regKeyAppRoot.SetValue("SyncAppointmentsTimeZone", appointmentTimezonesComboBox.Text);
                 regKeyAppRoot.SetValue("SyncAppointments", btSyncAppointments.Checked);
                 regKeyAppRoot.SetValue("SyncNotes", btSyncNotes.Checked);
                 regKeyAppRoot.SetValue("SyncContacts", btSyncContacts.Checked);
@@ -577,6 +582,7 @@ namespace GoContactSyncMod
                     Syncronizer.SyncAppointmentsFolder = this.syncAppointmentsFolder;
                     Syncronizer.MonthsInPast = Convert.ToUInt16(this.pastMonthTextBox.Text);
                     Syncronizer.MonthsInFuture = Convert.ToUInt16(this.futureMonthTextBox.Text);
+                    Syncronizer.Timezone = this.Timezone;
 
                     sync.SyncOption = syncOption;
                     sync.SyncDelete = btSyncDelete.Checked;
@@ -1307,6 +1313,7 @@ namespace GoContactSyncMod
                 btSyncContacts.Checked = true;
             }
             appointmentFoldersComboBox.Visible = btSyncAppointments.Checked;
+            pastMonthTextBox.Visible = futureMonthTextBox.Visible = appointmentTimezonesComboBox.Visible = btSyncAppointments.Checked;
         }
     	
         private void cmbSyncProfile_SelectedIndexChanged(object sender, EventArgs e)
@@ -1542,6 +1549,11 @@ namespace GoContactSyncMod
                 pastMonthTextBox.Text = "1";
                 e.Cancel = true;
             }
+        }
+
+        private void appointmentTimezonesComboBox_TextChanged(object sender, EventArgs e)
+        {
+            this.Timezone = appointmentTimezonesComboBox.Text;
         }
 
 
