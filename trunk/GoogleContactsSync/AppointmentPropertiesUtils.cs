@@ -250,6 +250,80 @@ namespace GoContactSyncMod
             }
         }
 
+        public static string GetOutlookEmailAddress(string subject, Outlook.Recipient recipient)
+        {
+            string emailAddress = recipient.Address != null ? recipient.Address : recipient.Name;
+            switch (recipient.AddressEntry.AddressEntryUserType)
+            {
+                case Outlook.OlAddressEntryUserType.olExchangeUserAddressEntry:  // Microsoft Exchange address: "/o=xxxx/ou=xxxx/cn=Recipients/cn=xxxx"
+                    
+                    try
+                    {
+                        // The emailEntryID is garbage (bug in Outlook 2007 and before?) - so we cannot do GetAddressEntryFromID().
+                        // Instead we create a temporary recipient and ask Exchange to resolve it, then get the SMTP address from it.
+                        //Outlook.AddressEntry addressEntry = outlookNameSpace.GetAddressEntryFromID(emailEntryID);
+                        
+                        //try
+                        //{
+                            recipient.Resolve();
+                            if (recipient.Resolved)
+                            {
+                                Outlook.AddressEntry addressEntry = recipient.AddressEntry;
+                                if (addressEntry != null)
+                                {
+                                    try
+                                    {
+                                        if (addressEntry.AddressEntryUserType == Outlook.OlAddressEntryUserType.olExchangeUserAddressEntry)
+                                        {
+                                            Outlook.ExchangeUser exchangeUser = addressEntry.GetExchangeUser();
+                                            if (exchangeUser != null)
+                                            {
+                                                try
+                                                {
+                                                    return exchangeUser.PrimarySmtpAddress;
+                                                }
+                                                finally
+                                                {
+                                                    Marshal.ReleaseComObject(exchangeUser);
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Logger.Log(string.Format("Unsupported AddressEntryUserType {0} for email '{1}' in appointment '{3}'.", addressEntry.AddressEntryUserType, addressEntry.Address, subject), EventType.Debug);
+                                        }
+                                    }
+                                    finally
+                                    {
+                                        Marshal.ReleaseComObject(addressEntry);
+                                    }
+                                }
+                            }
+                        //}
+                        //finally
+                        //{
+                        //    if (recipient != null)
+                        //        Marshal.ReleaseComObject(recipient);
+                        //}
+                    }
+                    catch (Exception ex)
+                    {
+                        // Fallback: If Exchange cannot give us the SMTP address, we give up and use the Exchange address format.
+                        // TODO: Can we do better?
+                        Logger.Log(string.Format("Error getting the email address of outlook appointment '{0}' from Exchange format '{1}': {2}", subject, emailAddress, ex.Message), EventType.Warning);
+                        return emailAddress;
+                    }                    
+
+                    // Fallback: If Exchange cannot give us the SMTP address, we give up and use the Exchange address format.
+                    // TODO: Can we do better?                   
+                    return emailAddress;
+
+                case Outlook.OlAddressEntryUserType.olSmtpAddressEntry:
+                default:
+                    return emailAddress;
+            }
+        }
+
                 
     }
 }

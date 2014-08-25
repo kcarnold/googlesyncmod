@@ -42,10 +42,16 @@ namespace GoContactSyncMod
             #region Match first all outlookAppointments by sync id
             for (int i = 1; i <= sync.OutlookAppointments.Count; i++)
             {
-                Outlook.AppointmentItem ola;
+                Outlook.AppointmentItem ola;               
+
                 try
                 {
                     ola = sync.OutlookAppointments[i] as Outlook.AppointmentItem;
+
+                    //For debugging:
+                    //if (ola.Subject == "Flex Pilot - Latest Status") // - 14.07.2014 11:30:00
+                    //    throw new Exception("Debugging: Flex Pilot - Latest Status");
+
                     if (ola == null || string.IsNullOrEmpty(ola.Subject) && ola.Start == AppointmentSync.outlookDateMin)
                     {
                         Logger.Log("Empty Outlook appointment found. Skipping", EventType.Warning);
@@ -55,9 +61,9 @@ namespace GoContactSyncMod
                     }
                     else if (ola.MeetingStatus == Outlook.OlMeetingStatus.olMeetingCanceled || ola.MeetingStatus == Outlook.OlMeetingStatus.olMeetingReceivedAndCanceled)
                     {
-                        Logger.Log("Skipping Outlook appointment found because it is cancelled: " + ola.Subject + " - " + ola.Start, EventType.Information);
-                        sync.SkippedCount++;
-                        sync.SkippedCountNotMatches++;
+                        Logger.Log("Skipping Outlook appointment found because it is cancelled: " + ola.Subject + " - " + ola.Start, EventType.Debug);
+                        //sync.SkippedCount++;
+                        //sync.SkippedCountNotMatches++;
                         continue;
                     }
                     else if (Syncronizer.MonthsInPast > 0 && 
@@ -69,7 +75,12 @@ namespace GoContactSyncMod
                     {
                         Logger.Log("Skipping Outlook appointment because it is out of months range to sync:" + ola.Subject + " - " + ola.Start, EventType.Debug);                       
                         continue;
-                    }                    
+                    }                   
+                    //else if (ola.Subject != "Business Trip")
+                    //{//Only for debugging purposes, please comment if not needed
+                    //    Logger.Log("Skipping Outlook appointment because of DEBUGGING:" + ola.Subject + " - " + ola.Start, EventType.Error);
+                    //    continue;
+                    //}
 
                 }
                 catch (Exception ex)
@@ -106,17 +117,28 @@ namespace GoContactSyncMod
                         if (foundAppointment != null)
                         {
                             //we found a match by google id, that is not deleted yet
-                            match.AddGoogleAppointment(foundAppointment);
-                            result.Add(match);
-                            //Remove the appointment from the list to not sync it twice
-                            sync.GoogleAppointments.Remove(foundAppointment);
+
+                            //ToDo: For an unknown reason, some appointments are duplicate in GoogleAppointments, therefore remove all duplicates before continuing
+                            while (foundAppointment != null)
+                            {
+                                match.AddGoogleAppointment(foundAppointment);
+                                result.Add(match);
+                                //Remove the appointment from the list to not sync it twice
+                                if (sync.GoogleAppointments.Contains(foundAppointment))
+                                {
+                                    sync.GoogleAppointments.Remove(foundAppointment);
+                                    foundAppointment = sync.GetGoogleAppointmentById(googleAppointmentId);
+                                }
+                                else
+                                    foundAppointment = null;                                
+                            }
+
+
                         }
                         else
                         {
                         
-                            OutlookAppointmentsWithoutSyncId.Add(ola);
-
-                        
+                            OutlookAppointmentsWithoutSyncId.Add(ola);                        
                         }
                       
                     }
@@ -153,9 +175,25 @@ namespace GoContactSyncMod
                     // only match if there is a appointment targetBody, else
                     // a matching Google appointment will be created at each sync                
                     if (ola.Subject == googleAppointment.Title.Text && googleAppointment.Times.Count > 0 && ola.Start == googleAppointment.Times[0].StartTime)                         
-                    {
+                    {                        
                         match.AddGoogleAppointment(googleAppointment);
                         sync.GoogleAppointments.Remove(googleAppointment);
+
+                        //ToDo: For an unknown reason, some appointments are duplicate in GoogleAppointments, therefore remove all duplicates before continuing                                                
+                        EventEntry foundAppointment = sync.GetGoogleAppointmentById(AppointmentPropertiesUtils.GetGoogleId(googleAppointment));
+                        while (foundAppointment != null)
+                        {
+                            //we found a match by google id, that is not deleted yet                       
+                            match.AddGoogleAppointment(foundAppointment);
+                            //Remove the appointment from the list to not sync it twice
+                            if (sync.GoogleAppointments.Contains(foundAppointment))
+                            {
+                                sync.GoogleAppointments.Remove(foundAppointment);
+                                foundAppointment = sync.GetGoogleAppointmentById(AppointmentPropertiesUtils.GetGoogleId(googleAppointment));
+                            }
+                            else
+                                foundAppointment = null;
+                        }
                     }
 
                 }
@@ -163,15 +201,20 @@ namespace GoContactSyncMod
                 if (match.GoogleAppointment == null)
                     Logger.Log(string.Format("No match found for outlook appointment ({0}) => {1}", match.OutlookAppointment.Subject + " - " + match.OutlookAppointment.Start, (AppointmentPropertiesUtils.GetOutlookGoogleAppointmentId(sync, match.OutlookAppointment) != null ? "Delete from Outlook" : "Add to Google")), EventType.Information);
 
-                                result.Add(match);
+                result.Add(match);
             }
             #endregion
 
             
             //for each Google appointment that's left (they will be nonmatched) create a new match pair without outlook appointment. 
             for (int i = 0; i < sync.GoogleAppointments.Count; i++)
-            {
+            {                
                 var googleAppointment = sync.GoogleAppointments[i];
+
+                //For debugging:
+                //if (googleAppointment.Title.Text == "Flex Pilot - Latest Status")
+                //    throw new Exception("Debugging: Flex Pilot - Latest Status");
+
                 if (NotificationReceived != null)
                     NotificationReceived(String.Format("Adding new Google appointment {0} of {1} by unique properties: {2} ...", i + 1, sync.GoogleAppointments.Count, googleAppointment.Title.Text));
 
@@ -182,6 +225,11 @@ namespace GoContactSyncMod
                     sync.SkippedCountNotMatches++;
                     Logger.Log("Skipped GoogleAppointment because no unique property found (Subject or StartDate):" + googleAppointment.Title.Text + " - " + Syncronizer.GetTime(googleAppointment), EventType.Warning);
                 }
+                //else if (googleAppointment.Title.Text != "Business Trip")
+                //{//Only for debugging purposes, please comment if not needed
+                //    Logger.Log("Skipping Google appointment because of DEBUGGING:" + googleAppointment.Title.Text + " - " + googleAppointment.Times[0].StartTime, EventType.Error);
+                //    continue;
+                //}
                 else if (googleAppointment.OriginalEvent != null)
                 {
                     sync.SkippedCountNotMatches++;
