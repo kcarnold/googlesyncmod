@@ -1679,7 +1679,7 @@ namespace GoContactSyncMod
             //else                            
             //    updated = true;
 
-            if (slave.Recipients.Count > 0 && AppointmentPropertiesUtils.GetOutlookGoogleAppointmentId(this, slave) != null)
+            if (slave.Recipients.Count > 1 && AppointmentPropertiesUtils.GetOutlookGoogleAppointmentId(this, slave) != null)
             {
                 //ToDo:Maybe find as better way, e.g. to ask the user, if he wants to overwrite the invalid appointment
                 SkippedCount++;
