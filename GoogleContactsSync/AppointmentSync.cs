@@ -57,6 +57,8 @@ namespace GoContactSyncMod
             ////    slave.Attachments.Add(master.Attachments);
             
             slave.Content.Content = master.Body;
+
+            //ToDo: Also Track Available Status, but this is not existing in Google Data API
             slave.Status = Google.GData.Calendar.EventEntry.EventStatus.CONFIRMED;
             if (master.BusyStatus.Equals(Outlook.OlBusyStatus.olTentative))
                 slave.Status = Google.GData.Calendar.EventEntry.EventStatus.TENTATIVE;

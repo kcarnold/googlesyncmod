@@ -318,6 +318,14 @@ namespace GoContactSyncMod
                             matchingGoogleAppointment = sync.LoadGoogleAppointments(new AtomId(googleAppointmentId), 0, 0, null, null, null);
                         if (matchingGoogleAppointment == null)
                         {
+                            if (match.OutlookAppointment.Recipients.Count > 1)
+                            {
+                                //ToDo:Maybe find as better way, e.g. to ask the user, if he wants to overwrite the invalid appointment
+                                Logger.Log("Outlook Appointment not deleted, because multiple participants found and invitations NOT sent by Google: " + match.OutlookAppointment.Subject + " - " + match.OutlookAppointment.Start, EventType.Information);
+                                AppointmentPropertiesUtils.ResetOutlookGoogleAppointmentId(sync, match.OutlookAppointment);
+                                return;
+                            }
+
                             if (!sync.PromptDelete)
                                 sync.DeleteOutlookResolution = DeleteResolution.DeleteOutlookAlways;
                             else if (sync.DeleteOutlookResolution != DeleteResolution.DeleteOutlookAlways &&
@@ -345,7 +353,7 @@ namespace GoContactSyncMod
                         {
                             sync.SkippedCount++;
                             match.GoogleAppointment = matchingGoogleAppointment;
-                            Logger.Log("Outlook Appointment not deleted, because still existing on Google side, maybe because months restriction", EventType.Information);
+                            Logger.Log("Outlook Appointment not deleted, because still existing on Google side, maybe because months restriction: " + match.OutlookAppointment.Subject + " - " + match.OutlookAppointment.Start, EventType.Information);
                             return;
                         }
 
@@ -410,6 +418,9 @@ namespace GoContactSyncMod
             }
             else if (match.OutlookAppointment != null && match.GoogleAppointment != null)
             {
+                //ToDo: Check how to overcome appointment recurrences, which need more than 60 seconds to update and therefore get updated again and again because of time tolerance 60 seconds violated again and again
+                
+
                 //merge appointment details                
 
                 //determine if this appointment pair were syncronized
@@ -424,6 +435,13 @@ namespace GoContactSyncMod
                     //lastSynced is stored without seconds. take that into account.
                     DateTime lastUpdatedOutlook = match.OutlookAppointment.LastModificationTime.AddSeconds(-match.OutlookAppointment.LastModificationTime.Second);
                     DateTime lastUpdatedGoogle = match.GoogleAppointment.Updated.AddSeconds(-match.GoogleAppointment.Updated.Second);
+                    //consider GoogleAppointmentExceptions, because if they are updated, the master appointment doesn't have a new Saved TimeStamp
+                    foreach (EventEntry googleAppointment in match.GoogleAppointmentExceptions)
+                    {
+                        DateTime lastUpdatedGoogleException = googleAppointment.Updated.AddSeconds(-googleAppointment.Updated.Second);
+                        if (lastUpdatedGoogleException > lastUpdatedGoogle)
+                            lastUpdatedGoogle = lastUpdatedGoogleException;
+                    }
 
                     //check if both outlok and Google appointments where updated sync last sync
                     if ((int)lastUpdatedOutlook.Subtract(lastSynced.Value).TotalSeconds > TimeTolerance
