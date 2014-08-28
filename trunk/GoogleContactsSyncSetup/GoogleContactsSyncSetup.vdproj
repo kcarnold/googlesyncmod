@@ -869,7 +869,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:GO Contact Sync Mod"
         "ProductCode" = "8:{709C09E6-A960-4651-B40D-66F6E0952A72}"
-        "PackageCode" = "8:{8ECEF0B9-A677-4A15-B5F9-F792D34B2534}"
+        "PackageCode" = "8:{41A2555A-0B0D-4E86-96BA-DA6AAC64B185}"
         "UpgradeCode" = "8:{170B4620-F5BB-4D2E-97A1-239D79030F20}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
