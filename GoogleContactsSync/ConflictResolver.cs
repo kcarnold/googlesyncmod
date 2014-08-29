@@ -346,6 +346,33 @@ namespace GoContactSyncMod
 
             return Resolve();
         }
+
+        public ConflictResolution Resolve(string message, Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment, EventEntry googleAppointment, Syncronizer sync)
+        {
+            string name = string.Empty;
+
+            _form.OutlookItemTextBox.Text = string.Empty;
+            _form.GoogleItemTextBox.Text = string.Empty;
+            if (outlookAppointment != null)
+            {
+                name = outlookAppointment.Subject + " - " + outlookAppointment.Start;
+                _form.OutlookItemTextBox.Text += outlookAppointment.Body;
+            }
+
+            if (googleAppointment != null)
+            {
+                name = googleAppointment.Title.Text + " - " + Syncronizer.GetTime(googleAppointment);
+                _form.GoogleItemTextBox.Text += googleAppointment.Content.Content;
+            }
+
+            //ToDo: Make it more flexible
+            _form.keepGoogle.Enabled = false;
+            _form.AllCheckBox.Visible = false;
+            _form.messageLabel.Text = message;
+
+            return Resolve();
+        }
+
         public DeleteResolution ResolveDelete(Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment)
         {
 

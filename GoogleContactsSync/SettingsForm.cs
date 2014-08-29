@@ -681,7 +681,7 @@ namespace GoContactSyncMod
                 if (ex is COMException)
                 {
                     string message = "Outlook exception, please assure that Outlook is running and not closed when syncing";
-                    Logger.Log(message + ": " + ex.Message, EventType.Warning);
+                    Logger.Log(message + ": " + ex.Message + "\r\n" + ex.StackTrace, EventType.Warning);
                     ShowBalloonToolTip("Error", message, ToolTipIcon.Error, 5000, true);
                 }
                 else
