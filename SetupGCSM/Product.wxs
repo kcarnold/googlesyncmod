@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Product Id="*" Name="GoogleContactSyncMod" Language="1033" Version="1.0.0.0" Manufacturer="GCSM" UpgradeCode="27504567-5653-4a32-98c8-97d66c63d98e">
+		<Package Id="*" InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+		<MediaTemplate EmbedCab="yes"/>
+
+		<Feature Id="ProductFeature" Title="GCSM" Level="1">
+			<ComponentGroupRef Id="ProductComponents" />
+		</Feature>
+	</Product>
+
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLFOLDER" Name="GoogleContactSyncMod" />
+      </Directory>
+		</Directory>
+	</Fragment>
+
+	<Fragment>
+		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+			<Component Id="BinaryComponent">
+        <File Source="$(var.GoogleContactsSync.TargetPath)" ></File>
+				<!-- TODO: Insert files, registry keys, and other resources here. -->
+			</Component>
+		</ComponentGroup>
+	</Fragment>
+</Wix>
