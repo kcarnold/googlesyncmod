@@ -1,11 +1,11 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual C# Express 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30723.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoogleContactsSync", "GoogleContactsSync\GoogleContactsSync.csproj", "{E43CE572-6694-461D-A4DC-2DB768A7665A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{96D645AD-D2E3-414A-B170-E3E25A7723BE}"
-EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "GoogleContactsSyncSetup", "GoogleContactsSyncSetup\GoogleContactsSyncSetup.vdproj", "{936DBD8D-A805-47BA-9BB5-4B4013AB0F0B}"
 EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
@@ -42,12 +42,6 @@ Global
 		{96D645AD-D2E3-414A-B170-E3E25A7723BE}.Release|x64.ActiveCfg = Release|x64
 		{96D645AD-D2E3-414A-B170-E3E25A7723BE}.Release|x86.ActiveCfg = Release|x86
 		{96D645AD-D2E3-414A-B170-E3E25A7723BE}.Release|x86.Build.0 = Release|x86
-		{936DBD8D-A805-47BA-9BB5-4B4013AB0F0B}.Debug|Any CPU.ActiveCfg = Debug
-		{936DBD8D-A805-47BA-9BB5-4B4013AB0F0B}.Debug|x64.ActiveCfg = Debug
-		{936DBD8D-A805-47BA-9BB5-4B4013AB0F0B}.Debug|x86.ActiveCfg = Debug
-		{936DBD8D-A805-47BA-9BB5-4B4013AB0F0B}.Release|Any CPU.ActiveCfg = Release
-		{936DBD8D-A805-47BA-9BB5-4B4013AB0F0B}.Release|x64.ActiveCfg = Release
-		{936DBD8D-A805-47BA-9BB5-4B4013AB0F0B}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
