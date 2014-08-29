@@ -889,13 +889,10 @@ namespace GoContactSyncMod
                         g = sync.GetGoogleGroupByName(cat);
                         if (g == null)
                         {
-                            // create group
-                            if (g == null)
-                            {
-                                g = sync.CreateGroup(cat);
-                                g = sync.SaveGoogleGroup(g);
-                                sync.GoogleGroups.Add(g);
-                            }
+                            // create group                            
+                            g = sync.CreateGroup(cat);
+                            g = sync.SaveGoogleGroup(g);
+                            sync.GoogleGroups.Add(g);                            
                         }
                     }
                 }
