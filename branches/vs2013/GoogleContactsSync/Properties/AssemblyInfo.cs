@@ -9,7 +9,7 @@ using System.Resources;
 [assembly: AssemblyTitle("GO Contact Sync Mod")]
 [assembly: AssemblyDescription("Synchronize your Outlook and Google contacts. Visit our Project Homepage at http://googlesyncmod.sourceforge.net")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("WebGear Ltd, New Zealand + Create Software + Stru.be + saller.NET")]
+[assembly: AssemblyCompany("WebGear Ltd, New Zealand + Create Software + Stru.be + saller.NET + Big-R")]
 [assembly: AssemblyProduct("GO Contact Sync Mod")] //forked from GO Contact Sync, updated by Create Software and Stru.be and saller.NET
 [assembly: AssemblyCopyright("Copyright © Mikhail Diatchenko 2009, © WebGear Ltd, New Zealand 2009, parts © Create Software (Clément Pit--Claudel), parts © Stru.be (Stefan Strube), parts © saller.NET (Florian Saller), parts © Big-R (Ronny Berndt)")]
 [assembly: AssemblyTrademark("")]
@@ -31,6 +31,6 @@ using System.Resources;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("3.7.2.*")]
-[assembly: AssemblyFileVersion("3.7.2")]
-[assembly: NeutralResourcesLanguageAttribute("en-GB")]
+[assembly: AssemblyVersion("3.7.3.*")]
+[assembly: AssemblyFileVersion("3.7.3")]
+[assembly: NeutralResourcesLanguageAttribute("en-US")]
