@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <DirectoryRef Id="INSTALLLOCATION">
+            <Component Id="cmpFE385C1766E7C35F38A2FA76D0303187" Guid="{67B05AA2-EDB3-490D-AA29-8971F06D697B}">
+                <File Id="filDFE4BEA3D1BF18D2E66DC427FA6647D3" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.AccessControl.dll" />
+            </Component>
+            <Component Id="cmp77A3B1E1047F0234FA663F7D6C4103D4" Guid="{4CEF671A-1701-4B9C-8A50-CBF36BDFB5EA}">
+                <File Id="filC552906AD054CA41329AC1DF50B011CD" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.Analytics.dll" />
+            </Component>
+            <Component Id="cmp52DA60EAFDED3BF5AB0E1CC075B28DBD" Guid="{862F72BC-6F90-4A0E-BEFB-CC601C3E9A6C}">
+                <File Id="fil2F988569E462AF7E8FF6DCC46FB08CCD" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.Apps.dll" />
+            </Component>
+            <Component Id="cmp64D148BC1EB122C5BD9B84136A9CA53E" Guid="{02A43154-F42B-40FF-8B50-C7C807F26961}">
+                <File Id="fil693B501D450C2BD37FB52D98A8B2A7F2" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.Blogger.dll" />
+            </Component>
+            <Component Id="cmpC988E00E192496360A5659D1B0D9CEA0" Guid="{F5BE0C3B-D272-48DC-8A07-24052D8E2C30}">
+                <File Id="fil784FDDF868133582362B3A6F95B9441D" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.Calendar.dll" />
+            </Component>
+            <Component Id="cmp3578439E84A7640AFEBF890BEF51DF9F" Guid="{DFB1FFC8-D24D-40B7-8382-5A0CD0F0F967}">
+                <File Id="filFFD513F7276ECCEA801AD56D1BDBAAB2" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.Client.dll" />
+            </Component>
+            <Component Id="cmp4C88EF534D672489E83C8B5026CA90CA" Guid="{774297D1-BD56-4B61-AC21-829959BC2077}">
+                <File Id="fil0AF9DEC08066A918CBB71E588E0C98A4" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.Contacts.dll" />
+            </Component>
+            <Component Id="cmp0F012A17060D7F068F866C89C1C2BEED" Guid="{89CBA62B-0BBF-4D03-A6E2-F030DE4E19E8}">
+                <File Id="fil14CE8E80866E635813C3671A16803729" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.ContentForShopping.dll" />
+            </Component>
+            <Component Id="cmp4188C2728F2FD2DFC8A4447B4C7902B7" Guid="{BFBF0A61-93E8-4606-9488-FB8660461AD0}">
+                <File Id="filA1E5BD1C0A48324E1C685B6E73E52945" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.Documents.dll" />
+            </Component>
+            <Component Id="cmp0B3CE06EB2D8BD723898ADF2B90DA31D" Guid="{96AA35F7-8B10-4493-96D2-664BFFD9BC8B}">
+                <File Id="filDE994DD767B62603F583333A71F589FB" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.Extensions.dll" />
+            </Component>
+            <Component Id="cmpCC7FC85DAB2FF89ECCBC484263EBD175" Guid="{044299F3-F25B-4641-939C-2370F395ECD6}">
+                <File Id="filEF39FEF1F0E0A4C5B49FBEAF7DFD0090" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.Photos.dll" />
+            </Component>
+            <Component Id="cmpB56052B3AE5791266A74E071C399B7F0" Guid="{96CA494B-DC2E-445B-8154-14C95F2FD341}">
+                <File Id="fil04F2C885578E94F8985FF91D1C73CEF1" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.Spreadsheets.dll" />
+            </Component>
+            <Component Id="cmp6CB260F5D83D0B78BBB8A9CF214AE0F9" Guid="{5351CFB4-28D1-44D7-BE52-18AB1535D388}">
+                <File Id="filB55F9CF2E0ECB024E6BB51A101963D1A" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.WebmasterTools.dll" />
+            </Component>
+            <Component Id="cmpCC795B8A5BAD96FCA90BE479AA51D086" Guid="{4A30F902-BD75-4C56-8B6B-9593134597E8}">
+                <File Id="filFEA7C469A55449666C7272E3860282D8" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.YouTube.dll" />
+            </Component>
+            <Component Id="cmpE48528C4F5932A4EFD89F7331108F45D" Guid="{01F89462-925C-4909-A5BD-028E59819F29}">
+                <File Id="filF1B84C2C6BCC693224B7A7959445B74F" KeyPath="yes" Source="$(var.GoogleAPIDir)\Newtonsoft.Json.dll" />
+            </Component>
+            <Component Id="cmp0F404ED493BDFFBCF640DDA4405E7EFE" Guid="{158770DC-0C2F-47AE-8E5E-47D79473693C}">
+                <File Id="fil0A59CE8DA2966629B775DE366D0DF117" KeyPath="yes" Source="$(var.GoogleAPIDir)\ReadMe.txt" />
+            </Component>
+            <Component Id="cmpC6498C748627F772B87732121E074EDA" Guid="{00B109B8-30BE-4938-A39E-C3BD43DDBE8D}">
+                <File Id="fil747E04943B44D10FCA052CF5F3EEF300" KeyPath="yes" Source="$(var.GoogleAPIDir)\zlib.x86.dll" />
+            </Component>
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <ComponentGroup Id="GoogleAPIFiles">
+            <ComponentRef Id="cmpFE385C1766E7C35F38A2FA76D0303187" />
+            <ComponentRef Id="cmp77A3B1E1047F0234FA663F7D6C4103D4" />
+            <ComponentRef Id="cmp52DA60EAFDED3BF5AB0E1CC075B28DBD" />
+            <ComponentRef Id="cmp64D148BC1EB122C5BD9B84136A9CA53E" />
+            <ComponentRef Id="cmpC988E00E192496360A5659D1B0D9CEA0" />
+            <ComponentRef Id="cmp3578439E84A7640AFEBF890BEF51DF9F" />
+            <ComponentRef Id="cmp4C88EF534D672489E83C8B5026CA90CA" />
+            <ComponentRef Id="cmp0F012A17060D7F068F866C89C1C2BEED" />
+            <ComponentRef Id="cmp4188C2728F2FD2DFC8A4447B4C7902B7" />
+            <ComponentRef Id="cmp0B3CE06EB2D8BD723898ADF2B90DA31D" />
+            <ComponentRef Id="cmpCC7FC85DAB2FF89ECCBC484263EBD175" />
+            <ComponentRef Id="cmpB56052B3AE5791266A74E071C399B7F0" />
+            <ComponentRef Id="cmp6CB260F5D83D0B78BBB8A9CF214AE0F9" />
+            <ComponentRef Id="cmpCC795B8A5BAD96FCA90BE479AA51D086" />
+            <ComponentRef Id="cmpE48528C4F5932A4EFD89F7331108F45D" />
+            <ComponentRef Id="cmp0F404ED493BDFFBCF640DDA4405E7EFE" />
+            <ComponentRef Id="cmpC6498C748627F772B87732121E074EDA" />
+        </ComponentGroup>
+    </Fragment>
+</Wix>
