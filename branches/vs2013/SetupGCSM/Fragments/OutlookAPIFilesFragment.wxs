@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <DirectoryRef Id="INSTALLLOCATION">
+            <Component Id="cmpBD1A39765DE825049C6308DE92F1954A" Guid="{8F61CA8B-9CD2-40CA-8B02-6CC20C9C8DEC}">
+                <File Id="fil884AEFE00248A1D1E0C39E3078DB1234" KeyPath="yes" Source="$(var.OutlookAPIDir)\Microsoft.Office.Interop.Outlook.dll" />
+            </Component>
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <ComponentGroup Id="OutlookAPIFiles">
+            <ComponentRef Id="cmpBD1A39765DE825049C6308DE92F1954A" />
+        </ComponentGroup>
+    </Fragment>
+</Wix>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+  <!-- This is how we include wxi files -->
+  <?include $(sys.CURRENTDIR)Includes\Variables.wxi ?>
+
+  <Product Id="*"
+           Name="!(loc.ProductName) !(bind.FileVersion.fil314CA3CA2085C9E6AFB0D54561EC0ABD)"
+           Language="!(loc.LANG)"
+           Version="!(bind.FileVersion.fil314CA3CA2085C9E6AFB0D54561EC0ABD)"
+           Manufacturer="$(var.ManufacturerName)"
+           UpgradeCode="$(var.UpgradeCode)">
+
+    <!-- Define the minimum supported installer version (3.0) and that the install should be done for the whole machine not just the current user -->
+    <Package InstallerVersion="300" Compressed="yes" InstallScope="perMachine"/>
+
+    <Media Id="1" Cabinet="media.cab" EmbedCab="yes" />
+    
+    <!-- Upgrade settings. This will be explained in more detail in a future post -->
+    <Upgrade Id="$(var.UpgradeCode)">
+      <UpgradeVersion OnlyDetect="yes" Minimum="!(bind.FileVersion.fil314CA3CA2085C9E6AFB0D54561EC0ABD)" IncludeMinimum="no" Property="NEWER_VERSION_FOUND" />
+      <UpgradeVersion Minimum="0.0.0.0" IncludeMinimum="yes" Maximum="!(bind.FileVersion.fil314CA3CA2085C9E6AFB0D54561EC0ABD)" IncludeMaximum="no" Property="OLDER_VERSION_FOUND" />
+    </Upgrade>
+
+    <!-- Reference the global NETFRAMEWORKxx property to check if it exists -->
+    <PropertyRef Id="NETFRAMEWORK35"/>
+    <!-- 
+    Startup conditions that checks if .Net Framework 3.5 is installed or if 
+    we're running the OS higher than Windows XP SP2.
+    If not the installation is aborted.
+    By doing the (Installed OR ...) property means that this condition will only 
+    be evaluated if the app is being installed and not on uninstall or changing
+    -->
+    <Condition Message="!(loc.DotNet35FrameworkNeeded)">
+      <![CDATA[Installed OR NETFRAMEWORK35]]>
+    </Condition>
+    <Condition Message="!(loc.AppNotSupported)">
+      <![CDATA[Installed OR ((VersionNT >= 501 AND ServicePackLevel >= 3) OR (VersionNT >= 502))]]>
+    </Condition>
+
+    <!-- 
+    This custom action in the InstallExecuteSequence is needed to 
+    stop silent install (passing /qb to msiexec) from going around it. 
+    -->
+    <CustomAction Id="NewerVersionFound" Error="!(loc.GoogleContactSyncModNewerVersionInstalled)" />
+    
+    <InstallExecuteSequence>
+      <!-- Check for newer versions with FindRelatedProducts and execute the custom action after it -->
+      <Custom Action="NewerVersionFound" After="FindRelatedProducts">
+        <![CDATA[NEWER_VERSION_FOUND]]>
+      </Custom>
+      <!-- Remove the previous versions of the product -->
+      <RemoveExistingProducts After="InstallInitialize"/>
+      <!-- WixCloseApplications is a built in custom action that uses util:CloseApplication below -->
+      <Custom Action="WixCloseApplications" Before="InstallInitialize" />
+    </InstallExecuteSequence>
+
+    <!-- This will ask the user to close the SuperForm app if it's running while upgrading -->
+    <util:CloseApplication Id="CloseGoogleContactSyncMod" CloseMessage="no" Description="!(loc.MustCloseGoogleContactSyncMod)"
+                           ElevatedCloseMessage="no" RebootPrompt="no" Target="$(var.ExeProcessName)" />
+    
+    <!-- Use the built in WixUI_InstallDir GUI -->
+    <UIRef Id="WixUI_InstallDir" />
+    
+    <!--add licence to installer -->
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.ProjectDir)Lang\GPLv3.rtf" />
+
+    <!-- Set the icon to show next to the program name in Add/Remove programs -->
+    <Icon Id="GoogleContactsSyncMod.ico" SourceFile="$(var.SolutionDir)GoogleContactsSync\Resources\contacts-sync.ico" />
+    <Property Id="ARPPRODUCTICON" Value="GoogleContactsSyncMod.ico" />
+    
+    
+    <!-- Installer UI custom pictures. File names are made up. Add path to your pics. 
+      <WixVariable Id="WixUIDialogBmp" Value="MyAppLogo.jpg" />
+      <WixVariable Id="WixUIBannerBmp" Value="installBanner.jpg" /> 
+    -->
+    
+    <!-- the default directory structure -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLLOCATION" Name="!(loc.ProductName)" />
+      </Directory>
+    </Directory>
+    <!-- 
+    Set the default install location to the value of 
+    INSTALLLOCATION (usually c:\Program Files\YourProductName) 
+    -->
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLLOCATION" />
+    <!-- Set the components defined in our fragment files that will be used for our feature  -->
+    <Feature Id="GoogleContactSyncModFeature" Title="!(loc.ProductName)" Level="1">
+    
+      <ComponentGroupRef Id="GoogleAPIFiles" />
+      <ComponentGroupRef Id="OutlookAPIFiles"/>
+      <ComponentGroupRef Id="GoogleContactsSync.Binaries"/>
+      <ComponentGroupRef Id="GoogleContactsSync.Symbols"/>
+
+    </Feature>
+  </Product>
+</Wix>
