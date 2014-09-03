@@ -7,4 +7,5 @@
   <String Id="DotNet35FrameworkNeeded">Das .NET Framework 3.5 wird benötigt. Bitte installieren Sie dieses vorher und starten die Installaion erneut.</String>
   <String Id="MustCloseGoogleContactSyncMod">GO Contact Sync Mod muss geschlossen werden!</String>
   <String Id="GoogleContactSyncModNewerVersionInstalled">Eine aktuellere Version von !(loc.ProductName) ist schon installiert.</String>
+  <String Id="RunAfterInstall">Starte !(loc.ProductName) nach der Installation?</String>
 </WixLocalization>
