@@ -15,7 +15,7 @@
     <Package InstallerVersion="300" Compressed="yes" InstallScope="perMachine"/>
 
     <Media Id="1" Cabinet="media.cab" EmbedCab="yes" />
-    
+
     <!-- Upgrade settings. This will be explained in more detail in a future post -->
     <Upgrade Id="$(var.UpgradeCode)">
       <UpgradeVersion OnlyDetect="yes" Minimum="!(bind.FileVersion.fil314CA3CA2085C9E6AFB0D54561EC0ABD)" IncludeMinimum="no" Property="NEWER_VERSION_FOUND" />
@@ -43,7 +43,7 @@
     stop silent install (passing /qb to msiexec) from going around it. 
     -->
     <CustomAction Id="NewerVersionFound" Error="!(loc.GoogleContactSyncModNewerVersionInstalled)" />
-    
+
     <InstallExecuteSequence>
       <!-- Check for newer versions with FindRelatedProducts and execute the custom action after it -->
       <Custom Action="NewerVersionFound" After="FindRelatedProducts">
@@ -58,27 +58,36 @@
     <!-- This will ask the user to close the SuperForm app if it's running while upgrading -->
     <util:CloseApplication Id="CloseGoogleContactSyncMod" CloseMessage="no" Description="!(loc.MustCloseGoogleContactSyncMod)"
                            ElevatedCloseMessage="no" RebootPrompt="no" Target="$(var.ExeProcessName)" />
-    
+
     <!-- Use the built in WixUI_InstallDir GUI -->
-    <UIRef Id="WixUI_InstallDir" />
-    
+    <UI>
+      <UIRef Id="WixUI_InstallDir" />
+      <Publish Dialog="ExitDialog"
+         Control="Finish"
+         Event="DoAction"
+         Value="LaunchApplication">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed</Publish>
+    </UI>
+
     <!--add licence to installer -->
     <WixVariable Id="WixUILicenseRtf" Value="$(var.ProjectDir)Lang\GPLv3.rtf" />
 
     <!-- Set the icon to show next to the program name in Add/Remove programs -->
     <Icon Id="GoogleContactsSyncMod.ico" SourceFile="$(var.SolutionDir)GoogleContactsSync\Resources\contacts-sync.ico" />
     <Property Id="ARPPRODUCTICON" Value="GoogleContactsSyncMod.ico" />
-    
-    
+
+
     <!-- Installer UI custom pictures. File names are made up. Add path to your pics. 
       <WixVariable Id="WixUIDialogBmp" Value="MyAppLogo.jpg" />
       <WixVariable Id="WixUIBannerBmp" Value="installBanner.jpg" /> 
     -->
-    
+
     <!-- the default directory structure -->
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder">
         <Directory Id="INSTALLLOCATION" Name="!(loc.ProductName)" />
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="!(loc.ProductName)"/>
       </Directory>
     </Directory>
     <!-- 
@@ -88,12 +97,21 @@
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLLOCATION" />
     <!-- Set the components defined in our fragment files that will be used for our feature  -->
     <Feature Id="GoogleContactSyncModFeature" Title="!(loc.ProductName)" Level="1">
-    
+
       <ComponentGroupRef Id="GoogleAPIFiles" />
       <ComponentGroupRef Id="OutlookAPIFiles"/>
       <ComponentGroupRef Id="GoogleContactsSync.Binaries"/>
       <ComponentGroupRef Id="GoogleContactsSync.Symbols"/>
+      <ComponentGroupRef Id="Shortcut"/>
 
     </Feature>
+
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="!(loc.RunAfterInstall)" />
+
+    <Property Id="WixShellExecTarget" Value="[#fil314CA3CA2085C9E6AFB0D54561EC0ABD]" />
+    <CustomAction Id="LaunchApplication"
+                  BinaryKey="WixCA"
+                  DllEntry="WixShellExec"
+                  Impersonate="yes" />
   </Product>
 </Wix>
