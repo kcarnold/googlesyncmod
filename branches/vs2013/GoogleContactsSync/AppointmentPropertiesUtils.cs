@@ -290,7 +290,7 @@ namespace GoContactSyncMod
                                         }
                                         else
                                         {
-                                            Logger.Log(string.Format("Unsupported AddressEntryUserType {0} for email '{1}' in appointment '{3}'.", addressEntry.AddressEntryUserType, addressEntry.Address, subject), EventType.Debug);
+                                            Logger.Log(string.Format("Unsupported AddressEntryUserType {0} for email '{1}' in appointment '{2}'.", addressEntry.AddressEntryUserType, addressEntry.Address, subject), EventType.Debug);
                                         }
                                     }
                                     finally

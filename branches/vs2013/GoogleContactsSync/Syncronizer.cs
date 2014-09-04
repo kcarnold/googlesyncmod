@@ -2494,7 +2494,7 @@ namespace GoContactSyncMod
 					g = GetGoogleGroupByName(cat);
 					if (g == null)
 					{
-						throw new Exception(string.Format("Google Groups were supposed to be created prior to saving", cat));
+						throw new Exception(string.Format("Google Groups were supposed to be created prior to saving {0}", cat));
 					}
 					Utilities.AddGoogleGroup(slave, g);
 				}
@@ -2507,7 +2507,7 @@ namespace GoContactSyncMod
                 g = GetGoogleGroupByName(myContactsGroup);
                 if (g == null)
                 {
-                    throw new Exception(string.Format("Google System Group: My Contacts doesn't exist", myContactsGroup));
+                    throw new Exception(string.Format("Google System Group: My Contacts doesn't exist {0}", myContactsGroup));
                 }
                 Utilities.AddGoogleGroup(slave, g);
             }
