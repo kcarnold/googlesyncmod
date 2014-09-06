@@ -5,7 +5,7 @@
   <?include $(sys.CURRENTDIR)Includes\Variables.wxi ?>
 
   <Product Id="*"
-           Name="!(loc.ProductName) !(bind.FileVersion.fil314CA3CA2085C9E6AFB0D54561EC0ABD)"
+           Name="!(loc.ProductName) $(var.ShortAssemblyVersion)"
            Language="!(loc.LANG)"
            Version="!(bind.FileVersion.fil314CA3CA2085C9E6AFB0D54561EC0ABD)"
            Manufacturer="$(var.ManufacturerName)"

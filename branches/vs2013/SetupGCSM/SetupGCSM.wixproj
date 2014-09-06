@@ -93,10 +93,25 @@
   </Target>
   -->
   <Target Name="BeforeBuild">
+    
+    <!--Read AssemblyInfo.cs-->
     <GetAssemblyIdentity AssemblyFiles="$(SolutionDir)GoogleContactsSync\bin\$(Configuration)\GoContactSync.exe">
       <Output TaskParameter="Assemblies" ItemName="AssemblyVersions" />
     </GetAssemblyIdentity>
-    <CreateProperty Value="$(OutputName)-%(AssemblyVersions.Version)">
+    <!--Read Assembly version-->
+    <CreateProperty Value="%(AssemblyVersions.Version)">
+      <Output TaskParameter="Value" PropertyName="AssyVersion" />
+    </CreateProperty>
+    <!--create short version number-->
+    <CreateProperty Value="$(AssyVersion.Split('.')[0]).$(AssyVersion.Split('.')[1]).$(AssyVersion.Split('.')[2])">
+      <Output TaskParameter="Value" PropertyName="ShortAssemblyVersion" />
+    </CreateProperty>
+
+    <CreateProperty Value="$(DefineConstants);ShortAssemblyVersion=$(ShortAssemblyVersion)">
+      <Output TaskParameter="Value" PropertyName="DefineConstants" />
+    </CreateProperty>
+
+    <CreateProperty Value="$(OutputName)-$(ShortAssemblyVersion)">
       <Output TaskParameter="Value" PropertyName="TargetName" />
     </CreateProperty>
     <CreateProperty Value="$(TargetName)$(TargetExt)">
