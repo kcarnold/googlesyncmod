@@ -160,9 +160,20 @@ namespace GoContactSyncMod
             if (master.Times.Count == 1 || master.Times.Count > 0 && master.Recurrence == null)
             {//only sync times for not recurrent events
                 //ToDo: How to sync deleted recurrences?
-                slave.AllDayEvent = master.Times[0].AllDay;
-                slave.Start = master.Times[0].StartTime;
-                slave.End = master.Times[0].EndTime;
+
+                try
+                {
+                    if (slave.AllDayEvent != master.Times[0].AllDay)
+                        slave.AllDayEvent = master.Times[0].AllDay;
+                    if (slave.Start != master.Times[0].StartTime)
+                        slave.Start = master.Times[0].StartTime;
+                    if (slave.End != master.Times[0].EndTime)
+                        slave.End = master.Times[0].EndTime;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log("Error updating event " + master.Title + " - " + Syncronizer.GetTime(master) + ": " + ex.Message, EventType.Warning);
+                }
             }
             
             //slave.StartInStartTimeZone = master.StartInStartTimeZone;
