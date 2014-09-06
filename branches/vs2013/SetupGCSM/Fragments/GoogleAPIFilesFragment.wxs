@@ -2,25 +2,25 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Fragment>
         <DirectoryRef Id="INSTALLLOCATION">
-            <Component Id="cmpFE385C1766E7C35F38A2FA76D0303187" Guid="{631EAA4C-1F0D-4667-B219-CE0478095B66}">
+            <Component Id="cmpFE385C1766E7C35F38A2FA76D0303187" Guid="{42F5C16E-9A3A-4E51-9B38-8A71F6F1FA68}">
                 <File Id="filDFE4BEA3D1BF18D2E66DC427FA6647D3" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.AccessControl.dll" />
             </Component>
-            <Component Id="cmpC988E00E192496360A5659D1B0D9CEA0" Guid="{5233F9EF-94FB-4732-9ECA-B35F92FA0A97}">
+            <Component Id="cmpC988E00E192496360A5659D1B0D9CEA0" Guid="{F8ADEAEF-A9D3-4C8C-98FF-CE45202D3B98}">
                 <File Id="fil784FDDF868133582362B3A6F95B9441D" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.Calendar.dll" />
             </Component>
-            <Component Id="cmp3578439E84A7640AFEBF890BEF51DF9F" Guid="{3893F780-EF4A-44DC-9E64-665CA414A00F}">
+            <Component Id="cmp3578439E84A7640AFEBF890BEF51DF9F" Guid="{41BB1FB2-C5F5-49E3-ACA7-6DD5DFA55718}">
                 <File Id="filFFD513F7276ECCEA801AD56D1BDBAAB2" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.Client.dll" />
             </Component>
-            <Component Id="cmp4C88EF534D672489E83C8B5026CA90CA" Guid="{837544D3-712A-4DBB-937F-A6D6EA3053C6}">
+            <Component Id="cmp4C88EF534D672489E83C8B5026CA90CA" Guid="{5AB0D16F-FB09-4B2D-897C-3409D6E2C573}">
                 <File Id="fil0AF9DEC08066A918CBB71E588E0C98A4" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.Contacts.dll" />
             </Component>
-            <Component Id="cmp4188C2728F2FD2DFC8A4447B4C7902B7" Guid="{A1B6490F-6AFB-482C-97E5-5D17336DE1B4}">
+            <Component Id="cmp4188C2728F2FD2DFC8A4447B4C7902B7" Guid="{F35FEA34-7D53-496F-890D-FD9C48210EDC}">
                 <File Id="filA1E5BD1C0A48324E1C685B6E73E52945" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.Documents.dll" />
             </Component>
-            <Component Id="cmp0B3CE06EB2D8BD723898ADF2B90DA31D" Guid="{440BFB76-497F-4409-8AD8-EA84F7FD4C89}">
+            <Component Id="cmp0B3CE06EB2D8BD723898ADF2B90DA31D" Guid="{DE5E8BAF-ED6C-4896-92A8-9682B2D74BA4}">
                 <File Id="filDE994DD767B62603F583333A71F589FB" KeyPath="yes" Source="$(var.GoogleAPIDir)\Google.GData.Extensions.dll" />
             </Component>
-            <Component Id="cmpE48528C4F5932A4EFD89F7331108F45D" Guid="{93A4406C-EB83-42A7-B519-6CE8B88BC8A7}">
+            <Component Id="cmpE48528C4F5932A4EFD89F7331108F45D" Guid="{9EF0821C-B5E6-4613-8A34-697A7E39F03D}">
                 <File Id="filF1B84C2C6BCC693224B7A7959445B74F" KeyPath="yes" Source="$(var.GoogleAPIDir)\Newtonsoft.Json.dll" />
             </Component>
         </DirectoryRef>
