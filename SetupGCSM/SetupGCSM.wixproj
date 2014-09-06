@@ -15,7 +15,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>$(ProjectDir)Packages\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>Debug</DefineConstants>
+    <DefineConstants>GoogleAPIDir=$(SolutionDir)GoogleAPI;OutlookAPIDir=$(SolutionDir)OutlookAPI\v15</DefineConstants>
     <DefineConstants>GoogleAPIDir=$(SolutionDir)GoogleAPI\;OutlookAPIDir=$(SolutionDir)OutlookAPI\v15\</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
@@ -74,15 +74,6 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
-  <PropertyGroup>
-    <PostBuildEvent>REM “$(SolutionDir)BootstrapperBuild.bat $(TargetDir) $(TargetFileName) $(SolutionDir)”</PostBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PreBuildEvent>
-      "$(WIX)bin\heat.exe" dir "$(SolutionDir)GoogleAPI\ " -cg GoogleAPIFiles -gg -scom -sreg -sfrag -srd -dr INSTALLLOCATION  -var var.GoogleAPIDir -v -out "$(ProjectDir)Fragments\GoogleAPIFilesFragment.wxs"
-      "$(WIX)bin\heat.exe" dir "$(SolutionDir)OutlookAPI\v15\ " -cg OutlookAPIFiles -gg -scom -sreg -sfrag -srd -dr INSTALLLOCATION  -var var.OutlookAPIDir -v -out "$(ProjectDir)Fragments\OutlookAPIFilesFragment.wxs"
-    </PreBuildEvent>
-  </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
 	Other similar extension points exist, see Wix.targets.
@@ -93,7 +84,6 @@
   </Target>
   -->
   <Target Name="BeforeBuild">
-    
     <!--Read AssemblyInfo.cs-->
     <GetAssemblyIdentity AssemblyFiles="$(SolutionDir)GoogleContactsSync\bin\$(Configuration)\GoContactSync.exe">
       <Output TaskParameter="Assemblies" ItemName="AssemblyVersions" />
@@ -106,11 +96,9 @@
     <CreateProperty Value="$(AssyVersion.Split('.')[0]).$(AssyVersion.Split('.')[1]).$(AssyVersion.Split('.')[2])">
       <Output TaskParameter="Value" PropertyName="ShortAssemblyVersion" />
     </CreateProperty>
-
     <CreateProperty Value="$(DefineConstants);ShortAssemblyVersion=$(ShortAssemblyVersion)">
       <Output TaskParameter="Value" PropertyName="DefineConstants" />
     </CreateProperty>
-
     <CreateProperty Value="$(OutputName)-$(ShortAssemblyVersion)">
       <Output TaskParameter="Value" PropertyName="TargetName" />
     </CreateProperty>
@@ -121,4 +109,11 @@
       <Output TaskParameter="Value" PropertyName="TargetPath" />
     </CreateProperty>
   </Target>
+  <PropertyGroup>
+    <PostBuildEvent />
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>REM "$(WIX)bin\heat.exe" dir "$(SolutionDir)GoogleAPI" -cg GoogleAPIFiles -gg -scom -sreg -sfrag -srd -dr INSTALLLOCATION  -var var.GoogleAPIDir -v -out "$(ProjectDir)Fragments\GoogleAPIFilesFragment.wxs"
+REM "$(WIX)bin\heat.exe" dir "$(SolutionDir)OutlookAPI\v15" -cg OutlookAPIFiles -gg -scom -sreg -sfrag -srd -dr INSTALLLOCATION  -var var.OutlookAPIDir -v -out "$(ProjectDir)Fragments\OutlookAPIFilesFragment.wxs"</PreBuildEvent>
+  </PropertyGroup>
 </Project>
