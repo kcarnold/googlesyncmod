@@ -2,7 +2,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Fragment>
         <DirectoryRef Id="INSTALLLOCATION">
-            <Component Id="cmpBD1A39765DE825049C6308DE92F1954A" Guid="{4B4E0443-D64E-4F25-BFBE-5288BD660F32}">
+            <Component Id="cmpBD1A39765DE825049C6308DE92F1954A" Guid="{BB04E8B5-0E78-4E4C-8F9B-A2147E8016DE}">
                 <File Id="fil884AEFE00248A1D1E0C39E3078DB1234" KeyPath="yes" Source="$(var.OutlookAPIDir)\Microsoft.Office.Interop.Outlook.dll" />
             </Component>
         </DirectoryRef>
