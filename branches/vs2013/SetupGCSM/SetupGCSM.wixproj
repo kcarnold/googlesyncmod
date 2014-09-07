@@ -21,7 +21,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>$(ProjectDir)Packages\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>GoogleAPIDir=$(SolutionDir)GoogleAPI\;OutlookAPIDir=$(SolutionDir)OutlookAPI\v15\</DefineConstants>
+    <DefineConstants>GoogleAPIDir=$(SolutionDir)GoogleAPI\;OutlookAPIDir=$(SolutionDir)OutlookAPI\</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Fragments\BinariesAndSymbolsFilesFragment.wxs" />
@@ -113,7 +113,7 @@
     <PostBuildEvent />
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>REM "$(WIX)bin\heat.exe" dir "$(SolutionDir)GoogleAPI" -cg GoogleAPIFiles -gg -scom -sreg -sfrag -srd -dr INSTALLLOCATION  -var var.GoogleAPIDir -v -out "$(ProjectDir)Fragments\GoogleAPIFilesFragment.wxs"
-REM "$(WIX)bin\heat.exe" dir "$(SolutionDir)OutlookAPI\v15" -cg OutlookAPIFiles -gg -scom -sreg -sfrag -srd -dr INSTALLLOCATION  -var var.OutlookAPIDir -v -out "$(ProjectDir)Fragments\OutlookAPIFilesFragment.wxs"</PreBuildEvent>
+    <PreBuildEvent>REM "$(WIX)bin\heat.exe" dir "$(SolutionDir)GoogleAPI" -cg GoogleAPIFiles -gg -scom -sreg -sfrag -srd -dr INSTALLLOCATION  -var var.GoogleAPIDir -v -out "$(ProjectDir)Fragments\GoogleAPIFilesFragment.wxs
+REM "$(WIX)bin\heat.exe" dir "$(SolutionDir)OutlookAPI" -cg OutlookAPIFiles -gg -scom -sreg -sfrag -srd -dr INSTALLLOCATION  -var var.OutlookAPIDir -v -out "$(ProjectDir)Fragments\OutlookAPIFilesFragment.wxs"</PreBuildEvent>
   </PropertyGroup>
 </Project>
