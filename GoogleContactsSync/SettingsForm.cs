@@ -155,8 +155,9 @@ namespace GoContactSyncMod
         private void fillSyncFolderItems()
         {
             lock (syncRoot)
-            {
-                if (this.contactFoldersComboBox.Items.Count == 0 || this.noteFoldersComboBox.Items.Count == 0 || this.appointmentFoldersComboBox.Items.Count == 0)
+            {                
+                if (this.contactFoldersComboBox.DataSource == null || this.noteFoldersComboBox.DataSource == null || this.appointmentFoldersComboBox.DataSource == null ||
+                    this.contactFoldersComboBox.Items.Count == 0 || this.noteFoldersComboBox.Items.Count == 0 || this.appointmentFoldersComboBox.Items.Count == 0)
                 {
                     Logger.Log("Loading Outlook folders...", EventType.Information);
 
@@ -172,7 +173,12 @@ namespace GoContactSyncMod
                         Cursor = Cursors.WaitCursor;
                         SuspendLayout();
 
-                        //this.contactFoldersComboBox.BeginUpdate();
+                        this.contactFoldersComboBox.BeginUpdate();
+                        this.noteFoldersComboBox.BeginUpdate();
+                        this.appointmentFoldersComboBox.BeginUpdate();
+                        this.contactFoldersComboBox.DataSource = null;
+                        this.noteFoldersComboBox.DataSource = null;
+                        this.appointmentFoldersComboBox.DataSource = null;
                         //this.contactFoldersComboBox.Items.Clear();
 
                         Microsoft.Office.Interop.Outlook.Folders folders = Syncronizer.OutlookNameSpace.Folders;
@@ -187,22 +193,31 @@ namespace GoContactSyncMod
                                 Logger.Log("Error getting available Outlook folders: " + e.Message, EventType.Warning);
                             }
                         }
-                        outlookContactFolders.Sort();
-                        outlookNoteFolders.Sort();
-                        outlookAppointmentFolders.Sort();
+                                                                        
 
-                        this.contactFoldersComboBox.DataSource = outlookContactFolders;
-                        this.contactFoldersComboBox.DisplayMember = "DisplayName";
-                        this.contactFoldersComboBox.ValueMember = "FolderID";
+                        if (outlookContactFolders != null && outlookContactFolders.Count > 0)
+                        {
+                            outlookContactFolders.Sort();
+                            this.contactFoldersComboBox.DataSource = outlookContactFolders;
+                            this.contactFoldersComboBox.DisplayMember = "DisplayName";
+                            this.contactFoldersComboBox.ValueMember = "FolderID";
+                        }
 
-                        this.noteFoldersComboBox.DataSource = outlookNoteFolders;
-                        this.noteFoldersComboBox.DisplayMember = "DisplayName";
-                        this.noteFoldersComboBox.ValueMember = "FolderID";
+                        if (outlookNoteFolders != null && outlookNoteFolders.Count > 0)
+                        {
+                            outlookNoteFolders.Sort();
+                            this.noteFoldersComboBox.DataSource = outlookNoteFolders;
+                            this.noteFoldersComboBox.DisplayMember = "DisplayName";
+                            this.noteFoldersComboBox.ValueMember = "FolderID";
+                        }
 
-                        this.appointmentFoldersComboBox.DataSource = outlookAppointmentFolders;
-                        this.appointmentFoldersComboBox.DisplayMember = "DisplayName";
-                        this.appointmentFoldersComboBox.ValueMember = "FolderID";
-
+                        if (outlookAppointmentFolders != null && outlookAppointmentFolders.Count > 0)
+                        {
+                            outlookAppointmentFolders.Sort();
+                            this.appointmentFoldersComboBox.DataSource = outlookAppointmentFolders;
+                            this.appointmentFoldersComboBox.DisplayMember = "DisplayName";
+                            this.appointmentFoldersComboBox.ValueMember = "FolderID";
+                        }
                         this.contactFoldersComboBox.EndUpdate();
                         this.noteFoldersComboBox.EndUpdate();
                         this.appointmentFoldersComboBox.EndUpdate();
