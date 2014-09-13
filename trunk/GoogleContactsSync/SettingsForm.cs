@@ -172,8 +172,8 @@ namespace GoContactSyncMod
                         Cursor = Cursors.WaitCursor;
                         SuspendLayout();
 
-                        this.contactFoldersComboBox.BeginUpdate();
-                        this.contactFoldersComboBox.Items.Clear();
+                        //this.contactFoldersComboBox.BeginUpdate();
+                        //this.contactFoldersComboBox.Items.Clear();
 
                         Microsoft.Office.Interop.Outlook.Folders folders = Syncronizer.OutlookNameSpace.Folders;
                         foreach (Microsoft.Office.Interop.Outlook.Folder folder in folders)
