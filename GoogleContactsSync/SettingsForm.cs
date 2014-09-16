@@ -860,21 +860,21 @@ namespace GoContactSyncMod
             switch(m.Msg) 
             {
                 //System shutdown
-                case WinAPIMethods.WM_QUERYENDSESSION:
+                case NativeMethods.WM_QUERYENDSESSION:
                     requestClose = true;
                     break;
-                /*case WinAPIMethods.WM_WTSSESSION_CHANGE:
+                /*case NativeMethods.WM_WTSSESSION_CHANGE:
                     {
                         int value = m.WParam.ToInt32();
                         //User Session locked
-                        if (value == WinAPIMethods.WTS_SESSION_LOCK)
+                        if (value == NativeMethods.WTS_SESSION_LOCK)
                         {
                             Console.WriteLine("Session Lock",EventType.Information);
                             //OnSessionLock();
                             boolShowBalloonTip = false; // Do something when locked
                         }
                         //User Session unlocked
-                        else if (value == WinAPIMethods.WTS_SESSION_UNLOCK)
+                        else if (value == NativeMethods.WTS_SESSION_UNLOCK)
                         {
                             Console.WriteLine("Session Unlock", EventType.Information);
                             //OnSessionUnlock();
@@ -885,21 +885,21 @@ namespace GoContactSyncMod
                     }
                 
                 
-                case WinAPIMethods.WM_POWERBROADCAST:
+                case NativeMethods.WM_POWERBROADCAST:
                     {
-                        if (m.WParam.ToInt32() == WinAPIMethods.PBT_APMRESUMEAUTOMATIC ||
-                            m.WParam.ToInt32() == WinAPIMethods.PBT_APMRESUMECRITICAL ||
-                            m.WParam.ToInt32() == WinAPIMethods.PBT_APMRESUMESTANDBY ||
-                            m.WParam.ToInt32() == WinAPIMethods.PBT_APMRESUMESUSPEND ||
-                            m.WParam.ToInt32() == WinAPIMethods.PBT_APMQUERYSTANDBYFAILED ||
-                            m.WParam.ToInt32() == WinAPIMethods.PBT_APMQUERYSTANDBYFAILED)
+                        if (m.WParam.ToInt32() == NativeMethods.PBT_APMRESUMEAUTOMATIC ||
+                            m.WParam.ToInt32() == NativeMethods.PBT_APMRESUMECRITICAL ||
+                            m.WParam.ToInt32() == NativeMethods.PBT_APMRESUMESTANDBY ||
+                            m.WParam.ToInt32() == NativeMethods.PBT_APMRESUMESUSPEND ||
+                            m.WParam.ToInt32() == NativeMethods.PBT_APMQUERYSTANDBYFAILED ||
+                            m.WParam.ToInt32() == NativeMethods.PBT_APMQUERYSTANDBYFAILED)
                         {                            
                             TimerSwitch(true);
                         }
-                        else if (m.WParam.ToInt32() == WinAPIMethods.PBT_APMSUSPEND ||
-                                 m.WParam.ToInt32() == WinAPIMethods.PBT_APMSTANDBY ||
-                                 m.WParam.ToInt32() == WinAPIMethods.PBT_APMQUERYSTANDBY ||
-                                 m.WParam.ToInt32() == WinAPIMethods.PBT_APMQUERYSUSPEND)
+                        else if (m.WParam.ToInt32() == NativeMethods.PBT_APMSUSPEND ||
+                                 m.WParam.ToInt32() == NativeMethods.PBT_APMSTANDBY ||
+                                 m.WParam.ToInt32() == NativeMethods.PBT_APMQUERYSTANDBY ||
+                                 m.WParam.ToInt32() == NativeMethods.PBT_APMQUERYSUSPEND)
                         {
                             TimerSwitch(false);
                         }
@@ -911,7 +911,7 @@ namespace GoContactSyncMod
                     break;
             }
             //Show Window from Tray
-            if (m.Msg == WinAPIMethods.WM_GCSM_SHOWME)
+            if (m.Msg == NativeMethods.WM_GCSM_SHOWME)
                 ShowForm();
 			base.WndProc(ref m);
 		} 
