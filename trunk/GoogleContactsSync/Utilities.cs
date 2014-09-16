@@ -54,7 +54,7 @@ namespace GoContactSyncMod
 
                 s.Write(bytes, 0, bytes.Length);
                 s.Flush();
-                s.Close();
+                //s.Close();
                 s.Dispose();
                 client.Dispose();
                 pic.Dispose();
@@ -78,8 +78,8 @@ namespace GoContactSyncMod
                 BinaryReader reader = new BinaryReader(stream);
                 Image image = Image.FromStream(stream);
                 reader.Close();
-                stream.Close();
-                stream.Dispose();
+                //stream.Close();
+                //stream.Dispose();
                 client.Dispose();
 
                 return image;

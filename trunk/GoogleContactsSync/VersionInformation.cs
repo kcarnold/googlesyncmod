@@ -69,9 +69,9 @@ namespace GoContactSyncMod
         /// </summary>
         public static WindowsMainVersion GetWindowsMainVersion()
         {
-            WinAPIMethods.OSVERSIONINFOEX osVersionInfo = new WinAPIMethods.OSVERSIONINFOEX();
+            NativeMethods.OSVERSIONINFOEX osVersionInfo = new NativeMethods.OSVERSIONINFOEX();
             osVersionInfo.dwOSVersionInfoSize = Marshal.SizeOf(osVersionInfo);
-            if (WinAPIMethods.GetVersionEx(ref osVersionInfo))
+            if (NativeMethods.GetVersionEx(ref osVersionInfo))
             {
                 switch (osVersionInfo.dwMajorVersion)
                 {
@@ -82,7 +82,7 @@ namespace GoContactSyncMod
                         }
                         else if (Environment.OSVersion.Version.Minor == 2)
                         {
-                            if (osVersionInfo.wProductType == WinAPIMethods.VER_NT_WORKSTATION)
+                            if (osVersionInfo.wProductType == NativeMethods.VER_NT_WORKSTATION)
                             {
                                 return WindowsMainVersion.WindowsXP64;
                             }
@@ -99,7 +99,7 @@ namespace GoContactSyncMod
                     case 6:
                         if (Environment.OSVersion.Version.Minor == 0)
                         {
-                            if (osVersionInfo.wProductType == WinAPIMethods.VER_NT_WORKSTATION)
+                            if (osVersionInfo.wProductType == NativeMethods.VER_NT_WORKSTATION)
                             {
                                 return WindowsMainVersion.Vista;
                             }
@@ -110,7 +110,7 @@ namespace GoContactSyncMod
                         }
                         else if (Environment.OSVersion.Version.Minor == 1)
                         {
-                            if (osVersionInfo.wProductType == WinAPIMethods.VER_NT_WORKSTATION)
+                            if (osVersionInfo.wProductType == NativeMethods.VER_NT_WORKSTATION)
                             {
                                 return WindowsMainVersion.Windows7;
                             }
@@ -121,7 +121,7 @@ namespace GoContactSyncMod
                         }
                         else if (Environment.OSVersion.Version.Minor == 2)
                         {
-                            if (osVersionInfo.wProductType == WinAPIMethods.VER_NT_WORKSTATION)
+                            if (osVersionInfo.wProductType == NativeMethods.VER_NT_WORKSTATION)
                             {
                                 return WindowsMainVersion.Windows8;
                             }

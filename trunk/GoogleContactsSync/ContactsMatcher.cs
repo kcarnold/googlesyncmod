@@ -817,7 +817,7 @@ namespace GoContactSyncMod
             }
             catch (ArgumentNullException e)
             {
-                throw e;
+                throw;
             }
             catch (Exception e)
             {
