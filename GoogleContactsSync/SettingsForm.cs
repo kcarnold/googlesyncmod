@@ -155,8 +155,9 @@ namespace GoContactSyncMod
         private void fillSyncFolderItems()
         {
             lock (syncRoot)
-            {
-                if (this.contactFoldersComboBox.Items.Count == 0 || this.noteFoldersComboBox.Items.Count == 0 || this.appointmentFoldersComboBox.Items.Count == 0)
+            {                
+                if (this.contactFoldersComboBox.DataSource == null || this.noteFoldersComboBox.DataSource == null || this.appointmentFoldersComboBox.DataSource == null ||
+                    this.contactFoldersComboBox.Items.Count == 0 || this.noteFoldersComboBox.Items.Count == 0 || this.appointmentFoldersComboBox.Items.Count == 0)
                 {
                     Logger.Log("Loading Outlook folders...", EventType.Information);
 
@@ -173,7 +174,12 @@ namespace GoContactSyncMod
                         SuspendLayout();
 
                         this.contactFoldersComboBox.BeginUpdate();
-                        this.contactFoldersComboBox.Items.Clear();
+                        this.noteFoldersComboBox.BeginUpdate();
+                        this.appointmentFoldersComboBox.BeginUpdate();
+                        this.contactFoldersComboBox.DataSource = null;
+                        this.noteFoldersComboBox.DataSource = null;
+                        this.appointmentFoldersComboBox.DataSource = null;
+                        //this.contactFoldersComboBox.Items.Clear();
 
                         Microsoft.Office.Interop.Outlook.Folders folders = Syncronizer.OutlookNameSpace.Folders;
                         foreach (Microsoft.Office.Interop.Outlook.Folder folder in folders)
@@ -187,22 +193,31 @@ namespace GoContactSyncMod
                                 Logger.Log("Error getting available Outlook folders: " + e.Message, EventType.Warning);
                             }
                         }
-                        outlookContactFolders.Sort();
-                        outlookNoteFolders.Sort();
-                        outlookAppointmentFolders.Sort();
+                                                                        
 
-                        this.contactFoldersComboBox.DataSource = outlookContactFolders;
-                        this.contactFoldersComboBox.DisplayMember = "DisplayName";
-                        this.contactFoldersComboBox.ValueMember = "FolderID";
+                        if (outlookContactFolders != null && outlookContactFolders.Count > 0)
+                        {
+                            outlookContactFolders.Sort();
+                            this.contactFoldersComboBox.DataSource = outlookContactFolders;
+                            this.contactFoldersComboBox.DisplayMember = "DisplayName";
+                            this.contactFoldersComboBox.ValueMember = "FolderID";
+                        }
 
-                        this.noteFoldersComboBox.DataSource = outlookNoteFolders;
-                        this.noteFoldersComboBox.DisplayMember = "DisplayName";
-                        this.noteFoldersComboBox.ValueMember = "FolderID";
+                        if (outlookNoteFolders != null && outlookNoteFolders.Count > 0)
+                        {
+                            outlookNoteFolders.Sort();
+                            this.noteFoldersComboBox.DataSource = outlookNoteFolders;
+                            this.noteFoldersComboBox.DisplayMember = "DisplayName";
+                            this.noteFoldersComboBox.ValueMember = "FolderID";
+                        }
 
-                        this.appointmentFoldersComboBox.DataSource = outlookAppointmentFolders;
-                        this.appointmentFoldersComboBox.DisplayMember = "DisplayName";
-                        this.appointmentFoldersComboBox.ValueMember = "FolderID";
-
+                        if (outlookAppointmentFolders != null && outlookAppointmentFolders.Count > 0)
+                        {
+                            outlookAppointmentFolders.Sort();
+                            this.appointmentFoldersComboBox.DataSource = outlookAppointmentFolders;
+                            this.appointmentFoldersComboBox.DisplayMember = "DisplayName";
+                            this.appointmentFoldersComboBox.ValueMember = "FolderID";
+                        }
                         this.contactFoldersComboBox.EndUpdate();
                         this.noteFoldersComboBox.EndUpdate();
                         this.appointmentFoldersComboBox.EndUpdate();
@@ -681,7 +696,7 @@ namespace GoContactSyncMod
                 if (ex is COMException)
                 {
                     string message = "Outlook exception, please assure that Outlook is running and not closed when syncing";
-                    Logger.Log(message + ": " + ex.Message, EventType.Warning);
+                    Logger.Log(message + ": " + ex.Message + "\r\n" + ex.StackTrace, EventType.Warning);
                     ShowBalloonToolTip("Error", message, ToolTipIcon.Error, 5000, true);
                 }
                 else
@@ -845,21 +860,21 @@ namespace GoContactSyncMod
             switch(m.Msg) 
             {
                 //System shutdown
-                case NativeMethods.WM_QUERYENDSESSION:
+                case WinAPIMethods.WM_QUERYENDSESSION:
                     requestClose = true;
                     break;
-                /*case NativeMethods.WM_WTSSESSION_CHANGE:
+                /*case WinAPIMethods.WM_WTSSESSION_CHANGE:
                     {
                         int value = m.WParam.ToInt32();
                         //User Session locked
-                        if (value == NativeMethods.WTS_SESSION_LOCK)
+                        if (value == WinAPIMethods.WTS_SESSION_LOCK)
                         {
                             Console.WriteLine("Session Lock",EventType.Information);
                             //OnSessionLock();
                             boolShowBalloonTip = false; // Do something when locked
                         }
                         //User Session unlocked
-                        else if (value == NativeMethods.WTS_SESSION_UNLOCK)
+                        else if (value == WinAPIMethods.WTS_SESSION_UNLOCK)
                         {
                             Console.WriteLine("Session Unlock", EventType.Information);
                             //OnSessionUnlock();
@@ -870,21 +885,21 @@ namespace GoContactSyncMod
                     }
                 
                 
-                case NativeMethods.WM_POWERBROADCAST:
+                case WinAPIMethods.WM_POWERBROADCAST:
                     {
-                        if (m.WParam.ToInt32() == NativeMethods.PBT_APMRESUMEAUTOMATIC ||
-                            m.WParam.ToInt32() == NativeMethods.PBT_APMRESUMECRITICAL ||
-                            m.WParam.ToInt32() == NativeMethods.PBT_APMRESUMESTANDBY ||
-                            m.WParam.ToInt32() == NativeMethods.PBT_APMRESUMESUSPEND ||
-                            m.WParam.ToInt32() == NativeMethods.PBT_APMQUERYSTANDBYFAILED ||
-                            m.WParam.ToInt32() == NativeMethods.PBT_APMQUERYSTANDBYFAILED)
+                        if (m.WParam.ToInt32() == WinAPIMethods.PBT_APMRESUMEAUTOMATIC ||
+                            m.WParam.ToInt32() == WinAPIMethods.PBT_APMRESUMECRITICAL ||
+                            m.WParam.ToInt32() == WinAPIMethods.PBT_APMRESUMESTANDBY ||
+                            m.WParam.ToInt32() == WinAPIMethods.PBT_APMRESUMESUSPEND ||
+                            m.WParam.ToInt32() == WinAPIMethods.PBT_APMQUERYSTANDBYFAILED ||
+                            m.WParam.ToInt32() == WinAPIMethods.PBT_APMQUERYSTANDBYFAILED)
                         {                            
                             TimerSwitch(true);
                         }
-                        else if (m.WParam.ToInt32() == NativeMethods.PBT_APMSUSPEND ||
-                                 m.WParam.ToInt32() == NativeMethods.PBT_APMSTANDBY ||
-                                 m.WParam.ToInt32() == NativeMethods.PBT_APMQUERYSTANDBY ||
-                                 m.WParam.ToInt32() == NativeMethods.PBT_APMQUERYSUSPEND)
+                        else if (m.WParam.ToInt32() == WinAPIMethods.PBT_APMSUSPEND ||
+                                 m.WParam.ToInt32() == WinAPIMethods.PBT_APMSTANDBY ||
+                                 m.WParam.ToInt32() == WinAPIMethods.PBT_APMQUERYSTANDBY ||
+                                 m.WParam.ToInt32() == WinAPIMethods.PBT_APMQUERYSUSPEND)
                         {
                             TimerSwitch(false);
                         }
@@ -896,7 +911,7 @@ namespace GoContactSyncMod
                     break;
             }
             //Show Window from Tray
-            if (m.Msg == NativeMethods.WM_GCSM_SHOWME)
+            if (m.Msg == WinAPIMethods.WM_GCSM_SHOWME)
                 ShowForm();
 			base.WndProc(ref m);
 		} 
