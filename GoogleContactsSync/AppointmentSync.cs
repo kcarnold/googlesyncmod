@@ -160,9 +160,20 @@ namespace GoContactSyncMod
             if (master.Times.Count == 1 || master.Times.Count > 0 && master.Recurrence == null)
             {//only sync times for not recurrent events
                 //ToDo: How to sync deleted recurrences?
-                slave.AllDayEvent = master.Times[0].AllDay;
-                slave.Start = master.Times[0].StartTime;
-                slave.End = master.Times[0].EndTime;
+
+                try
+                {
+                    if (slave.AllDayEvent != master.Times[0].AllDay)
+                        slave.AllDayEvent = master.Times[0].AllDay;
+                    if (slave.Start != master.Times[0].StartTime)
+                        slave.Start = master.Times[0].StartTime;
+                    if (slave.End != master.Times[0].EndTime)
+                        slave.End = master.Times[0].EndTime;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log("Error updating event " + master.Title + " - " + Syncronizer.GetTime(master) + ": " + ex.Message, EventType.Warning);
+                }
             }
             
             //slave.StartInStartTimeZone = master.StartInStartTimeZone;
@@ -680,7 +691,8 @@ namespace GoContactSyncMod
                         //}
 
                         //ToDo: Doesn't work for all recurrences
-                        var googleRecurrenceException = sync.LoadGoogleAppointments(slave.Id, Syncronizer.MonthsInPast, Syncronizer.MonthsInFuture, exception.OriginalDate, null, null);
+                        //var googleRecurrenceException = sync.LoadGoogleAppointments(slave.Id, Syncronizer.MonthsInPast, Syncronizer.MonthsInFuture, exception.OriginalDate, null, null);
+                        var googleRecurrenceException = sync.GetGoogleAppointmentByStartDate(slave.Id, exception.OriginalDate);                                 
 
                         if (googleRecurrenceException != null)
                             googleRecurrenceException.Delete();
@@ -720,7 +732,7 @@ namespace GoContactSyncMod
                     //myInstance.Subject = googleAppointment.Title.Text;
                     //myInstance.Start = googleAppointment.Times[0].StartTime;
                     //myInstance.End = googleAppointment.Times[0].EndTime;
-                    googleRecurrenceException = sync.LoadGoogleAppointments(googleRecurrenceException.Id, 0, 0, null, googleRecurrenceException.Times[0].StartTime, googleRecurrenceException.Times[0].EndTime); //Reload, just in case it was updated by master recurrence                                
+                    googleRecurrenceException = sync.LoadGoogleAppointments(googleRecurrenceException.Id, 0, 0, googleRecurrenceException.Times[0].StartTime, googleRecurrenceException.Times[0].EndTime); //Reload, just in case it was updated by master recurrence                                
                     if (googleRecurrenceException != null)
                     {
                         sync.UpdateAppointment(ref googleRecurrenceException, outlookRecurrenceException, null);
