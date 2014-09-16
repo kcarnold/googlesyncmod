@@ -315,13 +315,15 @@ namespace GoContactSyncMod
                         if (sync.AllGoogleAppointments != null)
                             matchingGoogleAppointment = sync.GetGoogleAppointmentById(googleAppointmentId);
                         else
-                            matchingGoogleAppointment = sync.LoadGoogleAppointments(new AtomId(googleAppointmentId), 0, 0, null, null, null);
+                            matchingGoogleAppointment = sync.LoadGoogleAppointments(new AtomId(googleAppointmentId), 0, 0, null, null);
                         if (matchingGoogleAppointment == null)
                         {
                             if (match.OutlookAppointment.Recipients.Count > 1)
                             {
-                                //ToDo:Maybe find as better way, e.g. to ask the user, if he wants to overwrite the invalid appointment
-                                Logger.Log("Outlook Appointment not deleted, because multiple participants found and invitations NOT sent by Google: " + match.OutlookAppointment.Subject + " - " + match.OutlookAppointment.Start, EventType.Information);
+
+
+                                //ToDo:Maybe find as better way, e.g. to ask the user, if he wants to overwrite the invalid appointment                                
+                                Logger.Log("Outlook Appointment not deleted, because multiple participants found,  invitation maybe NOT sent by Google: " + match.OutlookAppointment.Subject + " - " + match.OutlookAppointment.Start, EventType.Information);
                                 AppointmentPropertiesUtils.ResetOutlookGoogleAppointmentId(sync, match.OutlookAppointment);
                                 return;
                             }

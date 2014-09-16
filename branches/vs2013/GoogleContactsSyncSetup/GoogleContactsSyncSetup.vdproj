@@ -82,19 +82,7 @@
         "Entry"
         {
         "MsmKey" = "8:_91E364B39302FB8247F82D5FA41F951E"
-        "OwnerKey" = "8:_D7DDBBCA636A87CDD2ADC2B73352977A"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_91E364B39302FB8247F82D5FA41F951E"
-        "OwnerKey" = "8:_6EC35BE8EF1AAED05EABD0848EEEB700"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_91E364B39302FB8247F82D5FA41F951E"
-        "OwnerKey" = "8:_8A4A20DC9841455BB5FD97B9DF38A24E"
+        "OwnerKey" = "8:_E4E9E9D12EE20858632E2D09D30DCA43"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -106,7 +94,19 @@
         "Entry"
         {
         "MsmKey" = "8:_91E364B39302FB8247F82D5FA41F951E"
-        "OwnerKey" = "8:_E4E9E9D12EE20858632E2D09D30DCA43"
+        "OwnerKey" = "8:_8A4A20DC9841455BB5FD97B9DF38A24E"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_91E364B39302FB8247F82D5FA41F951E"
+        "OwnerKey" = "8:_6EC35BE8EF1AAED05EABD0848EEEB700"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_91E364B39302FB8247F82D5FA41F951E"
+        "OwnerKey" = "8:_D7DDBBCA636A87CDD2ADC2B73352977A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -142,13 +142,13 @@
         "Entry"
         {
         "MsmKey" = "8:_CB86503BDB83C3FBEE399D4CB0262D44"
-        "OwnerKey" = "8:_D7DDBBCA636A87CDD2ADC2B73352977A"
+        "OwnerKey" = "8:_89832188CB92777E66D9628AEC0E6C6D"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_CB86503BDB83C3FBEE399D4CB0262D44"
-        "OwnerKey" = "8:_89832188CB92777E66D9628AEC0E6C6D"
+        "OwnerKey" = "8:_D7DDBBCA636A87CDD2ADC2B73352977A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -166,13 +166,7 @@
         "Entry"
         {
         "MsmKey" = "8:_E4E9E9D12EE20858632E2D09D30DCA43"
-        "OwnerKey" = "8:_8A4A20DC9841455BB5FD97B9DF38A24E"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_E4E9E9D12EE20858632E2D09D30DCA43"
-        "OwnerKey" = "8:_D7DDBBCA636A87CDD2ADC2B73352977A"
+        "OwnerKey" = "8:_89832188CB92777E66D9628AEC0E6C6D"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -184,7 +178,13 @@
         "Entry"
         {
         "MsmKey" = "8:_E4E9E9D12EE20858632E2D09D30DCA43"
-        "OwnerKey" = "8:_89832188CB92777E66D9628AEC0E6C6D"
+        "OwnerKey" = "8:_D7DDBBCA636A87CDD2ADC2B73352977A"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_E4E9E9D12EE20858632E2D09D30DCA43"
+        "OwnerKey" = "8:_8A4A20DC9841455BB5FD97B9DF38A24E"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -202,49 +202,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_A2D96859CE406F76F4F0818B2813AE72"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_9B5DC5D715B4971C5D9D7ED2D1D2EDD3"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_06C9B16F19D14FD3B3FA194D0586E047"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_D7DDBBCA636A87CDD2ADC2B73352977A"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_6EC35BE8EF1AAED05EABD0848EEEB700"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_89832188CB92777E66D9628AEC0E6C6D"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_CB86503BDB83C3FBEE399D4CB0262D44"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_E4E9E9D12EE20858632E2D09D30DCA43"
+        "OwnerKey" = "8:_07FC5961D3A6F370DE91779E308BD7E1"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -256,7 +214,49 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_07FC5961D3A6F370DE91779E308BD7E1"
+        "OwnerKey" = "8:_E4E9E9D12EE20858632E2D09D30DCA43"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_CB86503BDB83C3FBEE399D4CB0262D44"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_89832188CB92777E66D9628AEC0E6C6D"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_6EC35BE8EF1AAED05EABD0848EEEB700"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_D7DDBBCA636A87CDD2ADC2B73352977A"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_06C9B16F19D14FD3B3FA194D0586E047"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_9B5DC5D715B4971C5D9D7ED2D1D2EDD3"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_A2D96859CE406F76F4F0818B2813AE72"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -407,11 +407,6 @@
             "AssemblyAsmDisplayName" = "8:Newtonsoft.Json, Version=4.0.5.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_07FC5961D3A6F370DE91779E308BD7E1"
-                    {
-                    "Name" = "8:Newtonsoft.Json.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:Newtonsoft.Json.dll"
             "TargetName" = "8:"
@@ -498,11 +493,6 @@
             "AssemblyAsmDisplayName" = "8:Google.GData.Contacts, Version=2.2.0.0, Culture=neutral, PublicKeyToken=7e065189dd4b982f, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_6EC35BE8EF1AAED05EABD0848EEEB700"
-                    {
-                    "Name" = "8:Google.GData.Contacts.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:Google.GData.Contacts.dll"
             "TargetName" = "8:"
@@ -529,11 +519,6 @@
             "AssemblyAsmDisplayName" = "8:Google.GData.Calendar, Version=2.2.0.0, Culture=neutral, PublicKeyToken=aa6748391206b888, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_89832188CB92777E66D9628AEC0E6C6D"
-                    {
-                    "Name" = "8:Google.GData.Calendar.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:Google.GData.Calendar.dll"
             "TargetName" = "8:"
@@ -560,11 +545,6 @@
             "AssemblyAsmDisplayName" = "8:Google.GData.Client, Version=2.2.0.0, Culture=neutral, PublicKeyToken=04a59ca9b0273830, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_91E364B39302FB8247F82D5FA41F951E"
-                    {
-                    "Name" = "8:Google.GData.Client.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:Google.GData.Client.dll"
             "TargetName" = "8:"
@@ -673,11 +653,6 @@
             "AssemblyAsmDisplayName" = "8:Google.GData.AccessControl, Version=2.2.0.0, Culture=neutral, PublicKeyToken=b4b8eb9a7afc8328, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_CB86503BDB83C3FBEE399D4CB0262D44"
-                    {
-                    "Name" = "8:Google.GData.AccessControl.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:Google.GData.AccessControl.dll"
             "TargetName" = "8:"
@@ -704,11 +679,6 @@
             "AssemblyAsmDisplayName" = "8:Google.GData.Documents, Version=2.2.0.0, Culture=neutral, PublicKeyToken=e4daaad656f19bb9, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_D7DDBBCA636A87CDD2ADC2B73352977A"
-                    {
-                    "Name" = "8:Google.GData.Documents.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:Google.GData.Documents.dll"
             "TargetName" = "8:"
@@ -735,11 +705,6 @@
             "AssemblyAsmDisplayName" = "8:Google.GData.Extensions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=0b4c5df2ebf20876, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_E4E9E9D12EE20858632E2D09D30DCA43"
-                    {
-                    "Name" = "8:Google.GData.Extensions.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:Google.GData.Extensions.dll"
             "TargetName" = "8:"
@@ -868,15 +833,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:GO Contact Sync Mod"
-        "ProductCode" = "8:{709C09E6-A960-4651-B40D-66F6E0952A72}"
-        "PackageCode" = "8:{41A2555A-0B0D-4E86-96BA-DA6AAC64B185}"
+        "ProductCode" = "8:{6CB0E739-787A-470D-875E-54F0DDB95877}"
+        "PackageCode" = "8:{6F3465D4-CDF8-48F9-A5D5-785169DA0EB1}"
         "UpgradeCode" = "8:{170B4620-F5BB-4D2E-97A1-239D79030F20}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:3.7.2"
+        "ProductVersion" = "8:3.7.3"
         "Manufacturer" = "8:WebGear, Create Software, Stru.be, saller.NET"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://googlesyncmod.sourceforge.net/"
