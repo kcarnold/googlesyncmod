@@ -126,10 +126,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\GoogleAPI\Google.GData.Extensions.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Office.Interop.Outlook, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Microsoft.Office.Interop.Outlook">
+      <HintPath>..\OutlookAPI\Microsoft.Office.Interop.Outlook.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>..\OutlookAPI\v15\Microsoft.Office.Interop.Outlook.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />

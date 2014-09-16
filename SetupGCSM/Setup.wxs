@@ -5,9 +5,9 @@
   <?include $(sys.CURRENTDIR)Includes\Variables.wxi ?>
 
   <Product Id="*"
-           Name="!(loc.ProductName) $(var.ShortAssemblyVersion)"
+           Name="!(loc.ProductName)"
            Language="!(loc.LANG)"
-           Version="!(bind.FileVersion.fil314CA3CA2085C9E6AFB0D54561EC0ABD)"
+           Version="$(var.ShortAssemblyVersion)"
            Manufacturer="$(var.ManufacturerName)"
            UpgradeCode="$(var.UpgradeCode)">
 
@@ -16,12 +16,18 @@
 
     <Media Id="1" Cabinet="media.cab" EmbedCab="yes" />
 
-    <!-- Upgrade settings. This will be explained in more detail in a future post -->
+    <MajorUpgrade
+      DowngradeErrorMessage="!(loc.GoogleContactSyncModNewerVersionInstalled)"
+      AllowDowngrades="no"
+      AllowSameVersionUpgrades="no"
+      />
+    
+    <!-- Upgrade settings. This will be explained in more detail in a future post
     <Upgrade Id="$(var.UpgradeCode)">
-      <UpgradeVersion OnlyDetect="yes" Minimum="!(bind.FileVersion.fil314CA3CA2085C9E6AFB0D54561EC0ABD)" IncludeMinimum="no" Property="NEWER_VERSION_FOUND" />
-      <UpgradeVersion Minimum="0.0.0.0" IncludeMinimum="yes" Maximum="!(bind.FileVersion.fil314CA3CA2085C9E6AFB0D54561EC0ABD)" IncludeMaximum="no" Property="OLDER_VERSION_FOUND" />
+      <UpgradeVersion OnlyDetect="yes" Minimum="$(var.ShortAssemblyVersion)" IncludeMinimum="no" Property="NEWER_VERSION_FOUND" />
+      <UpgradeVersion Minimum="0.0.0.0" IncludeMinimum="yes" Maximum="$(var.ShortAssemblyVersion)" IncludeMaximum="no" Property="OLDER_VERSION_FOUND" />
     </Upgrade>
-
+    ´-->
     <!-- Reference the global NETFRAMEWORKxx property to check if it exists -->
     <PropertyRef Id="NETFRAMEWORK35"/>
     <!-- 
@@ -49,8 +55,8 @@
       <Custom Action="NewerVersionFound" After="FindRelatedProducts">
         <![CDATA[NEWER_VERSION_FOUND]]>
       </Custom>
-      <!-- Remove the previous versions of the product -->
-      <RemoveExistingProducts After="InstallInitialize"/>
+      <!-- Remove the previous versions of the product 
+      <RemoveExistingProducts After="InstallInitialize"/>-->
       <!-- WixCloseApplications is a built in custom action that uses util:CloseApplication below -->
       <Custom Action="WixCloseApplications" Before="InstallInitialize" />
     </InstallExecuteSequence>
