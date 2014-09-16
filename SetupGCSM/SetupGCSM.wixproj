@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>3.9</ProductVersion>
+    <ProjectGuid>{9dca19a6-3be4-435b-97fc-963da094be5a}</ProjectGuid>
+    <SchemaVersion>2.0</SchemaVersion>
+    <OutputName>SetupGCSM</OutputName>
+    <OutputType>Package</OutputType>
+    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' AND '$(MSBuildExtensionsPath32)' != '' ">$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
+    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
+    <Name>SetupGCSM</Name>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <OutputPath>$(ProjectDir)Packages\</OutputPath>
+    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+    <DefineConstants>GoogleAPIDir=$(SolutionDir)GoogleAPI\;OutlookAPIDir=$(SolutionDir)OutlookAPI\</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <OutputPath>$(ProjectDir)Packages\</OutputPath>
+    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+    <DefineConstants>GoogleAPIDir=$(SolutionDir)GoogleAPI\;OutlookAPIDir=$(SolutionDir)OutlookAPI\</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Fragments\BinariesAndSymbolsFilesFragment.wxs" />
+    <Compile Include="Fragments\GoogleAPIFilesFragment.wxs" />
+    <Compile Include="Fragments\OutlookAPIFilesFragment.wxs" />
+    <Compile Include="Setup.wxs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="CustomActions" />
+    <Folder Include="CustomDialogs" />
+    <Folder Include="Fragments" />
+    <Folder Include="Includes" />
+    <Folder Include="Lang" />
+    <Folder Include="Lang\de-de\" />
+    <Folder Include="Lang\en-us" />
+    <Folder Include="Resources" />
+    <Folder Include="Packages" />
+  </ItemGroup>
+  <ItemGroup>
+    <WixExtension Include="WixUtilExtension">
+      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
+      <Name>WixUtilExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixUIExtension">
+      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
+      <Name>WixUIExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixNetFxExtension">
+      <HintPath>$(WixExtDir)\WixNetFxExtension.dll</HintPath>
+      <Name>WixNetFxExtension</Name>
+    </WixExtension>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Includes\Variables.wxi" />
+    <Content Include="Lang\GPLv3.rtf" />
+    <Content Include="TODO.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Lang\de-de\Loc_de-de.wxl" />
+    <EmbeddedResource Include="Lang\en-us\Loc_en-us.wxl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GoogleContactsSync\GoogleContactsSync.csproj">
+      <Name>GoogleContactsSync</Name>
+      <Project>{e43ce572-6694-461d-a4dc-2db768a7665a}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(WixTargetsPath)" />
+  <!--
+	To modify your build process, add your task inside one of the targets below and uncomment it.
+	Other similar extension points exist, see Wix.targets.
+	-->
+  <!--
+  <Target Name="BeforeBuild">
+    <HeatProject ToolPath="$(WixToolPath)" GenerateGuidsNow="true" OutputFile="$(ProjectDir)Fragments\BinariesAndSymbolsFilesFragment.wxs" SuppressFragments="true" Project="$(SolutionDir)GoogleContactsSync\GoogleContactsSync.csproj" ProjectOutputGroups="Binaries;Symbols" />
+  </Target>
+  -->
+  <Target Name="BeforeBuild">
+    <!--Read AssemblyInfo.cs-->
+    <GetAssemblyIdentity AssemblyFiles="$(SolutionDir)GoogleContactsSync\bin\$(Configuration)\GoContactSync.exe">
+      <Output TaskParameter="Assemblies" ItemName="AssemblyVersions" />
+    </GetAssemblyIdentity>
+    <!--Read Assembly version-->
+    <CreateProperty Value="%(AssemblyVersions.Version)">
+      <Output TaskParameter="Value" PropertyName="AssyVersion" />
+    </CreateProperty>
+    <!--create short version number-->
+    <CreateProperty Value="$(AssyVersion.Split('.')[0]).$(AssyVersion.Split('.')[1]).$(AssyVersion.Split('.')[2])">
+      <Output TaskParameter="Value" PropertyName="ShortAssemblyVersion" />
+    </CreateProperty>
+    <CreateProperty Value="$(DefineConstants);ShortAssemblyVersion=$(ShortAssemblyVersion)">
+      <Output TaskParameter="Value" PropertyName="DefineConstants" />
+    </CreateProperty>
+    <CreateProperty Value="$(OutputName)-$(ShortAssemblyVersion)">
+      <Output TaskParameter="Value" PropertyName="TargetName" />
+    </CreateProperty>
+    <CreateProperty Value="$(TargetName)$(TargetExt)">
+      <Output TaskParameter="Value" PropertyName="TargetFileName" />
+    </CreateProperty>
+    <CreateProperty Value="$(TargetDir)$(TargetFileName)">
+      <Output TaskParameter="Value" PropertyName="TargetPath" />
+    </CreateProperty>
+  </Target>
+  <PropertyGroup>
+    <PostBuildEvent />
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>REM "$(WIX)bin\heat.exe" dir "$(SolutionDir)GoogleAPI" -cg GoogleAPIFiles -gg -scom -sreg -sfrag -srd -dr INSTALLLOCATION  -var var.GoogleAPIDir -v -out "$(ProjectDir)Fragments\GoogleAPIFilesFragment.wxs
+REM "$(WIX)bin\heat.exe" dir "$(SolutionDir)OutlookAPI" -cg OutlookAPIFiles -gg -scom -sreg -sfrag -srd -dr INSTALLLOCATION  -var var.OutlookAPIDir -v -out "$(ProjectDir)Fragments\OutlookAPIFilesFragment.wxs"</PreBuildEvent>
+  </PropertyGroup>
+</Project>

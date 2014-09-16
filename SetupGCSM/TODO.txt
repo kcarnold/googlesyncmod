@@ -1,0 +1,21 @@
+﻿TODO:
+
+- download .net automatically - create bundle project 
+
+DONE:
+
+- added start menu shortcut
+- choice for starting after install
+- get version number from AssemblyInfo.cs from Project GoContactsSync
+- localized installer for
+	 German
+	 English
+- auto rename installer file (with version number)
+
+INSTALL CHECKS:
+
+- check if .net is installed
+- check if newer version is installed
+- upgrade old version
+- auto-harvest GoogleAPI directory and add all files to installation
+- auto-harvest OutlookAPI directory and add all files to installation

@@ -19,7 +19,7 @@ namespace GoContactSyncMod
             //prevent more than one instance of the program
             if (IsRunning())
             {   //Instance already exists, so show only Main-Window  
-                WinAPIMethods.PostMessage((IntPtr)WinAPIMethods.HWND_BROADCAST, WinAPIMethods.WM_GCSM_SHOWME, IntPtr.Zero, IntPtr.Zero);
+                NativeMethods.PostMessage((IntPtr)NativeMethods.HWND_BROADCAST, NativeMethods.WM_GCSM_SHOWME, IntPtr.Zero, IntPtr.Zero);
                 return;
             }
             else

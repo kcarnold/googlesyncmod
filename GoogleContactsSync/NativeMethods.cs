@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace GoContactSyncMod
 {
-    internal class WinAPIMethods
+    internal class NativeMethods
     {
         #region API Constants
         public const int HWND_BROADCAST = 0xffff;
@@ -54,12 +54,12 @@ namespace GoContactSyncMod
 
         #region Extern Functions Declaration
         
-        [DllImport("user32", SetLastError=true)]
+        [DllImport("user32", SetLastError=true, CharSet = CharSet.Unicode)]
         public static extern bool PostMessage(IntPtr hwnd, int msg, IntPtr wparam, IntPtr lparam);
-        [DllImport("user32", SetLastError=true)]
+        [DllImport("user32", SetLastError=true, CharSet = CharSet.Unicode)]
         public static extern int RegisterWindowMessage(string message);
-        
-        [DllImport("kernel32")]
+
+        [DllImport("kernel32", CharSet = CharSet.Unicode)]
         public static extern bool GetVersionEx(ref OSVERSIONINFOEX osvi);
         
         #endregion
