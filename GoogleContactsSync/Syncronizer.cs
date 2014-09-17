@@ -2553,7 +2553,7 @@ namespace GoContactSyncMod
                 g = GetGoogleGroupByName(myContactsGroup);
                 if (g == null)
                 {
-                    throw new Exception(string.Format("Google System Group: My Contacts doesn't exist {0}", myContactsGroup));
+                    throw new Exception(string.Format("Google System Group: My Contacts doesn't exist", myContactsGroup));
                 }
                 Utilities.AddGoogleGroup(slave, g);
             }
