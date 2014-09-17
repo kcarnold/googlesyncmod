@@ -713,7 +713,7 @@ namespace GoContactSyncMod
             this.btSyncAppointments.Size = new System.Drawing.Size(136, 17);
             this.btSyncAppointments.TabIndex = 10;
             this.btSyncAppointments.Text = "Sync &Appointments";
-            this.toolTip.SetToolTip(this.btSyncAppointments, "This specifies whether notes are synchronized.");
+            this.toolTip.SetToolTip(this.btSyncAppointments, "This specifies whether appointments are synchronized.");
             this.btSyncAppointments.UseVisualStyleBackColor = true;
             this.btSyncAppointments.CheckedChanged += new System.EventHandler(this.btSyncAppointments_CheckedChanged);
             // 
