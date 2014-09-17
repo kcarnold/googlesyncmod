@@ -9,7 +9,7 @@
   Path to the resources directory. resources don't really need to be included
   in the project structure but I like to include them for for clarity 
   -->
-  <?define ResourcesDir="$(var.ProjectDir)\Resources" ?>
+  <?define ResourcesDir="$(var.ProjectDir)\Resources\" ?>
   <!--
   The name of your application exe file. This will be used to kill the process when updating
   and creating the desktop shortcut

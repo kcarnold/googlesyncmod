@@ -12,7 +12,7 @@
            UpgradeCode="$(var.UpgradeCode)">
 
     <!-- Define the minimum supported installer version (3.0) and that the install should be done for the whole machine not just the current user -->
-    <Package InstallerVersion="300" Compressed="yes" InstallScope="perMachine"/>
+    <Package InstallerVersion="300" Compressed="yes" InstallPrivileges="elevated"/>
 
     <Media Id="1" Cabinet="media.cab" EmbedCab="yes" />
 
@@ -22,12 +22,6 @@
       AllowSameVersionUpgrades="no"
       />
     
-    <!-- Upgrade settings. This will be explained in more detail in a future post
-    <Upgrade Id="$(var.UpgradeCode)">
-      <UpgradeVersion OnlyDetect="yes" Minimum="$(var.ShortAssemblyVersion)" IncludeMinimum="no" Property="NEWER_VERSION_FOUND" />
-      <UpgradeVersion Minimum="0.0.0.0" IncludeMinimum="yes" Maximum="$(var.ShortAssemblyVersion)" IncludeMaximum="no" Property="OLDER_VERSION_FOUND" />
-    </Upgrade>
-    ´-->
     <!-- Reference the global NETFRAMEWORKxx property to check if it exists -->
     <PropertyRef Id="NETFRAMEWORK35"/>
     <!-- 
@@ -65,6 +59,15 @@
     <util:CloseApplication Id="CloseGoogleContactSyncMod" CloseMessage="no" Description="!(loc.MustCloseGoogleContactSyncMod)"
                            ElevatedCloseMessage="no" RebootPrompt="no" Target="$(var.ExeProcessName)" />
 
+    <!--customize UI -->
+
+    <!--set logo-->
+    <WixVariable Id="WixUIBannerBmp" Value="$(var.ResourcesDir)WixUITopBanner.png" />
+    <WixVariable Id="WixUIDialogBmp" Value="$(var.ResourcesDir)WixUIDialogBanner.png" />
+    
+    <!--add licence to installer -->
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.ProjectDir)Lang\GPLv3.rtf" />
+    
     <!-- Use the built in WixUI_InstallDir GUI -->
     <UI>
       <UIRef Id="WixUI_InstallDir" />
@@ -74,18 +77,9 @@
          Value="LaunchApplication">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed</Publish>
     </UI>
 
-    <!--add licence to installer -->
-    <WixVariable Id="WixUILicenseRtf" Value="$(var.ProjectDir)Lang\GPLv3.rtf" />
-
     <!-- Set the icon to show next to the program name in Add/Remove programs -->
     <Icon Id="GoogleContactsSyncMod.ico" SourceFile="$(var.SolutionDir)GoogleContactsSync\Resources\contacts-sync.ico" />
     <Property Id="ARPPRODUCTICON" Value="GoogleContactsSyncMod.ico" />
-
-
-    <!-- Installer UI custom pictures. File names are made up. Add path to your pics. 
-      <WixVariable Id="WixUIDialogBmp" Value="MyAppLogo.jpg" />
-      <WixVariable Id="WixUIBannerBmp" Value="installBanner.jpg" /> 
-    -->
 
     <!-- the default directory structure -->
     <Directory Id="TARGETDIR" Name="SourceDir">
