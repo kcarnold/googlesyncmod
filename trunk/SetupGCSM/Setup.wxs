@@ -41,16 +41,10 @@
     <!-- 
     This custom action in the InstallExecuteSequence is needed to 
     stop silent install (passing /qb to msiexec) from going around it. 
-    -->
+    
     <CustomAction Id="NewerVersionFound" Error="!(loc.GoogleContactSyncModNewerVersionInstalled)" />
-
+    -->
     <InstallExecuteSequence>
-      <!-- Check for newer versions with FindRelatedProducts and execute the custom action after it -->
-      <Custom Action="NewerVersionFound" After="FindRelatedProducts">
-        <![CDATA[NEWER_VERSION_FOUND]]>
-      </Custom>
-      <!-- Remove the previous versions of the product 
-      <RemoveExistingProducts After="InstallInitialize"/>-->
       <!-- WixCloseApplications is a built in custom action that uses util:CloseApplication below -->
       <Custom Action="WixCloseApplications" Before="InstallInitialize" />
     </InstallExecuteSequence>
