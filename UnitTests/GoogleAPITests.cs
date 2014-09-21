@@ -197,6 +197,9 @@ namespace GoContactSyncMod.UnitTests
 
             Logger.Log("Created Google note", EventType.Information);
 
+            //Wait 5 seconds to give the testcase the chance to finish
+            System.Threading.Thread.Sleep(5000);
+
             //delete test note            
             DeleteTestNote(service);
             #endregion
