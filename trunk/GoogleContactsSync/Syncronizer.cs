@@ -1715,14 +1715,14 @@ namespace GoContactSyncMod
             {
                 AppointmentSync.UpdateAppointment(master, slave);
                 AppointmentPropertiesUtils.SetOutlookGoogleAppointmentId(this, slave, master);
-                //try
-                //{
-                //    slave.Save();
-                //}
-                //catch (Exception)
-                //{
+                try
+                { //Try to save 2 times, because sometimes the first save fails with a COMException (Outlook aborted)
                     slave.Save();
-                //}
+                }
+                catch (Exception)
+                {
+                    slave.Save();
+                }
 
 
                 AppointmentPropertiesUtils.SetGoogleOutlookAppointmentId(SyncProfile, master, slave);
