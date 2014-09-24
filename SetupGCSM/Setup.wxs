@@ -125,8 +125,8 @@
     <!--customize UI -->
 
     <!--set logo-->
-    <WixVariable Id="WixUIBannerBmp" Value="$(var.ResourcesDir)WixUITopBanner.png" />
-    <WixVariable Id="WixUIDialogBmp" Value="$(var.ResourcesDir)WixUIDialogBanner.png" />
+    <WixVariable Id="WixUIBannerBmp" Value="$(var.ResourcesDir)WixUITopBanner.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="$(var.ResourcesDir)WixUIDialogBanner.bmp" />
     
     <!--add licence to installer -->
     <WixVariable Id="WixUILicenseRtf" Value="$(var.ProjectDir)Lang\GPLv3.rtf" />
