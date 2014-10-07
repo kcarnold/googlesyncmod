@@ -666,10 +666,10 @@ namespace GoContactSyncMod
                 {
                     foreach (EventEntry a in feed.Entries)
                     {
-                        if (!a.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.CANCELED)
-                            && !GoogleAppointments.Contains(a) //ToDo: For an unknown reason, some appointments are duplicate in GoogleAppointments, therefore remove all duplicates before continuing  
+                        if ((a.OriginalEvent != null || !a.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.CANCELED)) && 
+                            !GoogleAppointments.Contains(a) //ToDo: For an unknown reason, some appointments are duplicate in GoogleAppointments, therefore remove all duplicates before continuing  
                             )
-                        {//only return not yet cancelled events and events not already in the list
+                        {//only return not yet cancelled events (except for recurrence exceptions) and events not already in the list
                             GoogleAppointments.Add(a);
                             if (/*restrictStartDate == null && */id != null && id.Equals(a.Id))
                                 ret = a;
@@ -1682,26 +1682,53 @@ namespace GoContactSyncMod
             if (slave.Recipients.Count > 1 && AppointmentPropertiesUtils.GetOutlookGoogleAppointmentId(this, slave) != null)
             {
                 //ToDo:Maybe find as better way, e.g. to ask the user, if he wants to overwrite the invalid appointment   
-                ConflictResolver r = new ConflictResolver();
-                switch (r.Resolve("Cannot update appointment from Google to Outlook because multiple participants found, invitation maybe NOT sent by Google: \"" + master.Title.Text + " - " + Syncronizer.GetTime(master) + "\". Do you want to update it back from Outlook to Google?", slave, master, this))
+                switch (this.SyncOption)
                 {
-                    case ConflictResolution.Skip:
-                    case ConflictResolution.SkipAlways: //Skip
-                        SkippedCount++;
-                        Logger.Log("Skipped Updating appointment from Google to Outlook because multiple participants found, invitation maybe NOT sent by Google: \"" + master.Title.Text + " - " + Syncronizer.GetTime(master) + "\".", EventType.Information);
-                        break;
-                    case ConflictResolution.OutlookWins:
-                    case ConflictResolution.OutlookWinsAlways: //Keep Outlook and overwrite Google    
+                    case SyncOption.MergeOutlookWins:
+                    case SyncOption.OutlookToGoogleOnly:
+                        //overwrite Google appointment
+                        Logger.Log("Multiple participants found, invitation maybe NOT sent by Google. Outlook appointment is overwriting Google because of SyncOption " + SyncOption + ": " + master.Title.Text + " - " + Syncronizer.GetTime(master) + "\". ", EventType.Information);
                         UpdateAppointment(slave, ref master);
                         break;
-                    case ConflictResolution.GoogleWins:
-                    case ConflictResolution.GoogleWinsAlways: //Keep Google and overwrite Outlook
-                        updated = true;
-                        break;
-                    default:
-                        throw new ApplicationException("Cancelled");
-                }
+                    //case SyncOption.MergeGoogleWins:
+                    //case SyncOption.GoogleToOutlookOnly:
+                    //    //overwrite outlook appointment
+                    //    Logger.Log("Outlook and Google appointment have been updated, Google appointment is overwriting Outlook because of SyncOption " + sync.SyncOption + ": " + match.GoogleAppointment.Title.Text + ".", EventType.Information);
+                    //    sync.UpdateAppointment(ref match.GoogleAppointment, match.OutlookAppointment, match.GoogleAppointmentExceptions);
+                    //    break;
+                    case SyncOption.MergePrompt:
+                        //promp for sync option
+                        if (
+                            //ConflictResolution != ConflictResolution.GoogleWinsAlways &&
+                            ConflictResolution != ConflictResolution.OutlookWinsAlways &&
+                            ConflictResolution != ConflictResolution.SkipAlways)
+                        {
+                            var r = new ConflictResolver();
+                            ConflictResolution = r.Resolve("Cannot update appointment from Google to Outlook because multiple participants found, invitation maybe NOT sent by Google: \"" + master.Title.Text + " - " + Syncronizer.GetTime(master) + "\". Do you want to update it back from Outlook to Google?", slave, master, this);
+                        }
+                        switch (ConflictResolution)
+                        {
+                            case ConflictResolution.Skip:
+                            case ConflictResolution.SkipAlways: //Skip
+                                SkippedCount++;
+                                Logger.Log("Skipped Updating appointment from Google to Outlook because multiple participants found, invitation maybe NOT sent by Google: \"" + master.Title.Text + " - " + Syncronizer.GetTime(master) + "\".", EventType.Information);
+                                break;
+                            case ConflictResolution.OutlookWins:
+                            case ConflictResolution.OutlookWinsAlways: //Keep Outlook and overwrite Google    
+                                UpdateAppointment(slave, ref master);
+                                break;
+                            //case ConflictResolution.GoogleWins:
+                            //case ConflictResolution.GoogleWinsAlways: //Keep Google and overwrite Outlook
+                            //    updated = true;
+                            //    break;
+                            default:
+                                throw new ApplicationException("Cancelled");
+                        }
 
+                        break;
+                }
+                
+                
                 //if (MessageBox.Show("Cannot update appointment from Google to Outlook because multiple participants found, invitation maybe NOT sent by Google: \"" + master.Title.Text + " - " + Syncronizer.GetTime(master) + "\". Do you want to update it back from Outlook to Google?", "Outlook appointment cannot be overwritten from Google", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 //    UpdateAppointment(slave, ref master);
                 //else
