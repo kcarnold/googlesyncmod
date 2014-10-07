@@ -114,9 +114,9 @@ namespace GoContactSyncMod
 
                         
 
-                        if (foundAppointment != null)
+                        if (foundAppointment != null && !foundAppointment.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.CANCELED))
                         {
-                            //we found a match by google id, that is not deleted yet
+                            //we found a match by google id, that is not deleted or cancelled yet
 
                             //ToDo: For an unknown reason, some appointments are duplicate in GoogleAppointments, therefore remove all duplicates before continuing
                             while (foundAppointment != null)
@@ -174,7 +174,7 @@ namespace GoContactSyncMod
                     var googleAppointment = sync.GoogleAppointments[j];
                     // only match if there is a appointment targetBody, else
                     // a matching Google appointment will be created at each sync                
-                    if (ola.Subject == googleAppointment.Title.Text && googleAppointment.Times.Count > 0 && ola.Start == googleAppointment.Times[0].StartTime)                         
+                    if (!googleAppointment.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.CANCELED) && ola.Subject == googleAppointment.Title.Text && googleAppointment.Times.Count > 0 && ola.Start == googleAppointment.Times[0].StartTime)                         
                     {                        
                         match.AddGoogleAppointment(googleAppointment);
                         sync.GoogleAppointments.Remove(googleAppointment);
@@ -215,6 +215,8 @@ namespace GoContactSyncMod
                 //if (googleAppointment.Title.Text == "Flex Pilot - Latest Status")
                 //    throw new Exception("Debugging: Flex Pilot - Latest Status");
 
+               
+
                 if (NotificationReceived != null)
                     NotificationReceived(String.Format("Adding new Google appointment {0} of {1} by unique properties: {2} ...", i + 1, sync.GoogleAppointments.Count, googleAppointment.Title.Text));
 
@@ -234,6 +236,12 @@ namespace GoContactSyncMod
                 {
                     sync.SkippedCountNotMatches++;
                     googleAppointmentExceptions.Add(googleAppointment);
+                }
+                else if (googleAppointment.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.CANCELED))
+                {
+                    Logger.Log("Skipping Google appointment found because it is cancelled: " + googleAppointment.Title.Text + " - " + Syncronizer.GetTime(googleAppointment), EventType.Debug);
+                    //sync.SkippedCount++;
+                    //sync.SkippedCountNotMatches++;
                 }
                 else
                 {

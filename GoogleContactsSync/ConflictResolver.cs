@@ -367,7 +367,7 @@ namespace GoContactSyncMod
 
             //ToDo: Make it more flexible
             _form.keepGoogle.Enabled = false;
-            _form.AllCheckBox.Visible = false;
+            _form.AllCheckBox.Visible = true;
             _form.messageLabel.Text = message;
 
             return Resolve();

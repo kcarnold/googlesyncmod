@@ -651,8 +651,9 @@ namespace GoContactSyncMod
             {
                 foreach (Outlook.Exception exception in exceptions)
                 {
-                    if (!exception.Deleted)
-                    {//Add exception time (but only if in given time range
+                    if (!exception.Deleted) 
+                    {
+                        //Add exception time (but only if in given time range
                         if ((Syncronizer.MonthsInPast == 0 || exception.AppointmentItem.End >= DateTime.Now.AddMonths(-Syncronizer.MonthsInPast)) &&
                              (Syncronizer.MonthsInFuture == 0 || exception.AppointmentItem.Start <= DateTime.Now.AddMonths(Syncronizer.MonthsInFuture)))
                         {
@@ -662,40 +663,85 @@ namespace GoContactSyncMod
                             googleRecurrenceException.OriginalEvent.IdOriginal = slave.EventId;
                             //googleRecurrenceException.OriginalEvent.Href = ???
                             googleRecurrenceException.OriginalEvent.OriginalStartTime = new When(exception.OriginalDate, exception.OriginalDate.AddMinutes(exception.AppointmentItem.Duration), exception.AppointmentItem.AllDayEvent);
-                            sync.UpdateAppointment(exception.AppointmentItem, ref googleRecurrenceException);
-                            //googleRecurrenceExceptions.Add(googleRecurrenceException);
-                            ret = true;
+
+
+                            try
+                            {
+                                sync.UpdateAppointment(exception.AppointmentItem, ref googleRecurrenceException);
+                                //googleRecurrenceExceptions.Add(googleRecurrenceException);                            
+
+                                ret = true;
+                            }
+                            catch (Exception ex)
+                            {
+                                //should not happen
+                                Logger.Log(ex.Message, EventType.Error);
+                            }
                         }
                     }
                     else
                     {//Delete exception time
 
-                        //for (int i=slave.Times.Count;i>0;i--)
-                        //{
-                        //    When time = slave.Times[i-1];
-                        //    if (time.StartTime.Equals(exception.AppointmentItem.Start))
-                        //    {
-                        //        slave.Times.Remove(time);
-                        //        ret = true;
-                        //        break;
-                        //    }
-                        //}
+                    //    //for (int i=slave.Times.Count;i>0;i--)
+                    //    //{
+                    //    //    When time = slave.Times[i-1];
+                    //    //    if (time.StartTime.Equals(exception.AppointmentItem.Start))
+                    //    //    {
+                    //    //        slave.Times.Remove(time);
+                    //    //        ret = true;
+                    //    //        break;
+                    //    //    }
+                    //    //}
 
-                        //for (int i = googleRecurrenceExceptions.Count; i > 0;i-- )
-                        //{
-                        //    if (googleRecurrenceExceptions[i-1].Times[0].StartTime.Equals(exception.OriginalDate))
-                        //    {
-                        //        googleRecurrenceExceptions[i - 1].Delete();
-                        //        googleRecurrenceExceptions.RemoveAt(i - 1);
-                        //    }
-                        //}
+                    //    //for (int i = googleRecurrenceExceptions.Count; i > 0;i-- )
+                    //    //{
+                    //    //    if (googleRecurrenceExceptions[i-1].Times[0].StartTime.Equals(exception.OriginalDate))
+                    //    //    {
+                    //    //        googleRecurrenceExceptions[i - 1].Delete();
+                    //    //        googleRecurrenceExceptions.RemoveAt(i - 1);
+                    //    //    }
+                    //    //}
 
-                        //ToDo: Doesn't work for all recurrences
-                        //var googleRecurrenceException = sync.LoadGoogleAppointments(slave.Id, Syncronizer.MonthsInPast, Syncronizer.MonthsInFuture, exception.OriginalDate, null, null);
-                        var googleRecurrenceException = sync.GetGoogleAppointmentByStartDate(slave.Id, exception.OriginalDate);                                 
+                    //    //ToDo: Doesn't work for all recurrences                        
+                    //    var googleRecurrenceException = sync.GetGoogleAppointmentByStartDate(slave.Id, exception.OriginalDate);                                 
 
-                        if (googleRecurrenceException != null)
-                            googleRecurrenceException.Delete();
+                    //    if (googleRecurrenceException != null)
+                    //        googleRecurrenceException.Delete();
+                        
+                        if ((Syncronizer.MonthsInPast == 0 || exception.OriginalDate >= DateTime.Now.AddMonths(-Syncronizer.MonthsInPast)) &&
+                             (Syncronizer.MonthsInFuture == 0 || exception.OriginalDate <= DateTime.Now.AddMonths(Syncronizer.MonthsInFuture)))
+                        {
+                            //First create deleted occurrences, to delete it later again
+                            var googleRecurrenceException = new EventEntry();
+                            googleRecurrenceException.OriginalEvent = new OriginalEvent();
+                            googleRecurrenceException.OriginalEvent.IdOriginal = slave.EventId;
+                            //googleRecurrenceException.OriginalEvent.Href = ???
+                            DateTime start = exception.OriginalDate.AddHours(master.Start.Hour).AddMinutes(master.Start.Minute).AddSeconds(master.Start.Second);
+                            googleRecurrenceException.OriginalEvent.OriginalStartTime = new When(start, start.AddMinutes(master.Duration), master.AllDayEvent);
+                            googleRecurrenceException.Times.Add(googleRecurrenceException.OriginalEvent.OriginalStartTime);
+                            googleRecurrenceException.Title.Text = master.Subject;
+
+                            try
+                            {
+                                googleRecurrenceException = sync.SaveGoogleAppointment(googleRecurrenceException);
+                                //googleRecurrenceExceptions.Add(googleRecurrenceException);                            
+
+                                //ToDo: check promptDeletion and syncDeletion options
+                                googleRecurrenceException.Delete();
+                                Logger.Log("Deleted obsolete recurrence exception from Google: " + master.Subject + " - " + exception.OriginalDate, EventType.Information);
+                                //sync.DeletedCount++;
+
+                                ret = true;
+                            }
+                            catch (Exception ex)
+                            {
+                                //usually only an error is thrown, if an already cancelled event is to be deleted again
+                                Logger.Log(ex.Message, EventType.Debug);
+                            }
+
+
+                        }
+                        
 
                     }
                 }
@@ -735,11 +781,20 @@ namespace GoContactSyncMod
                     googleRecurrenceException = sync.LoadGoogleAppointments(googleRecurrenceException.Id, 0, 0, googleRecurrenceException.Times[0].StartTime, googleRecurrenceException.Times[0].EndTime); //Reload, just in case it was updated by master recurrence                                
                     if (googleRecurrenceException != null)
                     {
-                        sync.UpdateAppointment(ref googleRecurrenceException, outlookRecurrenceException, null);
-                        outlookRecurrenceException.Save();
+                        if (googleRecurrenceException.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.CANCELED))
+                        {
+                            outlookRecurrenceException.Delete();
+                            Logger.Log("Delected obsolete recurrence exception from Outlook: " + googleRecurrenceException.Title.Text + " - " + Syncronizer.GetTime(googleRecurrenceException), EventType.Information);
+                        }
+                        else
+                        {
+                            sync.UpdateAppointment(ref googleRecurrenceException, outlookRecurrenceException, null);
+                            outlookRecurrenceException.Save();
+                            Logger.Log("Updated recurrence exception from Google to Outlook: " + googleRecurrenceException.Title.Text + " - " + Syncronizer.GetTime(googleRecurrenceException), EventType.Information);
+                        }
                         ret = true;
 
-                        Logger.Log("Updated recurrence exception from Google to Outlook: " + googleRecurrenceException.Title.Text + " - " + Syncronizer.GetTime(googleRecurrenceException), EventType.Information);
+                        
                     }
                     else
                         Logger.Log("Error updating recurrence exception from Google to Outlook (couldn't be reload from Google): " + outlookRecurrenceException.Subject + " - " + outlookRecurrenceException.Start, EventType.Information);
