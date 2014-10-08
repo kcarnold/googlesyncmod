@@ -8,5 +8,5 @@
   <String Id="MustCloseGoogleContactSyncMod">GO Contact Sync Mod muss geschlossen werden!</String>
   <String Id="GoogleContactSyncModNewerVersionInstalled">Eine aktuellere Version von !(loc.ProductName) ist schon installiert.</String>
   <String Id="RunAfterInstall">Starte !(loc.ProductName) nach der Installation?</String>
-  <String Id="OldVersionFound">Es wurde eine alte Version (&lt; v3.7.4) von !(loc.ProductName) gefunden. Deinstallieren Sie bitte zuerst die alte Version, bevor Sie fortfahren. Für Versionen (&gt; v3.7.4) erfolgt das Upgrade wieder automatisch!</String>
+  <String Id="OldVersionFound">Es wurde eine alte Version (&lt;v3.8.0) von !(loc.ProductName) gefunden. Deinstallieren Sie bitte zuerst die alte Version, bevor Sie fortfahren. Für Versionen (&gt;v3.8.0) erfolgt das Upgrade wieder automatisch!</String>
 </WixLocalization>

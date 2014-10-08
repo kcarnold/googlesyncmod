@@ -1,13 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30723.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoogleContactsSync", "GoogleContactsSync\GoogleContactsSync.csproj", "{E43CE572-6694-461D-A4DC-2DB768A7665A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{96D645AD-D2E3-414A-B170-E3E25A7723BE}"
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "SetupGCSM", "SetupGCSM\SetupGCSM.wixproj", "{9DCA19A6-3BE4-435B-97FC-963DA094BE5A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoveOldMsi", "RemoveOldMsi\RemoveOldMsi.csproj", "{9FB3D34E-7EE0-4E9E-8FB7-892574304B1F}"
+EndProject
 Global
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -60,12 +68,20 @@ Global
 		{9DCA19A6-3BE4-435B-97FC-963DA094BE5A}.Release|x64.ActiveCfg = Release|x86
 		{9DCA19A6-3BE4-435B-97FC-963DA094BE5A}.Release|x86.ActiveCfg = Release|x86
 		{9DCA19A6-3BE4-435B-97FC-963DA094BE5A}.Release|x86.Build.0 = Release|x86
+		{9FB3D34E-7EE0-4E9E-8FB7-892574304B1F}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{9FB3D34E-7EE0-4E9E-8FB7-892574304B1F}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{9FB3D34E-7EE0-4E9E-8FB7-892574304B1F}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{9FB3D34E-7EE0-4E9E-8FB7-892574304B1F}.Debug|x64.ActiveCfg = Debug|x86
+		{9FB3D34E-7EE0-4E9E-8FB7-892574304B1F}.Debug|x86.ActiveCfg = Debug|x86
+		{9FB3D34E-7EE0-4E9E-8FB7-892574304B1F}.Debug|x86.Build.0 = Debug|x86
+		{9FB3D34E-7EE0-4E9E-8FB7-892574304B1F}.Release|Any CPU.ActiveCfg = Release|x86
+		{9FB3D34E-7EE0-4E9E-8FB7-892574304B1F}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{9FB3D34E-7EE0-4E9E-8FB7-892574304B1F}.Release|Mixed Platforms.Build.0 = Release|x86
+		{9FB3D34E-7EE0-4E9E-8FB7-892574304B1F}.Release|x64.ActiveCfg = Release|x86
+		{9FB3D34E-7EE0-4E9E-8FB7-892574304B1F}.Release|x86.ActiveCfg = Release|x86
+		{9FB3D34E-7EE0-4E9E-8FB7-892574304B1F}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(SubversionScc) = preSolution
-		Svn-Managed = True
-		Manager = AnkhSVN - Subversion Support for Visual Studio
 	EndGlobalSection
 EndGlobal
