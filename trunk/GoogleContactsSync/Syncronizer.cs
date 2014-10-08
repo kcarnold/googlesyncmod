@@ -1687,19 +1687,19 @@ namespace GoContactSyncMod
                     case SyncOption.MergeOutlookWins:
                     case SyncOption.OutlookToGoogleOnly:
                         //overwrite Google appointment
-                        Logger.Log("Multiple participants found, invitation maybe NOT sent by Google. Outlook appointment is overwriting Google because of SyncOption " + SyncOption + ": " + master.Title.Text + " - " + Syncronizer.GetTime(master) + "\". ", EventType.Information);
+                        Logger.Log("Multiple participants found, invitation maybe NOT sent by Google. Outlook appointment is overwriting Google because of SyncOption " + SyncOption + ": " + master.Title.Text + " - " + Syncronizer.GetTime(master) + ". ", EventType.Information);
                         UpdateAppointment(slave, ref master);
                         break;
-                    //case SyncOption.MergeGoogleWins:
-                    //case SyncOption.GoogleToOutlookOnly:
-                    //    //overwrite outlook appointment
-                    //    Logger.Log("Outlook and Google appointment have been updated, Google appointment is overwriting Outlook because of SyncOption " + sync.SyncOption + ": " + match.GoogleAppointment.Title.Text + ".", EventType.Information);
-                    //    sync.UpdateAppointment(ref match.GoogleAppointment, match.OutlookAppointment, match.GoogleAppointmentExceptions);
-                    //    break;
+                    case SyncOption.MergeGoogleWins:
+                    case SyncOption.GoogleToOutlookOnly:
+                        //overwrite outlook appointment
+                        Logger.Log("Multiple participants found, invitation maybe NOT sent by Google, but Google appointment is overwriting Outlook because of SyncOption " + SyncOption + ": " + master.Title.Text +" - " + Syncronizer.GetTime(master) + ".", EventType.Information);
+                        updated = true;
+                        break;
                     case SyncOption.MergePrompt:
                         //promp for sync option
                         if (
-                            //ConflictResolution != ConflictResolution.GoogleWinsAlways &&
+                            //ConflictResolution != ConflictResolution.GoogleWinsAlways && //Shouldn't be used, because Outlook seems to be the master of the appointment
                             ConflictResolution != ConflictResolution.OutlookWinsAlways &&
                             ConflictResolution != ConflictResolution.SkipAlways)
                         {
@@ -1717,10 +1717,10 @@ namespace GoContactSyncMod
                             case ConflictResolution.OutlookWinsAlways: //Keep Outlook and overwrite Google    
                                 UpdateAppointment(slave, ref master);
                                 break;
-                            //case ConflictResolution.GoogleWins:
-                            //case ConflictResolution.GoogleWinsAlways: //Keep Google and overwrite Outlook
-                            //    updated = true;
-                            //    break;
+                            case ConflictResolution.GoogleWins:
+                            case ConflictResolution.GoogleWinsAlways: //Keep Google and overwrite Outlook
+                                updated = true;
+                                break;
                             default:
                                 throw new ApplicationException("Cancelled");
                         }
@@ -1735,7 +1735,7 @@ namespace GoContactSyncMod
                 //    SkippedCount++;
                 //    Logger.Log("Skipped Updating appointment from Google to Outlook because multiple participants found, invitation maybe NOT sent by Google: \"" + master.Title.Text + " - " + Syncronizer.GetTime(master) + "\".", EventType.Information);
             }
-            else //Only update, if invitation was not sent on Outlook side or freshly created during tis sync  
+            else //Only update, if invitation was not sent on Outlook side or freshly created during this sync  
                 updated = true;
 
             if (updated)
