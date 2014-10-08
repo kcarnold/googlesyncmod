@@ -662,7 +662,7 @@ namespace GoContactSyncMod
                             googleRecurrenceException.OriginalEvent = new OriginalEvent();
                             googleRecurrenceException.OriginalEvent.IdOriginal = slave.EventId;
                             //googleRecurrenceException.OriginalEvent.Href = ???
-                            googleRecurrenceException.OriginalEvent.OriginalStartTime = new When(exception.OriginalDate, exception.OriginalDate.AddMinutes(exception.AppointmentItem.Duration), exception.AppointmentItem.AllDayEvent);
+                            googleRecurrenceException.OriginalEvent.OriginalStartTime = new When(exception.OriginalDate, exception.OriginalDate.AddMinutes(exception.AppointmentItem.Duration)); //, exception.AppointmentItem.AllDayEvent);
 
 
                             try
@@ -717,7 +717,7 @@ namespace GoContactSyncMod
                             googleRecurrenceException.OriginalEvent.IdOriginal = slave.EventId;
                             //googleRecurrenceException.OriginalEvent.Href = ???
                             DateTime start = exception.OriginalDate.AddHours(master.Start.Hour).AddMinutes(master.Start.Minute).AddSeconds(master.Start.Second);
-                            googleRecurrenceException.OriginalEvent.OriginalStartTime = new When(start, start.AddMinutes(master.Duration), master.AllDayEvent);
+                            googleRecurrenceException.OriginalEvent.OriginalStartTime = new When(start, start.AddMinutes(master.Duration)); //, master.AllDayEvent);
                             googleRecurrenceException.Times.Add(googleRecurrenceException.OriginalEvent.OriginalStartTime);
                             googleRecurrenceException.Title.Text = master.Subject;
 
