@@ -12,9 +12,9 @@
            UpgradeCode="$(var.UpgradeCode)">
 
     <!-- Define the minimum supported installer version (3.0) and that the install should be done for the whole machine not just the current user -->
-    <Package InstallerVersion="300" Compressed="yes" InstallPrivileges="elevated" InstallScope="perMachine" Platform="x86"/>
+    <Package InstallerVersion="300" Compressed="yes" InstallScope="perMachine"/>
 
-    <Media Id="1" Cabinet="media.cab" EmbedCab="yes" />
+    <Media Id="1" Cabinet="gcsm.cab" EmbedCab="yes" />
 
     <MajorUpgrade
       DowngradeErrorMessage="!(loc.GoogleContactSyncModNewerVersionInstalled)"
