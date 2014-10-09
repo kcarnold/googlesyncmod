@@ -62,7 +62,15 @@ namespace GoContactSyncMod
             slave.Status = Google.GData.Calendar.EventEntry.EventStatus.CONFIRMED;
             if (master.BusyStatus.Equals(Outlook.OlBusyStatus.olTentative))
                 slave.Status = Google.GData.Calendar.EventEntry.EventStatus.TENTATIVE;
-            
+
+            switch (master.Sensitivity)
+            {               
+                case Outlook.OlSensitivity.olConfidential: //ToDo, currently not supported by Google Web App GUI and Outlook 2010: slave.EventVisibility = Google.GData.Calendar.EventEntry.Visibility.CONFIDENTIAL; break;#
+                case Outlook.OlSensitivity.olPersonal: //ToDo, currently not supported by Google Web App GUI and Outlook 2010: slave.EventVisibility = Google.GData.Calendar.EventEntry.Visibility.CONFIDENTIAL; break;
+                case Outlook.OlSensitivity.olPrivate: slave.EventVisibility = Google.GData.Calendar.EventEntry.Visibility.PRIVATE; break;
+                default: slave.EventVisibility = Google.GData.Calendar.EventEntry.Visibility.DEFAULT; break;
+            }
+
             //ToDo:slave.Categories = master.Categories;
             //slave.Duration = master.Duration;
 
@@ -100,6 +108,7 @@ namespace GoContactSyncMod
             //slave.RequiredAttendees = master.RequiredAttendees;
             //slave.OptionalAttendees = master.OptionalAttendees;
 
+            //ToDo: Doesn'T work for newly created appointments, because Event.Reminder is throwing NullPointerException and Reminders cannot be initialized, therefore moved to after saving
             if (slave.Reminders != null)
             {
                 slave.Reminders.Clear();
@@ -143,7 +152,16 @@ namespace GoContactSyncMod
                 slave.BusyStatus = Outlook.OlBusyStatus.olTentative;
              else if (master.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.CANCELED))
                 slave.BusyStatus = Outlook.OlBusyStatus.olFree;
-                  
+
+
+            switch (master.EventVisibility.Value)
+            {
+                case Google.GData.Calendar.EventEntry.Visibility.CONFIDENTIAL_VALUE: //ToDo, currently not supported by Google Web App GUI and Outlook 2010: slave.Sensitivity = Outlook.OlSensitivity.olConfidential; break;               
+                case Google.GData.Calendar.EventEntry.Visibility.PRIVATE_VALUE: slave.Sensitivity = Outlook.OlSensitivity.olPrivate; break;                
+                default: slave.Sensitivity = Outlook.OlSensitivity.olNormal; break;
+            }
+            
+
             //slave.Categories = master.Categories;
             //slave.Duration = master.Duration;
 

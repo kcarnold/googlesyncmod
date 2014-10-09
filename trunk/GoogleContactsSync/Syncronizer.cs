@@ -1201,12 +1201,14 @@ namespace GoContactSyncMod
 
         public static string GetTime(EventEntry googleAppointment)
         {
-            if (googleAppointment.Times.Count != 0)
-                return googleAppointment.Times[0].StartTime.ToString();
-            else if (googleAppointment.Recurrence != null)
-                return "Recurrence"; //ToDo: Return Recurrence Start/End
+            string ret = string.Empty;
 
-            return String.Empty;
+            if (googleAppointment.Times.Count != 0)
+                ret += googleAppointment.Times[0].StartTime.ToString();
+            if (googleAppointment.Recurrence != null)
+                ret += " Recurrence"; //ToDo: Return Recurrence Start/End
+
+            return ret;
         }        
 
         
@@ -1629,6 +1631,26 @@ namespace GoContactSyncMod
 
                 AppointmentPropertiesUtils.SetGoogleOutlookAppointmentId(SyncProfile, slave, master);
                 slave = SaveGoogleAppointment(slave);
+
+                //ToDo: Doesn'T work for newly created recurrence appointments before save, because Event.Reminder is throwing NullPointerException and Reminders cannot be initialized, therefore moved to after saving
+                if (slave.Recurrence != null && slave.Reminders != null)
+                {
+                    slave.Reminders.Clear();
+                    if (master.ReminderSet)
+                    {
+                        var reminder = new Google.GData.Extensions.Reminder();
+                        reminder.Minutes = master.ReminderMinutesBeforeStart;
+                        if (reminder.Minutes > 40300)
+                        {
+                            //ToDo: Check real limit, currently 40300
+                            Logger.Log("Reminder Minutes to big (" + reminder.Minutes + "), set to maximum of 40300 minutes for appointment: " + master.Subject + " - " + master.Start, EventType.Warning);
+                            reminder.Minutes = 40300;
+                        }
+                        reminder.Method = Google.GData.Extensions.Reminder.ReminderMethod.alert;
+                        slave.Reminders.Add(reminder);
+                    }
+                    slave = SaveGoogleAppointment(slave);
+                }
 
                 AppointmentPropertiesUtils.SetOutlookGoogleAppointmentId(this, master, slave);
                 master.Save();
@@ -3150,32 +3172,32 @@ namespace GoContactSyncMod
             return null;
         }
 
-        public EventEntry GetGoogleAppointmentByStartDate(AtomId id, DateTime restrictStartDate)
-        {//ToDo: Doesn't work for all recurrences
+        //public EventEntry GetGoogleAppointmentByStartDate(AtomId id, DateTime restrictStartDate)
+        //{//ToDo: Doesn't work for all recurrences
 
-            if (id == null)
-                return null;
+        //    if (id == null)
+        //        return null;
             
-            foreach (EventEntry appointment in GoogleAppointments)
-            {
+        //    foreach (EventEntry appointment in GoogleAppointments)
+        //    {
                 
-                if (appointment.OriginalEvent != null && appointment.Times.Count > 0 && restrictStartDate.Date.Equals(appointment.Times[0].StartTime.Date))
-                    if (id.Equals(new AtomId(id.AbsoluteUri.Substring(0, id.AbsoluteUri.LastIndexOf("/") + 1) + appointment.OriginalEvent.IdOriginal)))
-                        return appointment;                                         
-            }
+        //        if (appointment.OriginalEvent != null && appointment.Times.Count > 0 && restrictStartDate.Date.Equals(appointment.Times[0].StartTime.Date))
+        //            if (id.Equals(new AtomId(id.AbsoluteUri.Substring(0, id.AbsoluteUri.LastIndexOf("/") + 1) + appointment.OriginalEvent.IdOriginal)))
+        //                return appointment;                                         
+        //    }
 
-            //If not found, load AllGoogleAppointments
-            if (AllGoogleAppointments == null)
-                LoadGoogleAppointments(null, 0, 0, null, null);
-            foreach (EventEntry appointment in AllGoogleAppointments)
-            {
-                if (appointment.OriginalEvent != null && appointment.Times.Count > 0 && restrictStartDate.Date.Equals(appointment.Times[0].StartTime.Date))
-                    if (id.Equals(new AtomId(id.AbsoluteUri.Substring(0, id.AbsoluteUri.LastIndexOf("/") + 1) + appointment.OriginalEvent.IdOriginal)))
-                        return appointment;      
-            }
+        //    //If not found, load AllGoogleAppointments
+        //    if (AllGoogleAppointments == null)
+        //        LoadGoogleAppointments(null, 0, 0, null, null);
+        //    foreach (EventEntry appointment in AllGoogleAppointments)
+        //    {
+        //        if (appointment.OriginalEvent != null && appointment.Times.Count > 0 && restrictStartDate.Date.Equals(appointment.Times[0].StartTime.Date))
+        //            if (id.Equals(new AtomId(id.AbsoluteUri.Substring(0, id.AbsoluteUri.LastIndexOf("/") + 1) + appointment.OriginalEvent.IdOriginal)))
+        //                return appointment;      
+        //    }
 
-            return null;
-        }
+        //    return null;
+        //}
 
 
 		public Group CreateGroup(string name)
