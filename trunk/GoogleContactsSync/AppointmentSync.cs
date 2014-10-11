@@ -61,15 +61,7 @@ namespace GoContactSyncMod
             //ToDo: Also Track Available Status, but this is not existing in Google Data API
             slave.Status = Google.GData.Calendar.EventEntry.EventStatus.CONFIRMED;
             if (master.BusyStatus.Equals(Outlook.OlBusyStatus.olTentative))
-                slave.Status = Google.GData.Calendar.EventEntry.EventStatus.TENTATIVE;
-
-            switch (master.Sensitivity)
-            {               
-                case Outlook.OlSensitivity.olConfidential: //ToDo, currently not supported by Google Web App GUI and Outlook 2010: slave.EventVisibility = Google.GData.Calendar.EventEntry.Visibility.CONFIDENTIAL; break;#
-                case Outlook.OlSensitivity.olPersonal: //ToDo, currently not supported by Google Web App GUI and Outlook 2010: slave.EventVisibility = Google.GData.Calendar.EventEntry.Visibility.CONFIDENTIAL; break;
-                case Outlook.OlSensitivity.olPrivate: slave.EventVisibility = Google.GData.Calendar.EventEntry.Visibility.PRIVATE; break;
-                default: slave.EventVisibility = Google.GData.Calendar.EventEntry.Visibility.DEFAULT; break;
-            }
+                slave.Status = Google.GData.Calendar.EventEntry.EventStatus.TENTATIVE;            
 
             //ToDo:slave.Categories = master.Categories;
             //slave.Duration = master.Duration;
@@ -132,7 +124,16 @@ namespace GoContactSyncMod
 
             UpdateRecurrence(master, slave);
 
-            
+            if (slave.Recurrence == null)
+            {
+                switch (master.Sensitivity)
+                {
+                    case Outlook.OlSensitivity.olConfidential: //ToDo, currently not supported by Google Web App GUI and Outlook 2010: slave.EventVisibility = Google.GData.Calendar.EventEntry.Visibility.CONFIDENTIAL; break;#
+                    case Outlook.OlSensitivity.olPersonal: //ToDo, currently not supported by Google Web App GUI and Outlook 2010: slave.EventVisibility = Google.GData.Calendar.EventEntry.Visibility.CONFIDENTIAL; break;
+                    case Outlook.OlSensitivity.olPrivate: slave.EventVisibility = Google.GData.Calendar.EventEntry.Visibility.PRIVATE; break;
+                    default: slave.EventVisibility = Google.GData.Calendar.EventEntry.Visibility.DEFAULT; break;
+                }
+            }
         }
 
         /// <summary>
@@ -151,16 +152,7 @@ namespace GoContactSyncMod
             if (master.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.TENTATIVE))
                 slave.BusyStatus = Outlook.OlBusyStatus.olTentative;
              else if (master.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.CANCELED))
-                slave.BusyStatus = Outlook.OlBusyStatus.olFree;
-
-
-            switch (master.EventVisibility.Value)
-            {
-                case Google.GData.Calendar.EventEntry.Visibility.CONFIDENTIAL_VALUE: //ToDo, currently not supported by Google Web App GUI and Outlook 2010: slave.Sensitivity = Outlook.OlSensitivity.olConfidential; break;               
-                case Google.GData.Calendar.EventEntry.Visibility.PRIVATE_VALUE: slave.Sensitivity = Outlook.OlSensitivity.olPrivate; break;                
-                default: slave.Sensitivity = Outlook.OlSensitivity.olNormal; break;
-            }
-            
+                slave.BusyStatus = Outlook.OlBusyStatus.olFree;                        
 
             //slave.Categories = master.Categories;
             //slave.Duration = master.Duration;
@@ -289,7 +281,19 @@ namespace GoContactSyncMod
             
             //slave.RTFBody = master.RTFBody; 
             
-            UpdateRecurrence(master, slave);                                  
+            UpdateRecurrence(master, slave);
+
+            //Sensivity update is only allowed for single appointments or the master
+            if (!slave.IsRecurring || slave.RecurrenceState == Outlook.OlRecurrenceState.olApptMaster) 
+            {
+                switch (master.EventVisibility.Value)
+                {
+                    case Google.GData.Calendar.EventEntry.Visibility.CONFIDENTIAL_VALUE: //ToDo, currently not supported by Google Web App GUI and Outlook 2010: slave.Sensitivity = Outlook.OlSensitivity.olConfidential; break;               
+                    case Google.GData.Calendar.EventEntry.Visibility.PRIVATE_VALUE: slave.Sensitivity = Outlook.OlSensitivity.olPrivate; break;
+                    default: slave.Sensitivity = Outlook.OlSensitivity.olNormal; break;
+                }
+            }
+    
         }
 
         public static void UpdateRecurrence(Outlook.AppointmentItem master, EventEntry slave)
