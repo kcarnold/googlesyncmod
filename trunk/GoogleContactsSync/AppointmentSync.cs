@@ -56,7 +56,7 @@ namespace GoContactSyncMod
             ////foreach (Outlook.Attachment attachment in master.Attachments)
             ////    slave.Attachments.Add(master.Attachments);
             
-            slave.Content.Content = master.Body;
+            slave.Content.Content = master.Body;            
 
             //ToDo: Also Track Available Status, but this is not existing in Google Data API
             slave.Status = Google.GData.Calendar.EventEntry.EventStatus.CONFIRMED;
@@ -145,8 +145,13 @@ namespace GoContactSyncMod
 
             //foreach (Outlook.Attachment attachment in master.Attachments)
             //    slave.Attachments.Add(master.Attachments);
-
-            slave.Body = master.Content.Content;
+            
+            string rtf = Utilities.ConvertToText(slave.RTFBody as byte[]);
+            if (string.IsNullOrEmpty(rtf) || rtf.Equals(slave.Body) && !rtf.Equals(master.Content.Content))  //only update, if RTF text is same as plain text and is different between master and slave
+                slave.Body = master.Content.Content;
+            else
+                Logger.Log("Outlook appointment notes body not updated, because it is RTF, otherwise it will overwrite it by plain string: " + slave.Subject + " - " + slave.Start, EventType.Warning);       
+                                       
 
             slave.BusyStatus = Outlook.OlBusyStatus.olBusy;
             if (master.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.TENTATIVE))

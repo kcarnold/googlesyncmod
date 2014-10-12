@@ -343,6 +343,28 @@ namespace GoContactSyncMod
 
         //    return true;
         //}
+
+        static public string ConvertToText(string rtf)
+        {
+            using (var rtb = new System.Windows.Forms.RichTextBox())
+            {
+                rtb.Rtf = rtf;
+                return rtb.Text;
+            }
+        }
+
+        static public string ConvertToText(byte[] rtf)
+        {
+            string ret = null;
+            if (rtf != null)
+            {
+                System.Text.Encoding encoding = new System.Text.ASCIIEncoding();
+                ret = encoding.GetString(rtf);
+                ret = ConvertToText(ret);
+            }
+
+            return ret;
+        }
     }
 
     public class OutlookFolder : IComparable 
