@@ -167,10 +167,9 @@ namespace GoContactSyncMod
             if (master.RecurrenceException != null)
                 Logger.Log("Google Appointment with RecurrenceException found: " + master.Title.Text + " - " + Syncronizer.GetTime(master), EventType.Warning);            
 
-            if (master.Times.Count == 1 || master.Times.Count > 0 && master.Recurrence == null)
-            {//only sync times for not recurrent events
-                //ToDo: How to sync deleted recurrences?
-
+            //if (master.Times.Count == 1 || master.Times.Count > 0 && master.Recurrence == null)
+            if (master.Times.Count > 0)
+            {//Really???only sync times for not recurrent events             
                 try
                 {
                     if (slave.AllDayEvent != master.Times[0].AllDay)
@@ -473,6 +472,7 @@ namespace GoContactSyncMod
                         string[] parts = pattern.Split(new char[] { ';', ':' });
                         
                         slaveRecurrence.EndTime = GetDateTime(parts[parts.Length-1]);
+                        //Don't update, otherwise it will end after first occurrence: slaveRecurrence.PatternEndDate = GetDateTime(parts[parts.Length - 1]);
                         
                         break;
                     }
@@ -594,7 +594,16 @@ namespace GoContactSyncMod
                             }
                         }
 
-                        
+
+                        foreach (string part in parts)
+                        {
+                            if (part.StartsWith(INTERVAL))
+                            {
+                                slaveRecurrence.Interval = int.Parse(part.Substring(part.IndexOf('=') + 1));
+                                break;
+                            }
+
+                        }
 
                         foreach (string part in parts)
                         {
@@ -614,15 +623,7 @@ namespace GoContactSyncMod
                             }
                         }
 
-                        foreach (string part in parts)
-                        {
-                            if (part.StartsWith(INTERVAL))
-                            {
-                                slaveRecurrence.Interval = int.Parse(part.Substring(part.IndexOf('=') + 1));
-                                break;
-                            }
-
-                        }
+                        
 
 
 
