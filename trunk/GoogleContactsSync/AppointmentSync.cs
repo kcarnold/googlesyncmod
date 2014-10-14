@@ -145,12 +145,20 @@ namespace GoContactSyncMod
 
             //foreach (Outlook.Attachment attachment in master.Attachments)
             //    slave.Attachments.Add(master.Attachments);
-            
-            string rtf = Utilities.ConvertToText(slave.RTFBody as byte[]);
-            if (string.IsNullOrEmpty(rtf) || rtf.Equals(slave.Body) && !rtf.Equals(master.Content.Content))  //only update, if RTF text is same as plain text and is different between master and slave
+
+            try
+            {
+                string rtf = Utilities.ConvertToText(slave.RTFBody as byte[]);
+                if (string.IsNullOrEmpty(rtf) || rtf.Equals(slave.Body) && !rtf.Equals(master.Content.Content))  //only update, if RTF text is same as plain text and is different between master and slave
+                    slave.Body = master.Content.Content;
+                else
+                    Logger.Log("Outlook appointment notes body not updated, because it is RTF, otherwise it will overwrite it by plain text: " + slave.Subject + " - " + slave.Start, EventType.Warning);
+            }
+            catch (Exception e)
+            {
+                Logger.Log("Error when converting RTF to plain text, updating Google Appointment '"+ slave.Subject + " - " + slave.Start +"' notes to Outlook without RTF check: " + e.Message , EventType.Error);
                 slave.Body = master.Content.Content;
-            else
-                Logger.Log("Outlook appointment notes body not updated, because it is RTF, otherwise it will overwrite it by plain string: " + slave.Subject + " - " + slave.Start, EventType.Warning);       
+            }
                                        
 
             slave.BusyStatus = Outlook.OlBusyStatus.olBusy;
