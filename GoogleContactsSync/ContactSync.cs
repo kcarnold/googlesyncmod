@@ -870,13 +870,20 @@ namespace GoContactSyncMod
                     slave.WebPage = master.ContactEntry.Websites[0].Href; 
                 }               
             }
-            
-            string rtf = Utilities.ConvertToText(slave.RTFBody as byte[]);
-            if (string.IsNullOrEmpty(rtf) || rtf.Equals(slave.Body) && !rtf.Equals(master.Content)) //only update, if RTF text is same as plain text and is different between master and slave
+
+            try
+            {
+                string rtf = Utilities.ConvertToText(slave.RTFBody as byte[]);
+                if (string.IsNullOrEmpty(rtf) || rtf.Equals(slave.Body) && !rtf.Equals(master.Content)) //only update, if RTF text is same as plain text and is different between master and slave
+                    slave.Body = master.Content;
+                else
+                    Logger.Log("Outlook contact notes body not updated, because it is RTF, otherwise it will overwrite it by plain text: " + slave.FileAs, EventType.Warning);
+            }
+            catch (Exception e)
+            {
+                Logger.Log("Error when converting RTF to plain text, updating Google Contact '" + slave.FileAs + "' notes to Outlook without RTF check: " + e.Message, EventType.Error);
                 slave.Body = master.Content;
-            else
-                Logger.Log("Outlook contact notes body not updated, because it is RTF, otherwise it will overwrite it by plain string: " + slave.FileAs, EventType.Warning);       
-                                                        
+            }                                 
 		}
 
 		public static void SetEmails(Contact source, Outlook.ContactItem destination)
