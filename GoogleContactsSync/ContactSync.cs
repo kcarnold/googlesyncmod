@@ -881,7 +881,7 @@ namespace GoContactSyncMod
             }
             catch (Exception e)
             {
-                Logger.Log("Error when converting RTF to plain text, updating Google Contact '" + slave.FileAs + "' notes to Outlook without RTF check: " + e.Message, EventType.Error);
+                Logger.Log("Error when converting RTF to plain text, updating Google Contact '" + slave.FileAs + "' notes to Outlook without RTF check: " + e.Message, EventType.Debug);
                 slave.Body = master.Content;
             }                                 
 		}
