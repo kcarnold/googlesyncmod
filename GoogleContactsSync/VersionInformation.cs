@@ -61,7 +61,7 @@ namespace GoContactSyncMod
             WindowsServer2008R2,
             Windows8,
             WindowsServer2012,
-            Windows81,
+            Windows8_1,
             WindowsServer2012R2,
             Unknown
         }
@@ -136,7 +136,7 @@ namespace GoContactSyncMod
                         {
                             if (osVersionInfo.wProductType == NativeMethods.VER_NT_WORKSTATION)
                             {
-                                return WindowsMainVersion.Windows81;
+                                return WindowsMainVersion.Windows8_1;
                             }
                             else
                             {
