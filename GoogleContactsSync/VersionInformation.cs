@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Management;
+using System.Management.Instrumentation;
 
 namespace GoContactSyncMod
 {
@@ -46,7 +48,7 @@ namespace GoContactSyncMod
             }
      
         }
-
+        /*
         /// <summary>
         /// windows-main-version types
         /// </summary>
@@ -65,14 +67,37 @@ namespace GoContactSyncMod
             WindowsServer2012R2,
             Unknown
         }
+        */
 
+        /// <summary>
+        /// detect windows main version
+        /// </summary>
+        public static string GetWindowsVersionName()
+        {
+            using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT * FROM Win32_OperatingSystem"))
+            {
+                foreach (ManagementObject managementObject in searcher.Get())
+                {
+                    /*//iterate trough all properties
+                    foreach (PropertyData prop in managementObject.Properties)
+                    {
+                        Console.WriteLine("{0}: {1}", prop.Name, prop.Value);
+                    }
+                     */
+                    return (string)managementObject["Caption"];
+                }
+            }
+            return "Unknown Windows Version";
+        }
+
+        /*
         /// <summary>
         /// detect window main version
         /// </summary>
         public static WindowsMainVersion GetWindowsMainVersion()
         {
             NativeMethods.OSVERSIONINFOEX osVersionInfo = new NativeMethods.OSVERSIONINFOEX();
-            osVersionInfo.dwOSVersionInfoSize = Marshal.SizeOf(osVersionInfo);
+            osVersionInfo.dwOSVersionInfoSize = Marshal.SizeOf(typeof(NativeMethods.OSVERSIONINFOEX));
             if (NativeMethods.GetVersionEx(ref osVersionInfo))
             {
                 switch (osVersionInfo.dwMajorVersion)
@@ -150,5 +175,6 @@ namespace GoContactSyncMod
             }
             return WindowsMainVersion.Unknown;
         }
+         */ 
     }
 }

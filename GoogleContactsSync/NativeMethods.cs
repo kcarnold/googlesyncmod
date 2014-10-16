@@ -8,7 +8,7 @@ namespace GoContactSyncMod
         #region API Constants
         public const int HWND_BROADCAST = 0xffff;
         public static readonly int WM_GCSM_SHOWME = RegisterWindowMessage("WM_GCSM_SHOWME");
-        public const int VER_NT_WORKSTATION = 0x0000001;
+        //public const int VER_NT_WORKSTATION = 0x0000001;
 
         // Fix for WinXP and older systems, that do not continue with shutdown until all programs have closed
         // FormClosing would hold system shutdown, when it sets the cancel to true
@@ -34,7 +34,7 @@ namespace GoContactSyncMod
         */
         #endregion
  
-
+        /*
         [StructLayout(LayoutKind.Sequential)]
         public struct OSVERSIONINFOEX
         {
@@ -51,7 +51,7 @@ namespace GoContactSyncMod
             public Byte wProductType;
             public Byte wReserved;
         }
-
+        */
         #region Extern Functions Declaration
         
         [DllImport("user32", SetLastError=true, CharSet = CharSet.Unicode)]
@@ -59,9 +59,10 @@ namespace GoContactSyncMod
         [DllImport("user32", SetLastError=true, CharSet = CharSet.Unicode)]
         public static extern int RegisterWindowMessage(string message);
 
+        /*
         [DllImport("kernel32", CharSet = CharSet.Unicode)]
         public static extern bool GetVersionEx(ref OSVERSIONINFOEX osvi);
-        
+        */
         #endregion
     }
 }
