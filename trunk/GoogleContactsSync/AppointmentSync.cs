@@ -151,7 +151,7 @@ namespace GoContactSyncMod
                 string rtf = Utilities.ConvertToText(slave.RTFBody as byte[]);
                 if (string.IsNullOrEmpty(rtf) || rtf.Equals(slave.Body) && !rtf.Equals(master.Content.Content))  //only update, if RTF text is same as plain text and is different between master and slave
                     slave.Body = master.Content.Content;
-                else
+                else if (!rtf.Equals(master.Content.Content))
                     Logger.Log("Outlook appointment notes body not updated, because it is RTF, otherwise it will overwrite it by plain text: " + slave.Subject + " - " + slave.Start, EventType.Warning);
             }
             catch (Exception e)
