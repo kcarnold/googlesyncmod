@@ -165,9 +165,12 @@ namespace GoContactSyncMod
                     this.noteFoldersComboBox.Visible = btSyncNotes.Checked;
                     this.appointmentFoldersComboBox.Visible = this.futureMonthTextBox.Visible = this.pastMonthTextBox.Visible = this.appointmentTimezonesComboBox.Visible = btSyncAppointments.Checked;
                     this.cmbSyncProfile.Visible = true;
-                    ArrayList outlookContactFolders = new ArrayList();
-                    ArrayList outlookNoteFolders = new ArrayList();
-                    ArrayList outlookAppointmentFolders = new ArrayList();
+
+                    string defaultText = "    --- Select an Outlook folder ---";
+                    ArrayList outlookContactFolders = new ArrayList();                    
+                    ArrayList outlookNoteFolders = new ArrayList();                    
+                    ArrayList outlookAppointmentFolders = new ArrayList();                    
+
                     try
                     {
                         Cursor = Cursors.WaitCursor;
@@ -195,25 +198,28 @@ namespace GoContactSyncMod
                         }
                                                                         
 
-                        if (outlookContactFolders != null && outlookContactFolders.Count > 0)
+                        if (outlookContactFolders != null) // && outlookContactFolders.Count > 0)
                         {
                             outlookContactFolders.Sort();
+                            outlookContactFolders.Insert(0, new OutlookFolder(defaultText, defaultText, false));
                             this.contactFoldersComboBox.DataSource = outlookContactFolders;
                             this.contactFoldersComboBox.DisplayMember = "DisplayName";
                             this.contactFoldersComboBox.ValueMember = "FolderID";
                         }
 
-                        if (outlookNoteFolders != null && outlookNoteFolders.Count > 0)
+                        if (outlookNoteFolders != null) // && outlookNoteFolders.Count > 0)
                         {
                             outlookNoteFolders.Sort();
+                            outlookNoteFolders.Insert(0, new OutlookFolder(defaultText, defaultText, false));
                             this.noteFoldersComboBox.DataSource = outlookNoteFolders;
                             this.noteFoldersComboBox.DisplayMember = "DisplayName";
                             this.noteFoldersComboBox.ValueMember = "FolderID";
                         }
 
-                        if (outlookAppointmentFolders != null && outlookAppointmentFolders.Count > 0)
+                        if (outlookAppointmentFolders != null) // && outlookAppointmentFolders.Count > 0)
                         {
                             outlookAppointmentFolders.Sort();
+                            outlookAppointmentFolders.Insert(0, new OutlookFolder(defaultText, defaultText, false));
                             this.appointmentFoldersComboBox.DataSource = outlookAppointmentFolders;
                             this.appointmentFoldersComboBox.DisplayMember = "DisplayName";
                             this.appointmentFoldersComboBox.ValueMember = "FolderID";
@@ -222,9 +228,13 @@ namespace GoContactSyncMod
                         this.noteFoldersComboBox.EndUpdate();
                         this.appointmentFoldersComboBox.EndUpdate();
 
-                        this.contactFoldersComboBox.SelectedValue = "";
-                        this.noteFoldersComboBox.SelectedValue = "";
-                        this.appointmentFoldersComboBox.SelectedValue = "";
+                        this.contactFoldersComboBox.SelectedValue = defaultText;
+                        this.noteFoldersComboBox.SelectedValue = defaultText;
+                        this.appointmentFoldersComboBox.SelectedValue = defaultText;
+
+                        //this.contactFoldersComboBox.SelectedValue = "";
+                        //this.noteFoldersComboBox.SelectedValue = "";
+                        //this.appointmentFoldersComboBox.SelectedValue = "";
 
                         //Select Default Folder per Default
                         foreach (OutlookFolder folder in contactFoldersComboBox.Items)
@@ -445,17 +455,17 @@ namespace GoContactSyncMod
 	    {
             get
             {
-                bool syncContactFolderIsValid = (contactFoldersComboBox.SelectedIndex >= 0
-                                                 && contactFoldersComboBox.SelectedIndex < contactFoldersComboBox.Items.Count) || !btSyncContacts.Checked;
-                bool syncNoteFolderIsValid = (noteFoldersComboBox.SelectedIndex >= 0 && noteFoldersComboBox.SelectedIndex < noteFoldersComboBox.Items.Count)
-                                             || !btSyncNotes.Checked;
-                bool syncAppointmentFolderIsValid = (appointmentFoldersComboBox.SelectedIndex >= 0 && appointmentFoldersComboBox.SelectedIndex < appointmentFoldersComboBox.Items.Count)
-                                            || !btSyncAppointments.Checked;
+                bool syncContactFolderIsValid = (contactFoldersComboBox.SelectedIndex >= 1 && contactFoldersComboBox.SelectedIndex < contactFoldersComboBox.Items.Count) 
+                                                || !btSyncContacts.Checked;
+                bool syncNoteFolderIsValid = (noteFoldersComboBox.SelectedIndex >= 1 && noteFoldersComboBox.SelectedIndex < noteFoldersComboBox.Items.Count)
+                                                || !btSyncNotes.Checked;
+                bool syncAppointmentFolderIsValid = (appointmentFoldersComboBox.SelectedIndex >= 1 && appointmentFoldersComboBox.SelectedIndex < appointmentFoldersComboBox.Items.Count)
+                                                || !btSyncAppointments.Checked;
 
                 //ToDo: Coloring doesn'T Work for these combos
-                setBgColor(contactFoldersComboBox, syncContactFolderIsValid);
-                setBgColor(noteFoldersComboBox, syncNoteFolderIsValid);
-                setBgColor(appointmentFoldersComboBox, syncAppointmentFolderIsValid);
+                //setBgColor(contactFoldersComboBox, syncContactFolderIsValid);
+                //setBgColor(noteFoldersComboBox, syncNoteFolderIsValid);
+                //setBgColor(appointmentFoldersComboBox, syncAppointmentFolderIsValid);
 
                 return syncContactFolderIsValid && syncNoteFolderIsValid && syncAppointmentFolderIsValid;
             }
@@ -510,12 +520,12 @@ namespace GoContactSyncMod
 			{
                 if (!ValidCredentials)
                     //return;
-                    throw new Exception("Gmail Credentials are incomplete or incorrect!");
+                    throw new Exception("Gmail Credentials are incomplete or incorrect! Maybe a typo, or you have to allow less secure apps to access your account, see https://www.google.com/settings/security/lesssecureapps");
 
                 fillSyncFolderItems();
 
                 if (!ValidSyncFolders)
-                    throw new Exception("At least one sync folder is not selected or invalid!");
+                    throw new Exception("At least one Outlook folder is not selected or invalid! You have to choose one folder for each item you want to sync!");
 
 
                 //IconTimerSwitch(true);
