@@ -194,7 +194,7 @@ namespace GoContactSyncMod
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log("Error updating event " + master.Title + " - " + Syncronizer.GetTime(master) + ": " + ex.Message, EventType.Warning);
+                    Logger.Log("Error updating event " + master.Title.Text + " - " + Syncronizer.GetTime(master) + ": " + ex.Message, EventType.Warning);
                 }
             }
             
