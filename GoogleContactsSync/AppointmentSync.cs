@@ -182,7 +182,7 @@ namespace GoContactSyncMod
 
             //if (master.Times.Count == 1 || master.Times.Count > 0 && master.Recurrence == null)
             if (master.Times.Count > 0)
-            {//Really???only sync times for not recurrent events             
+            {//Also sync times for recurrent events, but log warning, if it is not working
                 try
                 {
                     if (slave.AllDayEvent != master.Times[0].AllDay)
@@ -194,7 +194,7 @@ namespace GoContactSyncMod
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log("Error updating event " + master.Title.Text + " - " + Syncronizer.GetTime(master) + ": " + ex.Message, EventType.Warning);
+                    Logger.Log("Error updating event's AllDay/Start/End: " + master.Title.Text + " - " + Syncronizer.GetTime(master) + ": " + ex.Message, slave.IsRecurring?EventType.Debug:EventType.Warning);
                 }
             }
             
@@ -820,7 +820,7 @@ namespace GoContactSyncMod
                         if (googleRecurrenceException.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.CANCELED))
                         {
                             outlookRecurrenceException.Delete();
-                            Logger.Log("Delected obsolete recurrence exception from Outlook: " + googleRecurrenceException.Title.Text + " - " + Syncronizer.GetTime(googleRecurrenceException), EventType.Information);
+                            Logger.Log("Deleted obsolete recurrence exception from Outlook: " + googleRecurrenceException.Title.Text + " - " + Syncronizer.GetTime(googleRecurrenceException), EventType.Information);
                         }
                         else
                         {
