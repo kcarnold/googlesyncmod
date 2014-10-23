@@ -284,7 +284,7 @@ namespace GoContactSyncMod
             
 
             slave.ReminderSet = false;
-            if (master.Reminder != null && !master.Reminder.Method.Equals(Google.GData.Extensions.Reminder.ReminderMethod.none) && master.Reminder.AbsoluteTime >= DateTime.Now)
+            if (master.Reminder != null && !master.Reminder.Method.Equals(Google.GData.Extensions.Reminder.ReminderMethod.none)) // && master.Reminder.AbsoluteTime >= DateTime.Now)
             { 
                 slave.ReminderSet = true;
                 slave.ReminderMinutesBeforeStart = master.Reminder.Minutes;
