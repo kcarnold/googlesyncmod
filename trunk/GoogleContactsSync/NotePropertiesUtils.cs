@@ -256,8 +256,10 @@ namespace GoContactSyncMod
 
             foreach (char c in System.IO.Path.GetInvalidFileNameChars())
             {
-                fileName = fileName.Replace(c, '_');                
+                fileName = fileName.Replace(c, '_');
+                syncProfile = syncProfile.Replace(c, '_');
             }
+            
 
             //Only for backward compliance with version before 3.5.9 (before syncProfile can be changed)
             CopyNoteFiles(syncProfile);
@@ -325,6 +327,10 @@ namespace GoContactSyncMod
                 FileStream filestream = new FileStream(fileName, FileMode.OpenOrCreate);
                 writer = new StreamWriter(filestream);
                 writer.Write(body);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Invalid path to create local note filename: " + fileName, e);
             }
             finally
             {
