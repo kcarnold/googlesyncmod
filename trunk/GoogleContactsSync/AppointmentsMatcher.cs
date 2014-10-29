@@ -326,17 +326,9 @@ namespace GoContactSyncMod
                             matchingGoogleAppointment = sync.LoadGoogleAppointments(new AtomId(googleAppointmentId), 0, 0, null, null);
                         if (matchingGoogleAppointment == null)
                         {
-                            if (match.OutlookAppointment.Recipients.Count > 1)
-                            {
+                            
 
-
-                                //ToDo:Maybe find as better way, e.g. to ask the user, if he wants to overwrite the invalid appointment                                
-                                Logger.Log("Outlook Appointment not deleted, because multiple participants found,  invitation maybe NOT sent by Google: " + match.OutlookAppointment.Subject + " - " + match.OutlookAppointment.Start, EventType.Information);
-                                AppointmentPropertiesUtils.ResetOutlookGoogleAppointmentId(sync, match.OutlookAppointment);
-                                return;
-                            }
-
-                            if (!sync.PromptDelete)
+                            if (!sync.PromptDelete && match.OutlookAppointment.Recipients.Count == 0)
                                 sync.DeleteOutlookResolution = DeleteResolution.DeleteOutlookAlways;
                             else if (sync.DeleteOutlookResolution != DeleteResolution.DeleteOutlookAlways &&
                                      sync.DeleteOutlookResolution != DeleteResolution.KeepOutlookAlways)
@@ -352,9 +344,18 @@ namespace GoContactSyncMod
                                     break;
                                 case DeleteResolution.DeleteOutlook:
                                 case DeleteResolution.DeleteOutlookAlways:
-                                    //Avoid recreating a GoogleAppointment already existing
-                                    //==> Delete this OutlookAppointment instead if previous match existed but no match exists anymore
-                                    return;
+                                    
+                                    if (match.OutlookAppointment.Recipients.Count > 1)
+                                    {
+                                        //ToDo:Maybe find as better way, e.g. to ask the user, if he wants to overwrite the invalid appointment                                
+                                        Logger.Log("Outlook Appointment not deleted, because multiple participants found,  invitation maybe NOT sent by Google: " + match.OutlookAppointment.Subject + " - " + match.OutlookAppointment.Start, EventType.Information);
+                                        AppointmentPropertiesUtils.ResetOutlookGoogleAppointmentId(sync, match.OutlookAppointment);
+                                        break;
+                                    }
+                                    else
+                                        //Avoid recreating a GoogleAppointment already existing
+                                        //==> Delete this OutlookAppointment instead if previous match existed but no match exists anymore
+                                        return;
                                 default:
                                     throw new ApplicationException("Cancelled");
                             }
