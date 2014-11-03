@@ -48,26 +48,6 @@ namespace GoContactSyncMod
             }
      
         }
-        /*
-        /// <summary>
-        /// windows-main-version types
-        /// </summary>
-        public enum WindowsMainVersion
-        {
-            WindowsXP,
-            WindowsServer2003,
-            WindowsXP64,
-            Vista,
-            WindowsServer2008,
-            Windows7,
-            WindowsServer2008R2,
-            Windows8,
-            WindowsServer2012,
-            Windows8_1,
-            WindowsServer2012R2,
-            Unknown
-        }
-        */
 
         /// <summary>
         /// detect windows main version
@@ -89,92 +69,5 @@ namespace GoContactSyncMod
             }
             return "Unknown Windows Version";
         }
-
-        /*
-        /// <summary>
-        /// detect window main version
-        /// </summary>
-        public static WindowsMainVersion GetWindowsMainVersion()
-        {
-            NativeMethods.OSVERSIONINFOEX osVersionInfo = new NativeMethods.OSVERSIONINFOEX();
-            osVersionInfo.dwOSVersionInfoSize = Marshal.SizeOf(typeof(NativeMethods.OSVERSIONINFOEX));
-            if (NativeMethods.GetVersionEx(ref osVersionInfo))
-            {
-                switch (osVersionInfo.dwMajorVersion)
-                {
-                    case 5:
-                        if (Environment.OSVersion.Version.Minor == 1)
-                        {
-                            return WindowsMainVersion.WindowsXP;
-                        }
-                        else if (Environment.OSVersion.Version.Minor == 2)
-                        {
-                            if (osVersionInfo.wProductType == NativeMethods.VER_NT_WORKSTATION)
-                            {
-                                return WindowsMainVersion.WindowsXP64;
-                            }
-                            else
-                            {
-                                return WindowsMainVersion.WindowsServer2003;
-                            }
-                        }
-                        else
-                        {
-                            return WindowsMainVersion.Unknown;
-                        }
-
-                    case 6:
-                        if (Environment.OSVersion.Version.Minor == 0)
-                        {
-                            if (osVersionInfo.wProductType == NativeMethods.VER_NT_WORKSTATION)
-                            {
-                                return WindowsMainVersion.Vista;
-                            }
-                            else
-                            {
-                                return WindowsMainVersion.WindowsServer2008;
-                            }
-                        }
-                        else if (Environment.OSVersion.Version.Minor == 1)
-                        {
-                            if (osVersionInfo.wProductType == NativeMethods.VER_NT_WORKSTATION)
-                            {
-                                return WindowsMainVersion.Windows7;
-                            }
-                            else
-                            {
-                                return WindowsMainVersion.WindowsServer2008R2;
-                            }
-                        }
-                        else if (Environment.OSVersion.Version.Minor == 2)
-                        {
-                            if (osVersionInfo.wProductType == NativeMethods.VER_NT_WORKSTATION)
-                            {
-                                return WindowsMainVersion.Windows8;
-                            }
-                            else
-                            {
-                                return WindowsMainVersion.WindowsServer2012;
-                            }
-                        }
-                        else if (Environment.OSVersion.Version.Minor == 3) 
-                        {
-                            if (osVersionInfo.wProductType == NativeMethods.VER_NT_WORKSTATION)
-                            {
-                                return WindowsMainVersion.Windows8_1;
-                            }
-                            else
-                            {
-                                return WindowsMainVersion.WindowsServer2012R2;
-                            }
-                        }
-                        return WindowsMainVersion.Unknown;
-                    default:
-                        return WindowsMainVersion.Unknown;
-                }
-            }
-            return WindowsMainVersion.Unknown;
-        }
-         */ 
     }
 }
