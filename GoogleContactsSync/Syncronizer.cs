@@ -308,7 +308,7 @@ namespace GoContactSyncMod
 		{
             try
             {
-                Logger.Log("Disconnecting from Outlook...", EventType.Debug);
+                Logger.Log("Disconnecting from Outlook...", EventType.Information);
                 if (_outlookNamespace != null)
                 {
                     _outlookNamespace.Logoff();
@@ -321,13 +321,19 @@ namespace GoContactSyncMod
             }
             finally
             {
+               
                 if (_outlookNamespace != null)
                     Marshal.ReleaseComObject(_outlookNamespace);
                 if (OutlookApplication != null)
-                    Marshal.ReleaseComObject(OutlookApplication);
+                {
+                    while(Marshal.ReleaseComObject(OutlookApplication) > 0) {}
+                    //release Outlook
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
                 _outlookNamespace = null;
                 OutlookApplication = null;
-                Logger.Log("Disconnected from Outlook", EventType.Debug);
+                Logger.Log("Disconnected from Outlook", EventType.Information);
             }
 		}
 
