@@ -75,11 +75,13 @@ namespace GoContactSyncMod
 
         public void ProxySet()
         {
-            if (CustomProxy.Checked)
+            if (CustomProxy.Checked && !string.IsNullOrEmpty(Address.Text))
             {
                 try
                 {
-                    System.Net.WebProxy myProxy = new System.Net.WebProxy(Address.Text, Convert.ToInt16(Port.Text));
+                    System.Net.WebProxy myProxy = new System.Net.WebProxy(Address.Text);
+                    if (string.IsNullOrEmpty(Port.Text))
+                        myProxy = new System.Net.WebProxy(Address.Text, Convert.ToInt16(Port.Text));
                     myProxy.BypassProxyOnLocal = true;
                     myProxy.UseDefaultCredentials = true;
                                         
@@ -181,6 +183,8 @@ namespace GoContactSyncMod
 
         private void cancelButton_Click(object sender, EventArgs e)
         {
+            if (!ValidCredentials)
+                SystemProxy.Checked = true;
             this.Hide();
         }
 
