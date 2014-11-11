@@ -54,7 +54,7 @@ namespace GoContactSyncMod
             try
             {
                 Clipboard.SetText(message);
-                message += "/n/nHint: This error message is automatically copied to the clipboard.\n";
+                message += "\n\nHint: This error message is automatically copied to the clipboard.\n";
             
             }
             catch (Exception e)

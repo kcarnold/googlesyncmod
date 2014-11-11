@@ -1232,7 +1232,6 @@ namespace GoContactSyncMod
             try
             {
                 RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(regKey);
-
                 if (runAtStartupCheckBox.Checked)
                 {
                     // add to registry
@@ -1246,9 +1245,12 @@ namespace GoContactSyncMod
             }
             catch (Exception ex)
             {
+                //if we can't write to that key, disable it... 
+                runAtStartupCheckBox.Checked = false;
+                runAtStartupCheckBox.Enabled = false;
                 TimerSwitch(false);
                 ShowForm();
-                ErrorHandler.Handle(new Exception("Error saving 'Run program at startup' settings into Registry key '" + regKey + "'",ex));
+                ErrorHandler.Handle(new Exception(("Error saving 'Run program at startup' settings into Registry key '" + regKey + "' Error: " + ex.Message), ex));
             }
 		}
 

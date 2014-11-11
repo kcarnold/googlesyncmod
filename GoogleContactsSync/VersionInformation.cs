@@ -42,6 +42,8 @@ namespace GoContactSyncMod
                         if (appVersion != null)
                         {
                             Marshal.ReleaseComObject(appVersion);
+                            GC.Collect();
+                            GC.WaitForPendingFinalizers();
                         }
                         return OutlookMainVersion.OutlookUnknownVersion;
                     }
