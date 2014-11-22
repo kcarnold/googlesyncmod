@@ -308,7 +308,7 @@ namespace GoContactSyncMod
 		{
             try
             {
-                Logger.Log("Disconnecting from Outlook...", EventType.Information);
+                Logger.Log("Disconnecting from Outlook...", EventType.Debug);
                 if (_outlookNamespace != null)
                 {
                     _outlookNamespace.Logoff();
@@ -321,19 +321,13 @@ namespace GoContactSyncMod
             }
             finally
             {
-               
                 if (_outlookNamespace != null)
                     Marshal.ReleaseComObject(_outlookNamespace);
                 if (OutlookApplication != null)
-                {
-                    while(Marshal.ReleaseComObject(OutlookApplication) > 0) {}
-                    //release Outlook
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                }
+                    Marshal.ReleaseComObject(OutlookApplication);
                 _outlookNamespace = null;
                 OutlookApplication = null;
-                Logger.Log("Disconnected from Outlook", EventType.Information);
+                Logger.Log("Disconnected from Outlook", EventType.Debug);
             }
 		}
 
@@ -648,6 +642,7 @@ namespace GoContactSyncMod
                 GoogleAppointments = new Collection<EventEntry>();
 
                 EventQuery query = new EventQuery("https://www.google.com/calendar/feeds/default/private/full");
+                //ToDo: Upgrade to v3, EventQuery query = new EventQuery("https://www.googleapis.com/calendar/v3/calendars/default/events");
                 query.NumberToRetrieve = 256;
                 query.StartIndex = 0;                               
 

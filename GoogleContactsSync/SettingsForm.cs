@@ -377,8 +377,8 @@ namespace GoContactSyncMod
                 futureMonthTextBox.Text = regKeyAppRoot.GetValue("SyncAppointmentsMonthsInFuture") as string;
             if (regKeyAppRoot.GetValue("SyncAppointmentsTimezone") != null)
                 appointmentTimezonesComboBox.Text = regKeyAppRoot.GetValue("SyncAppointmentsTimezone") as string;
-            if (regKeyAppRoot.GetValue("SyncAppointments") != null)
-                btSyncAppointments.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("SyncAppointments"));
+            //if (regKeyAppRoot.GetValue("SyncAppointments") != null) //ToDo: Google Calendar Api v2 deprecated
+            //    btSyncAppointments.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("SyncAppointments"));
             if (regKeyAppRoot.GetValue("SyncNotes") != null)
                 btSyncNotes.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("SyncNotes"));
             if (regKeyAppRoot.GetValue("SyncContacts") != null)
@@ -616,7 +616,7 @@ namespace GoContactSyncMod
                     sync.UseFileAs = chkUseFileAs.Checked;
                     sync.SyncNotes = btSyncNotes.Checked;
                     sync.SyncContacts = btSyncContacts.Checked;
-                    sync.SyncAppointments = btSyncAppointments.Checked;                    
+                    sync.SyncAppointments = false; // btSyncAppointments.Checked;    //ToDo: Google Calendar Api v2 deprecated                
 
                     if (!sync.SyncContacts && !sync.SyncNotes && !sync.SyncAppointments)
                     {
@@ -1328,8 +1328,9 @@ namespace GoContactSyncMod
         {
             if (!btSyncContacts.Checked && !btSyncNotes.Checked && !btSyncAppointments.Checked)
             {
-                MessageBox.Show("Neither notes nor contacts nor appointments are switched on for syncing. Please choose at least one option (automatically switched on appointments for syncing now).", "No sync switched on");
-                btSyncAppointments.Checked = true;
+                MessageBox.Show("Neither notes nor contacts nor appointments are switched on for syncing. Please choose at least one option (automatically switched on contacts for syncing now).", "No sync switched on");
+                //btSyncAppointments.Checked = true; //ToDo: Google Calendar Api v2 deprecated
+                btSyncContacts.Checked = true;
             }
             noteFoldersComboBox.Visible = btSyncNotes.Checked;
         }
