@@ -4,8 +4,8 @@ using System.Text;
 using Google.Contacts;
 using Google.Documents;
 using System.Reflection;
-using Google.GData.Extensions;
-using Google.GData.Calendar;
+using Google.Apis.Calendar;
+using Google.Apis.Calendar.v3.Data;
 
 namespace GoContactSyncMod
 {
@@ -309,7 +309,7 @@ namespace GoContactSyncMod
             return ResolveDeletedOutlook();
         }
 
-        public ConflictResolution Resolve(Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment, EventEntry googleAppointment, Syncronizer sync, bool isNewMatch)
+        public ConflictResolution Resolve(Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment, Event googleAppointment, Syncronizer sync, bool isNewMatch)
         {
             string name = string.Empty;
 
@@ -323,8 +323,8 @@ namespace GoContactSyncMod
 
             if (googleAppointment != null)
             {
-                name = googleAppointment.Title.Text + " - " + Syncronizer.GetTime(googleAppointment);                
-                _form.GoogleItemTextBox.Text += googleAppointment.Content.Content;
+                name = googleAppointment.Summary + " - " + Syncronizer.GetTime(googleAppointment);                
+                _form.GoogleItemTextBox.Text += googleAppointment.Description;
             }
 
             if (isNewMatch)
@@ -347,7 +347,7 @@ namespace GoContactSyncMod
             return Resolve();
         }
 
-        public ConflictResolution Resolve(string message, Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment, EventEntry googleAppointment, Syncronizer sync)
+        public ConflictResolution Resolve(string message, Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment, Event googleAppointment, Syncronizer sync)
         {
             string name = string.Empty;
 
@@ -361,8 +361,8 @@ namespace GoContactSyncMod
 
             if (googleAppointment != null)
             {
-                name = googleAppointment.Title.Text + " - " + Syncronizer.GetTime(googleAppointment);
-                _form.GoogleItemTextBox.Text += googleAppointment.Content.Content;
+                name = googleAppointment.Summary + " - " + Syncronizer.GetTime(googleAppointment);
+                _form.GoogleItemTextBox.Text += googleAppointment.Description;
             }
 
             //ToDo: Make it more flexible
@@ -393,16 +393,16 @@ namespace GoContactSyncMod
             return ResolveDeletedGoogle();
         }
 
-        public DeleteResolution ResolveDelete(EventEntry googleAppointment)
+        public DeleteResolution ResolveDelete(Event googleAppointment)
         {
 
             _form.Text = "Outlook appointment deleted";
             _form.messageLabel.Text =
-                "Outlook appointment \"" + googleAppointment.Title.Text + " - " + Syncronizer.GetTime(googleAppointment) +
+                "Outlook appointment \"" + googleAppointment.Summary + " - " + Syncronizer.GetTime(googleAppointment) +
                 "\" doesn't exist aynmore. Do you want to delete it also on Google side?";
 
             _form.OutlookItemTextBox.Text = String.Empty;            
-            _form.GoogleItemTextBox.Text += googleAppointment.Content.Content;
+            _form.GoogleItemTextBox.Text += googleAppointment.Description;
 
 
             _form.keepOutlook.Text = "Keep Google";
