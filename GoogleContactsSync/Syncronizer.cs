@@ -14,8 +14,9 @@ using Google.Documents;
 using Google.GData.Client.ResumableUpload;
 using Google.GData.Documents;
 using System.Threading;
-using Google.GData.Calendar;
+using Google.Apis.Calendar;
 using Google.GData.Extensions;
+using Google.Apis.Calendar.v3;
 
 namespace GoContactSyncMod
 {
@@ -47,7 +48,7 @@ namespace GoContactSyncMod
 
         private ClientLoginAuthenticator authenticator;
         public DocumentsRequest DocumentsRequest { get; private set; }
-        public CalendarService CalendarService { get; private set; }
+        public CalendarService  CalendarRequest { get; private set; }
 
 		private static Outlook.NameSpace _outlookNamespace;
         public static Outlook.NameSpace OutlookNameSpace
@@ -67,8 +68,8 @@ namespace GoContactSyncMod
         public Collection<ContactMatch> GoogleContactDuplicates { get; set; }        
         public Collection<Contact> GoogleContacts { get; private set; }
         public Collection<Document> GoogleNotes { get; private set; }
-        public Collection<EventEntry> GoogleAppointments { get; private set; }
-        public Collection<EventEntry> AllGoogleAppointments { get; private set; }
+        public Collection<Google.Apis.Calendar.v3.Data.Event> GoogleAppointments { get; private set; }
+        public Collection<Google.Apis.Calendar.v3.Data.Event> AllGoogleAppointments { get; private set; }
         public Collection<Group> GoogleGroups { get; set; }
         internal Document googleNotesFolder;
         public string OutlookPropertyPrefix { get; private set; }
@@ -153,7 +154,7 @@ namespace GoContactSyncMod
 		public void LoginToGoogle(string username, string password)
 		{
 			Logger.Log("Connecting to Google...", EventType.Information);
-            if (ContactsRequest == null && SyncContacts || DocumentsRequest==null && SyncNotes || CalendarService==null & SyncAppointments)
+            if (ContactsRequest == null && SyncContacts || DocumentsRequest==null && SyncNotes || CalendarRequest==null & SyncAppointments)
             {
                 RequestSettings rs = new RequestSettings("GoogleContactSyncMod", username, password); 
                 if (SyncContacts)
@@ -166,8 +167,8 @@ namespace GoContactSyncMod
                 }
                 if (SyncAppointments)
                 {
-                    CalendarService = new CalendarService("GoogleContactSyncMod");
-                    CalendarService.setUserCredentials(username, password);
+                    CalendarRequest = new CalendarService("GoogleContactSyncMod");
+                    CalendarRequest.setUserCredentials(username, password);
                 }
             }
 
@@ -631,15 +632,15 @@ namespace GoContactSyncMod
             Logger.Log("Google Appointments Found: " + GoogleAppointments.Count, EventType.Debug);
         }
 
-        internal EventEntry LoadGoogleAppointments(AtomId id, ushort restrictMonthsInPast, ushort restrictMonthsInFuture, DateTime? restrictStartTime, DateTime? restrictEndTime)
+        internal Google.Apis.Calendar.v3.Data.Event LoadGoogleAppointments(string id, ushort restrictMonthsInPast, ushort restrictMonthsInFuture, DateTime? restrictStartTime, DateTime? restrictEndTime)
         {
             string message = "Error Loading Google appointments. Cannot connect to Google.\r\nPlease ensure you are connected to the internet. If you are behind a proxy, change your proxy configuration!";
 
-            EventEntry ret = null;
+           Google.Apis.Calendar.v3.Data.Event ret = null;
             try
             {                    
 
-                GoogleAppointments = new Collection<EventEntry>();
+                GoogleAppointments = new Collection<Google.Apis.Calendar.v3.Data.Event>();
 
                 EventQuery query = new EventQuery("https://www.google.com/calendar/feeds/default/private/full");
                 //ToDo: Upgrade to v3, EventQuery query = new EventQuery("https://www.googleapis.com/calendar/v3/calendars/default/events");
@@ -661,13 +662,13 @@ namespace GoContactSyncMod
                 //if (restrictStartDate != null)
                 //    query.StartDate = restrictStartDate.Value;
 
-                EventFeed feed = CalendarService.Query(query);
+                EventFeed feed = CalendarRequest.Query(query);
 
                 while (feed != null && feed.Entries != null && feed.Entries.Count > 0)
                 {
-                    foreach (EventEntry a in feed.Entries)
+                    foreach (Event a in feed.Entries)
                     {
-                        if ((a.OriginalEvent != null || !a.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.CANCELED)) && 
+                        if ((a.RecurringEventId != null || !a.Status.Equals(EventStatus.CANCELED)) && 
                             !GoogleAppointments.Contains(a) //ToDo: For an unknown reason, some appointments are duplicate in GoogleAppointments, therefore remove all duplicates before continuing  
                             )
                         {//only return not yet cancelled events (except for recurrence exceptions) and events not already in the list
@@ -675,18 +676,18 @@ namespace GoContactSyncMod
                             if (/*restrictStartDate == null && */id != null && id.Equals(a.Id))
                                 ret = a;
                             //ToDo: Doesn't work for all recurrences
-                            /*else if (restrictStartDate != null && id != null && a.OriginalEvent != null && a.Times.Count > 0 && restrictStartDate.Value.Date.Equals(a.Times[0].StartTime.Date))
-                                if (id.Equals(new AtomId(id.AbsoluteUri.Substring(0, id.AbsoluteUri.LastIndexOf("/") + 1) + a.OriginalEvent.IdOriginal)))
+                            /*else if (restrictStartDate != null && id != null && a.RecurringEventId != null && a.Times.Count > 0 && restrictStartDate.Value.Date.Equals(a.Times[0].StartTime.Date))
+                                if (id.Equals(new AtomId(id.AbsoluteUri.Substring(0, id.AbsoluteUri.LastIndexOf("/") + 1) + a.RecurringEventId.IdOriginal)))
                                     ret = a;*/                                             
                         }
                         //else
                         //{
-                        //    Logger.Log("Skipped Appointment because it was cancelled on Google side: " + a.Title.Text + " - " + GetTime(a), EventType.Information);
+                        //    Logger.Log("Skipped Appointment because it was cancelled on Google side: " + a.Summary + " - " + GetTime(a), EventType.Information);
                         //    SkippedCount++;
                         //}
                     }
                     query.StartIndex += query.NumberToRetrieve;
-                    feed = CalendarService.Query(query);
+                    feed = CalendarRequest.Query(query);
 
                 }
 
@@ -1190,7 +1191,7 @@ namespace GoContactSyncMod
                     {
                         ErrorCount++;
                         SyncedCount--;
-                        string message = String.Format("Failed to synchronize appointment: {0}:\n{1}", match.OutlookAppointment != null ? match.OutlookAppointment.Subject + " - " + match.OutlookAppointment.Start + ")" : match.GoogleAppointment.Title.Text + " - " + GetTime(match.GoogleAppointment), ex.Message);
+                        string message = String.Format("Failed to synchronize appointment: {0}:\n{1}", match.OutlookAppointment != null ? match.OutlookAppointment.Subject + " - " + match.OutlookAppointment.Start + ")" : match.GoogleAppointment.Summary + " - " + GetTime(match.GoogleAppointment), ex.Message);
                         Exception newEx = new Exception(message, ex);
                         ErrorEncountered("Error", newEx, EventType.Error);
                     }
@@ -1200,12 +1201,12 @@ namespace GoContactSyncMod
             }
         }
 
-        public static string GetTime(EventEntry googleAppointment)
+        public static string GetTime(Google.Apis.Calendar.v3.Data.Event googleAppointment)
         {
             string ret = string.Empty;
 
-            if (googleAppointment.Times.Count != 0)
-                ret += googleAppointment.Times[0].StartTime.ToString();
+            if (googleAppointment.Start != null)
+                ret += googleAppointment.Start.DateTime.Value.ToString();
             if (googleAppointment.Recurrence != null)
                 ret += " Recurrence"; //ToDo: Return Recurrence Start/End
 
@@ -1227,7 +1228,7 @@ namespace GoContactSyncMod
                 //    SyncedCount++;
                 //    AppointmentPropertiesUtils.SetProperty(match.GoogleAppointment, Syncronizer.OutlookAppointmentsFolder, match.OutlookAppointment.EntryID);
                 //    match.GoogleAppointment.Save();
-                //    Logger.Log("Updated Google appointment from Outlook: \"" + match.GoogleAppointment.Title.Text + "\".", EventType.Information);
+                //    Logger.Log("Updated Google appointment from Outlook: \"" + match.GoogleAppointment.Summary + "\".", EventType.Information);
                 //}
 
                 //if (!match.OutlookAppointment.Saved)// || outlookChanged)
@@ -1289,7 +1290,7 @@ namespace GoContactSyncMod
             {
                 if (AppointmentPropertiesUtils.GetGoogleOutlookAppointmentId(SyncProfile, match.GoogleAppointment) != null)
                 {
-                    string name = match.GoogleAppointment.Title.Text;
+                    string name = match.GoogleAppointment.Summary;
                     if (_syncOption == SyncOption.GoogleToOutlookOnly)
                     {
                         SkippedCount++;
@@ -1303,7 +1304,7 @@ namespace GoContactSyncMod
                     else
                     {
                         // outlook appointment was deleted, delete Google appointment
-                        EventEntry item = match.GoogleAppointment;
+                        Google.Apis.Calendar.v3.Data.Event item = match.GoogleAppointment;
                         ////try
                         ////{
                         //string outlookAppointmentId = AppointmentPropertiesUtils.GetGoogleOutlookAppointmentId(SyncProfile, match.GoogleAppointment);
@@ -1619,7 +1620,7 @@ namespace GoContactSyncMod
         /// <summary>
         /// Updates Outlook appointment from master to slave (including groups/categories)
         /// </summary>
-        public void UpdateAppointment(Outlook.AppointmentItem master, ref EventEntry slave)
+        public void UpdateAppointment(Outlook.AppointmentItem master, ref Google.Apis.Calendar.v3.Data.Event slave)
         {            
             //if (master.Recipients.Count == 0 || 
             //    master.Organizer == null || 
@@ -1636,19 +1637,22 @@ namespace GoContactSyncMod
                 //ToDo: Doesn'T work for newly created recurrence appointments before save, because Event.Reminder is throwing NullPointerException and Reminders cannot be initialized, therefore moved to after saving
                 if (slave.Recurrence != null && slave.Reminders != null)
                 {
-                    slave.Reminders.Clear();
-                    if (master.ReminderSet)
+                    if (slave.Reminders.Overrides != null)
                     {
-                        var reminder = new Google.GData.Extensions.Reminder();
-                        reminder.Minutes = master.ReminderMinutesBeforeStart;
-                        if (reminder.Minutes > 40300)
+                        slave.Reminders.Overrides.Clear();
+                        if (master.ReminderSet)
                         {
-                            //ToDo: Check real limit, currently 40300
-                            Logger.Log("Reminder Minutes to big (" + reminder.Minutes + "), set to maximum of 40300 minutes for appointment: " + master.Subject + " - " + master.Start, EventType.Warning);
-                            reminder.Minutes = 40300;
+                            var reminder = new Google.Apis.Calendar.v3.Data.EventReminder();
+                            reminder.Minutes = master.ReminderMinutesBeforeStart;
+                            if (reminder.Minutes > 40300)
+                            {
+                                //ToDo: Check real limit, currently 40300
+                                Logger.Log("Reminder Minutes to big (" + reminder.Minutes + "), set to maximum of 40300 minutes for appointment: " + master.Subject + " - " + master.Start, EventType.Warning);
+                                reminder.Minutes = 40300;
+                            }
+                            reminder.Method = "popup";
+                            slave.Reminders.Overrides.Add(reminder);
                         }
-                        reminder.Method = Google.GData.Extensions.Reminder.ReminderMethod.alert;
-                        slave.Reminders.Add(reminder);
                     }
                     slave = SaveGoogleAppointment(slave);
                 }
@@ -1680,7 +1684,7 @@ namespace GoContactSyncMod
         /// <summary>
         /// Updates Outlook appointment from master to slave (including groups/categories)
         /// </summary>
-        public void UpdateAppointment(ref EventEntry master, Outlook.AppointmentItem slave, List<EventEntry> googleAppointmentExceptions)
+        public void UpdateAppointment(ref Google.Apis.Calendar.v3.Data.Event master, Outlook.AppointmentItem slave, List<Google.Apis.Calendar.v3.Data.Event> googleAppointmentExceptions)
         {                        
 
             bool updated = false;
@@ -1696,7 +1700,7 @@ namespace GoContactSyncMod
             //    {
             //        //ToDo:Maybe find as better way, e.g. to ask the user, if he wants to overwrite the invalid appointment
             //        SkippedCount++;
-            //        Logger.Log("Skipped Updating appointment from Google to Outlook because multiple participants found and invitations NOT sent by Google: \"" + master.Title.Text + " - " + Syncronizer.GetTime(master) + "\".", EventType.Information);
+            //        Logger.Log("Skipped Updating appointment from Google to Outlook because multiple participants found and invitations NOT sent by Google: \"" + master.Summary + " - " + Syncronizer.GetTime(master) + "\".", EventType.Information);
             //    }
             //}
             //else                            
@@ -1710,13 +1714,13 @@ namespace GoContactSyncMod
                     case SyncOption.MergeOutlookWins:
                     case SyncOption.OutlookToGoogleOnly:
                         //overwrite Google appointment
-                        Logger.Log("Multiple participants found, invitation maybe NOT sent by Google. Outlook appointment is overwriting Google because of SyncOption " + SyncOption + ": " + master.Title.Text + " - " + Syncronizer.GetTime(master) + ". ", EventType.Information);
+                        Logger.Log("Multiple participants found, invitation maybe NOT sent by Google. Outlook appointment is overwriting Google because of SyncOption " + SyncOption + ": " + master.Summary + " - " + Syncronizer.GetTime(master) + ". ", EventType.Information);
                         UpdateAppointment(slave, ref master);
                         break;
                     case SyncOption.MergeGoogleWins:
                     case SyncOption.GoogleToOutlookOnly:
                         //overwrite outlook appointment
-                        Logger.Log("Multiple participants found, invitation maybe NOT sent by Google, but Google appointment is overwriting Outlook because of SyncOption " + SyncOption + ": " + master.Title.Text +" - " + Syncronizer.GetTime(master) + ".", EventType.Information);
+                        Logger.Log("Multiple participants found, invitation maybe NOT sent by Google, but Google appointment is overwriting Outlook because of SyncOption " + SyncOption + ": " + master.Summary +" - " + Syncronizer.GetTime(master) + ".", EventType.Information);
                         updated = true;
                         break;
                     case SyncOption.MergePrompt:
@@ -1727,14 +1731,14 @@ namespace GoContactSyncMod
                             ConflictResolution != ConflictResolution.SkipAlways)
                         {
                             var r = new ConflictResolver();
-                            ConflictResolution = r.Resolve("Cannot update appointment from Google to Outlook because multiple participants found, invitation maybe NOT sent by Google: \"" + master.Title.Text + " - " + Syncronizer.GetTime(master) + "\". Do you want to update it back from Outlook to Google?", slave, master, this);
+                            ConflictResolution = r.Resolve("Cannot update appointment from Google to Outlook because multiple participants found, invitation maybe NOT sent by Google: \"" + master.Summary + " - " + Syncronizer.GetTime(master) + "\". Do you want to update it back from Outlook to Google?", slave, master, this);
                         }
                         switch (ConflictResolution)
                         {
                             case ConflictResolution.Skip:
                             case ConflictResolution.SkipAlways: //Skip
                                 SkippedCount++;
-                                Logger.Log("Skipped Updating appointment from Google to Outlook because multiple participants found, invitation maybe NOT sent by Google: \"" + master.Title.Text + " - " + Syncronizer.GetTime(master) + "\".", EventType.Information);
+                                Logger.Log("Skipped Updating appointment from Google to Outlook because multiple participants found, invitation maybe NOT sent by Google: \"" + master.Summary + " - " + Syncronizer.GetTime(master) + "\".", EventType.Information);
                                 break;
                             case ConflictResolution.OutlookWins:
                             case ConflictResolution.OutlookWinsAlways: //Keep Outlook and overwrite Google    
@@ -1752,11 +1756,11 @@ namespace GoContactSyncMod
                 }
                 
                 
-                //if (MessageBox.Show("Cannot update appointment from Google to Outlook because multiple participants found, invitation maybe NOT sent by Google: \"" + master.Title.Text + " - " + Syncronizer.GetTime(master) + "\". Do you want to update it back from Outlook to Google?", "Outlook appointment cannot be overwritten from Google", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                //if (MessageBox.Show("Cannot update appointment from Google to Outlook because multiple participants found, invitation maybe NOT sent by Google: \"" + master.Summary + " - " + Syncronizer.GetTime(master) + "\". Do you want to update it back from Outlook to Google?", "Outlook appointment cannot be overwritten from Google", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 //    UpdateAppointment(slave, ref master);
                 //else
                 //    SkippedCount++;
-                //    Logger.Log("Skipped Updating appointment from Google to Outlook because multiple participants found, invitation maybe NOT sent by Google: \"" + master.Title.Text + " - " + Syncronizer.GetTime(master) + "\".", EventType.Information);
+                //    Logger.Log("Skipped Updating appointment from Google to Outlook because multiple participants found, invitation maybe NOT sent by Google: \"" + master.Summary + " - " + Syncronizer.GetTime(master) + "\".", EventType.Information);
             }
             else //Only update, if invitation was not sent on Outlook side or freshly created during this sync  
                 updated = true;
@@ -1779,7 +1783,7 @@ namespace GoContactSyncMod
                 master = SaveGoogleAppointment(master);
 
                 SyncedCount++;
-                Logger.Log("Updated appointment from Google to Outlook: \"" + master.Title.Text + " - " + GetTime(master) + "\".", EventType.Information);
+                Logger.Log("Updated appointment from Google to Outlook: \"" + master.Summary + " - " + GetTime(master) + "\".", EventType.Information);
 
 
                 //After saving Outlook Appointment => also sync recurrence exceptions and increase SyncCount
@@ -1952,13 +1956,13 @@ namespace GoContactSyncMod
         {
             if (ex != null)
             {
-                ErrorHandler.Handle(new Exception("Google Note couldn't be " + (create?"created":"updated") + " :" + entry == null ? null : entry.Title.Text, ex));
+                ErrorHandler.Handle(new Exception("Google Note couldn't be " + (create?"created":"updated") + " :" + entry == null ? null : entry.Summary.ToString(), ex));
                 return;
             }
 
             if (cancelled || entry == null)
             {
-                ErrorHandler.Handle(new Exception("Google Note " + (create ? "creation" : "update") + " was cancelled: " + entry == null ? null : entry.Title.Text));
+                ErrorHandler.Handle(new Exception("Google Note " + (create ? "creation" : "update") + " was cancelled: " + entry == null ? null : entry.Summary.ToString()));
                 return;
             }
 
@@ -2045,15 +2049,15 @@ namespace GoContactSyncMod
             return xml;
         }
 
-        private static string GetXml(EventEntry appointment)
-        {
-            MemoryStream ms = new MemoryStream();
-            appointment.SaveToXml(ms);
-            StreamReader sr = new StreamReader(ms);
-            ms.Seek(0, SeekOrigin.Begin);
-            string xml = sr.ReadToEnd();
-            return xml;
-        }
+        //private static string GetXml(Google.Apis.Calendar.v3.Data.Event appointment)
+        //{
+        //    MemoryStream ms = new MemoryStream();
+        //    appointment.SaveToXml(ms);
+        //    StreamReader sr = new StreamReader(ms);
+        //    ms.Seek(0, SeekOrigin.Begin);
+        //    string xml = sr.ReadToEnd();
+        //    return xml;
+        //}
 
         /// <summary>
         /// Only save the google contact without photo update
@@ -2121,17 +2125,17 @@ namespace GoContactSyncMod
         /// Save the google Appointment
         /// </summary>
         /// <param name="googleAppointment"></param>
-        internal EventEntry SaveGoogleAppointment(EventEntry googleAppointment)
+        internal Google.Apis.Calendar.v3.Data.Event SaveGoogleAppointment(Google.Apis.Calendar.v3.Data.Event googleAppointment)
         {
             //check if this contact was not yet inserted on google.
-            if (googleAppointment.Id.Uri == null)
+            if (googleAppointment.Id == null)
             {
                 //insert contact.
                 Uri feedUri = new Uri("https://www.google.com/calendar/feeds/default/private/full");
 
                 try
                 {
-                    EventEntry createdEntry = CalendarService.Insert(feedUri, googleAppointment);
+                    Google.Apis.Calendar.v3.Data.Event createdEntry = CalendarRequest.Insert(feedUri, googleAppointment);
                     return createdEntry;
                 }
                 catch (Exception ex)
@@ -2139,8 +2143,9 @@ namespace GoContactSyncMod
                     string responseString = "";
                     if (ex is GDataRequestException)
                         responseString = EscapeXml(((GDataRequestException)ex).ResponseString);
-                    string xml = GetXml(googleAppointment);
-                    string newEx = String.Format("Error saving NEW Google appointment: {0}. \n{1}\n{2}", responseString, ex.Message, xml);
+                    //string xml = GetXml(googleAppointment);
+                    //string newEx = String.Format("Error saving NEW Google appointment: {0}. \n{1}\n{2}", responseString, ex.Message, xml);
+                    string newEx = String.Format("Error saving NEW Google appointment: {0}. \n{1}", responseString, ex.Message);
                     throw new ApplicationException(newEx, ex);
                 }
             }
@@ -2149,8 +2154,8 @@ namespace GoContactSyncMod
                 try
                 {
                     //contact already present in google. just update
-                   
-                    EventEntry updated = CalendarService.Update(googleAppointment);
+
+                    Google.Apis.Calendar.v3.Data.Event updated = CalendarRequest.Update(googleAppointment);
                     return updated;
                 }
                 catch (Exception ex)
@@ -2158,8 +2163,9 @@ namespace GoContactSyncMod
                     string responseString = "";
                     if (ex is GDataRequestException)
                         responseString = EscapeXml(((GDataRequestException)ex).ResponseString);
-                    string xml = GetXml(googleAppointment);
-                    string newEx = String.Format("Error saving EXISTING Google appointment: {0}. \n{1}\n{2}", responseString, ex.Message, xml);
+                    //string xml = GetXml(googleAppointment);
+                    //string newEx = String.Format("Error saving EXISTING Google appointment: {0}. \n{1}\n{2}", responseString, ex.Message, xml);
+                    string newEx = String.Format("Error saving EXISTING Google appointment: {0}. \n{1}", responseString, ex.Message);
                     throw new ApplicationException(newEx, ex);
                 }
             }
@@ -2885,7 +2891,7 @@ namespace GoContactSyncMod
 
                 for (int i = 0; i < GoogleAppointments.Count; i++)
                 {
-                    EventEntry googleAppointment = null;
+                    Google.Apis.Calendar.v3.Data.Event googleAppointment = null;
 
                     try
                     {
@@ -2915,7 +2921,7 @@ namespace GoContactSyncMod
                         }
                         catch (Exception ex)
                         {
-                            Logger.Log("The match of Google appointment " + googleAppointment.Title.Text + " couldn't be reset: " + ex.Message, EventType.Warning);
+                            Logger.Log("The match of Google appointment " + googleAppointment.Summary + " couldn't be reset: " + ex.Message, EventType.Warning);
                         }
                     }
                 }
@@ -2949,7 +2955,7 @@ namespace GoContactSyncMod
                 return googleContact;
         }
 
-        public EventEntry ResetMatch(EventEntry googleAppointment)
+        public Google.Apis.Calendar.v3.Data.Event ResetMatch(Google.Apis.Calendar.v3.Data.Event googleAppointment)
         {
 
             if (googleAppointment != null)
@@ -3154,17 +3160,17 @@ namespace GoContactSyncMod
             return null;
         }
 
-        public EventEntry GetGoogleAppointmentById(string id)
+        public Google.Apis.Calendar.v3.Data.Event GetGoogleAppointmentById(string id)
         {
             AtomId atomId = new AtomId(id);
-            foreach (EventEntry appointment in GoogleAppointments)
+            foreach (Google.Apis.Calendar.v3.Data.Event appointment in GoogleAppointments)
             {                
                 if (appointment.Id.Equals(atomId))
                     return appointment;
             }
 
             if (AllGoogleAppointments != null)
-                foreach (EventEntry appointment in AllGoogleAppointments)
+                foreach (Google.Apis.Calendar.v3.Data.Event appointment in AllGoogleAppointments)
                 {
                     if (appointment.Id.Equals(atomId))
                         return appointment;
@@ -3173,13 +3179,13 @@ namespace GoContactSyncMod
             return null;
         }
 
-        //public EventEntry GetGoogleAppointmentByStartDate(AtomId id, DateTime restrictStartDate)
+        //public Event GetGoogleAppointmentByStartDate(AtomId id, DateTime restrictStartDate)
         //{//ToDo: Doesn't work for all recurrences
 
         //    if (id == null)
         //        return null;
             
-        //    foreach (EventEntry appointment in GoogleAppointments)
+        //    foreach (Event appointment in GoogleAppointments)
         //    {
                 
         //        if (appointment.OriginalEvent != null && appointment.Times.Count > 0 && restrictStartDate.Date.Equals(appointment.Times[0].StartTime.Date))
@@ -3190,7 +3196,7 @@ namespace GoContactSyncMod
         //    //If not found, load AllGoogleAppointments
         //    if (AllGoogleAppointments == null)
         //        LoadGoogleAppointments(null, 0, 0, null, null);
-        //    foreach (EventEntry appointment in AllGoogleAppointments)
+        //    foreach (Event appointment in AllGoogleAppointments)
         //    {
         //        if (appointment.OriginalEvent != null && appointment.Times.Count > 0 && restrictStartDate.Date.Equals(appointment.Times[0].StartTime.Date))
         //            if (id.Equals(new AtomId(id.AbsoluteUri.Substring(0, id.AbsoluteUri.LastIndexOf("/") + 1) + appointment.OriginalEvent.IdOriginal)))

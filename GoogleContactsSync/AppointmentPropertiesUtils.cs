@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Outlook = Microsoft.Office.Interop.Outlook;
-using Google.GData.Extensions;
-using Google.GData.Calendar;
 using System.Collections;
 
 using System.Runtime.InteropServices;
 using System.IO;
+using Google.Apis.Calendar.v3.Data;
 
 namespace GoContactSyncMod
 {
@@ -17,7 +16,7 @@ namespace GoContactSyncMod
         {
             return outlookAppointment.EntryID;
         }
-        public static string GetGoogleId(EventEntry googleAppointment)
+        public static string GetGoogleId(Event googleAppointment)
         {
             string id = googleAppointment.Id.ToString();
             if (id == null)
@@ -25,7 +24,7 @@ namespace GoContactSyncMod
             return id;
         }
 
-        public static void SetGoogleOutlookAppointmentId(string syncProfile, EventEntry googleAppointment, Outlook.AppointmentItem outlookAppointment)
+        public static void SetGoogleOutlookAppointmentId(string syncProfile, Event googleAppointment, Outlook.AppointmentItem outlookAppointment)
         {
             if (outlookAppointment.EntryID == null)
                 throw new Exception("Must save outlook Appointment before getting id");
@@ -33,45 +32,45 @@ namespace GoContactSyncMod
             SetGoogleOutlookAppointmentId(syncProfile, googleAppointment, GetOutlookId(outlookAppointment));
         }
 
-        public static void SetGoogleOutlookAppointmentId(string syncProfile, EventEntry googleAppointment, string outlookAppointmentId)
+        public static void SetGoogleOutlookAppointmentId(string syncProfile, Event googleAppointment, string outlookAppointmentId)
         {
             // check if exists
             bool found = false;
-            foreach (var p in googleAppointment.ExtensionElements)
+            foreach (var p in googleAppointment.ExtendedProperties.Shared)
             {
-                if (p is ExtendedProperty && ((ExtendedProperty)p).Name == "gos:oid:" + syncProfile + "")
+                
+                if (p.Key == "gos:oid:" + syncProfile + "")
                 {
-                    ((ExtendedProperty)p).Value = outlookAppointmentId;
+                    googleAppointment.ExtendedProperties.Shared[p.Key] = outlookAppointmentId;
                     found = true;
                     break;
                 }
             }
             if (!found)
             {
-                Google.GData.Extensions.ExtendedProperty prop = new ExtendedProperty(outlookAppointmentId, "gos:oid:" + syncProfile + "");
-                prop.Value = outlookAppointmentId;
-                googleAppointment.ExtensionElements.Add(prop);
+                var prop = new KeyValuePair<string, string>("gos:oid:" + syncProfile + "", outlookAppointmentId);
+                googleAppointment.ExtendedProperties.Shared.Add(prop);
             }
         }
-        public static string GetGoogleOutlookAppointmentId(string syncProfile, EventEntry googleAppointment)
+        public static string GetGoogleOutlookAppointmentId(string syncProfile, Event googleAppointment)
         {
             // get extended prop
-            foreach (var p in googleAppointment.ExtensionElements)
+            foreach (var p in googleAppointment.ExtendedProperties.Shared)
             {
-                if (p is ExtendedProperty && ((ExtendedProperty)p).Name == "gos:oid:" + syncProfile + "")
-                    return ((ExtendedProperty)p).Value;
+                if (p.Key == "gos:oid:" + syncProfile + "")
+                    return p.Value;
             }
             return null;
         }
-        public static void ResetGoogleOutlookAppointmentId(string syncProfile, EventEntry googleAppointment)
+        public static void ResetGoogleOutlookAppointmentId(string syncProfile, Event googleAppointment)
         {
             // get extended prop
-            foreach (var p in googleAppointment.ExtensionElements)
+            foreach (var p in googleAppointment.ExtendedProperties.Shared)
             {
-                if (p is ExtendedProperty && ((ExtendedProperty)p).Name == "gos:oid:" + syncProfile + "")
+                if (p.Key == "gos:oid:" + syncProfile + "")
                 {
                     // remove 
-                    googleAppointment.ExtensionElements.Remove(p);
+                    googleAppointment.ExtendedProperties.Shared.Remove(p);
                     return;
                 }
             }
@@ -84,9 +83,9 @@ namespace GoContactSyncMod
         /// <param name="sync"></param>
         /// <param name="outlookAppointment"></param>
         /// <param name="googleAppointment"></param>
-        public static void SetOutlookGoogleAppointmentId(Syncronizer sync, Outlook.AppointmentItem outlookAppointment, EventEntry googleAppointment)
+        public static void SetOutlookGoogleAppointmentId(Syncronizer sync, Outlook.AppointmentItem outlookAppointment, Event googleAppointment)
         {
-            if (googleAppointment.Id.Uri == null)
+            if (googleAppointment.Id == null)
                 throw new NullReferenceException("GoogleAppointment must have a valid Id");
 
             //check if outlook Appointment aready has google id property.
@@ -98,7 +97,7 @@ namespace GoContactSyncMod
                     prop = userProperties.Add(sync.OutlookPropertyNameId, Outlook.OlUserPropertyType.olText, true);
                 try
                 {
-                    prop.Value = googleAppointment.Id.Uri.Content;
+                    prop.Value = googleAppointment.Id;
                 }
                 finally
                 {
