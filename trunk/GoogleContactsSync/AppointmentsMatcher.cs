@@ -174,7 +174,7 @@ namespace GoContactSyncMod
                     var googleAppointment = sync.GoogleAppointments[j];
                     // only match if there is a appointment targetBody, else
                     // a matching Google appointment will be created at each sync                
-                    if (!googleAppointment.Status.Equals("cancelled") && ola.Subject == googleAppointment.Summary && ola.Start == googleAppointment.Start.DateTime)                         
+                    if (!googleAppointment.Status.Equals("cancelled") && ola.Subject == googleAppointment.Summary && googleAppointment.Start.DateTime != null && ola.Start == googleAppointment.Start.DateTime)                         
                     {                        
                         match.AddGoogleAppointment(googleAppointment);
                         sync.GoogleAppointments.Remove(googleAppointment);
@@ -220,7 +220,7 @@ namespace GoContactSyncMod
                 if (NotificationReceived != null)
                     NotificationReceived(String.Format("Adding new Google appointment {0} of {1} by unique properties: {2} ...", i + 1, sync.GoogleAppointments.Count, googleAppointment.Summary));
 
-                if (string.IsNullOrEmpty(googleAppointment.Summary) && googleAppointment.Start.DateTime == null)
+                if (string.IsNullOrEmpty(googleAppointment.Summary) && (googleAppointment.Start == null || googleAppointment.Start.DateTime == null))
                 {
                     // no title or time
                     sync.SkippedCount++;

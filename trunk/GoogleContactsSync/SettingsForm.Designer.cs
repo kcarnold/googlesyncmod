@@ -708,7 +708,6 @@ namespace GoContactSyncMod
             // btSyncAppointments
             // 
             this.btSyncAppointments.AutoSize = true;
-            this.btSyncAppointments.Enabled = false; //ToDo: Google Calendar Api v2 deprecated
             this.btSyncAppointments.Location = new System.Drawing.Point(453, 46);
             this.btSyncAppointments.Name = "btSyncAppointments";
             this.btSyncAppointments.Size = new System.Drawing.Size(136, 17);

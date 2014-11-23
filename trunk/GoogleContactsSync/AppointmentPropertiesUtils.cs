@@ -55,10 +55,13 @@ namespace GoContactSyncMod
         public static string GetGoogleOutlookAppointmentId(string syncProfile, Event googleAppointment)
         {
             // get extended prop
-            foreach (var p in googleAppointment.ExtendedProperties.Shared)
+            if (googleAppointment.ExtendedProperties != null && googleAppointment.ExtendedProperties.Shared != null)
             {
-                if (p.Key == "gos:oid:" + syncProfile + "")
-                    return p.Value;
+                foreach (var p in googleAppointment.ExtendedProperties.Shared)
+                {
+                    if (p.Key == "gos:oid:" + syncProfile + "")
+                        return p.Value;
+                }
             }
             return null;
         }
