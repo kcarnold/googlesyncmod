@@ -17,6 +17,9 @@ using System.Threading;
 using Google.Apis.Calendar;
 using Google.GData.Extensions;
 using Google.Apis.Calendar.v3;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Util.Store;
+using Google.Apis.Calendar.v3.Data;
 
 namespace GoContactSyncMod
 {
@@ -48,7 +51,8 @@ namespace GoContactSyncMod
 
         private ClientLoginAuthenticator authenticator;
         public DocumentsRequest DocumentsRequest { get; private set; }
-        public CalendarService  CalendarRequest { get; private set; }
+        public EventsResource EventRequest { get; private set; }
+        public CalendarListEntry PrimaryCalendar;
 
 		private static Outlook.NameSpace _outlookNamespace;
         public static Outlook.NameSpace OutlookNameSpace
@@ -154,7 +158,7 @@ namespace GoContactSyncMod
 		public void LoginToGoogle(string username, string password)
 		{
 			Logger.Log("Connecting to Google...", EventType.Information);
-            if (ContactsRequest == null && SyncContacts || DocumentsRequest==null && SyncNotes || CalendarRequest==null & SyncAppointments)
+            if (ContactsRequest == null && SyncContacts || DocumentsRequest==null && SyncNotes || EventRequest==null & SyncAppointments)
             {
                 RequestSettings rs = new RequestSettings("GoogleContactSyncMod", username, password); 
                 if (SyncContacts)
@@ -167,8 +171,40 @@ namespace GoContactSyncMod
                 }
                 if (SyncAppointments)
                 {
-                    CalendarRequest = new CalendarService("GoogleContactSyncMod");
-                    CalendarRequest.setUserCredentials(username, password);
+                    var scopes = new List<string>();
+                    scopes.Add(CalendarService.Scope.Calendar);
+
+                    UserCredential credential;
+                    using (var stream = new FileStream("client_secrets.json", FileMode.Open, FileAccess.Read))
+                    {
+                        credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+                        GoogleClientSecrets.Load(stream).Secrets, scopes, username, CancellationToken.None,
+                        new FileDataStore("Go Contact Sync")).Result;
+                    }
+ 
+
+                    var initializer = new Google.Apis.Services.BaseClientService.Initializer();
+                    initializer.HttpClientInitializer = credential;                    
+                    var CalendarRequest = new CalendarService(initializer);
+                    //CalendarRequest.setUserCredentials(username, password);
+                    
+                    var list = CalendarRequest.CalendarList.List().Execute().Items;
+                    foreach (var calendar in list)
+                    {
+                        if (calendar.Primary != null && calendar.Primary.Value)
+                        {
+                            PrimaryCalendar = calendar;
+                            break;
+                        }
+                    }
+
+                    if (PrimaryCalendar == null)
+                        throw new Exception("Primary Calendar not found");
+
+
+                    //EventQuery query = new EventQuery("https://www.google.com/calendar/feeds/default/private/full");
+                    //ToDo: Upgrade to v3, EventQuery query = new EventQuery("https://www.googleapis.com/calendar/v3/calendars/default/events");
+                    EventRequest = CalendarRequest.Events;
                 }
             }
 
@@ -642,33 +678,34 @@ namespace GoContactSyncMod
 
                 GoogleAppointments = new Collection<Google.Apis.Calendar.v3.Data.Event>();
 
-                EventQuery query = new EventQuery("https://www.google.com/calendar/feeds/default/private/full");
-                //ToDo: Upgrade to v3, EventQuery query = new EventQuery("https://www.googleapis.com/calendar/v3/calendars/default/events");
-                query.NumberToRetrieve = 256;
-                query.StartIndex = 0;                               
+                
+                var query = EventRequest.List(PrimaryCalendar.Id);                
+
+                query.MaxResults = 10000; //ToDo: Find a way to retrieve all appointments
+                //query.StartIndex = 0;                               
 
                 //Only Load events from month range, but onyl if not a distinct Google Appointment is searched for
                 if (restrictMonthsInPast != 0)
-                    query.StartTime = DateTime.Now.AddMonths(-MonthsInPast);
-                if (restrictStartTime != null && (query.StartTime == default(DateTime) || restrictStartTime > query.StartTime))
-                    query.StartTime = restrictStartTime.Value;
+                    query.TimeMin = DateTime.Now.AddMonths(-MonthsInPast);
+                if (restrictStartTime != null && (query.TimeMin == default(DateTime) || restrictStartTime > query.TimeMin))
+                    query.TimeMin = restrictStartTime.Value;
                 if (restrictMonthsInFuture != 0)
-                    query.EndTime = DateTime.Now.AddMonths(MonthsInFuture);
-                if (restrictEndTime != null && (query.EndTime == default(DateTime) ||restrictEndTime < query.EndTime))
-                    query.EndTime = restrictEndTime.Value;
+                    query.TimeMax = DateTime.Now.AddMonths(MonthsInFuture);
+                if (restrictEndTime != null && (query.TimeMax == default(DateTime) || restrictEndTime < query.TimeMax))
+                    query.TimeMax = restrictEndTime.Value;
 
 
                 //Doesn't work:
                 //if (restrictStartDate != null)
                 //    query.StartDate = restrictStartDate.Value;
 
-                EventFeed feed = CalendarRequest.Query(query);
+                var feed = query.Execute();
 
-                while (feed != null && feed.Entries != null && feed.Entries.Count > 0)
-                {
-                    foreach (Event a in feed.Entries)
+                //while (feed != null && feed.Items != null && feed.Items.Count > 0)
+                //{
+                    foreach (Google.Apis.Calendar.v3.Data.Event a in feed.Items)
                     {
-                        if ((a.RecurringEventId != null || !a.Status.Equals(EventStatus.CANCELED)) && 
+                        if ((a.RecurringEventId != null || !a.Status.Equals("cancelled")) && 
                             !GoogleAppointments.Contains(a) //ToDo: For an unknown reason, some appointments are duplicate in GoogleAppointments, therefore remove all duplicates before continuing  
                             )
                         {//only return not yet cancelled events (except for recurrence exceptions) and events not already in the list
@@ -680,16 +717,16 @@ namespace GoContactSyncMod
                                 if (id.Equals(new AtomId(id.AbsoluteUri.Substring(0, id.AbsoluteUri.LastIndexOf("/") + 1) + a.RecurringEventId.IdOriginal)))
                                     ret = a;*/                                             
                         }
-                        //else
-                        //{
-                        //    Logger.Log("Skipped Appointment because it was cancelled on Google side: " + a.Summary + " - " + GetTime(a), EventType.Information);
-                        //    SkippedCount++;
-                        //}
+                        else
+                        {
+                            Logger.Log("Skipped Appointment because it was cancelled on Google side: " + a.Summary + " - " + GetTime(a), EventType.Information);
+                            //SkippedCount++;
+                        }
                     }
-                    query.StartIndex += query.NumberToRetrieve;
-                    feed = CalendarRequest.Query(query);
+                    //query.StartIndex += query.NumberToRetrieve;
+                    //feed = query.Execute();
 
-                }
+                //}
 
             }
             catch (System.Net.WebException ex)
@@ -1205,7 +1242,7 @@ namespace GoContactSyncMod
         {
             string ret = string.Empty;
 
-            if (googleAppointment.Start != null)
+            if (googleAppointment.Start != null && googleAppointment.Start.DateTime != null)
                 ret += googleAppointment.Start.DateTime.Value.ToString();
             if (googleAppointment.Recurrence != null)
                 ret += " Recurrence"; //ToDo: Return Recurrence Start/End
@@ -1319,7 +1356,7 @@ namespace GoContactSyncMod
                         //    Logger.Log("Error resetting match for Google appointment: \"" + name + "\".", EventType.Warning);
                         //}
 
-                        item.Delete();
+                        EventRequest.Delete(PrimaryCalendar.Id, item.Id).Execute();
 
                         DeletedCount++;
                         Logger.Log("Deleted Google appointment: \"" + name + "\".", EventType.Information);
@@ -2135,7 +2172,7 @@ namespace GoContactSyncMod
 
                 try
                 {
-                    Google.Apis.Calendar.v3.Data.Event createdEntry = CalendarRequest.Insert(feedUri, googleAppointment);
+                    Google.Apis.Calendar.v3.Data.Event createdEntry = EventRequest.Insert(googleAppointment, PrimaryCalendar.Id).Execute();
                     return createdEntry;
                 }
                 catch (Exception ex)
@@ -2155,7 +2192,7 @@ namespace GoContactSyncMod
                 {
                     //contact already present in google. just update
 
-                    Google.Apis.Calendar.v3.Data.Event updated = CalendarRequest.Update(googleAppointment);
+                    Google.Apis.Calendar.v3.Data.Event updated = EventRequest.Update(googleAppointment,PrimaryCalendar.Id,googleAppointment.Id).Execute();
                     return updated;
                 }
                 catch (Exception ex)
@@ -2911,7 +2948,7 @@ namespace GoContactSyncMod
 
                     if (deleteGoogleAppointments)
                     {
-                        googleAppointment.Delete();
+                        EventRequest.Delete(PrimaryCalendar.Id,googleAppointment.Id).Execute();
                     }
                     else
                     {
@@ -3162,17 +3199,20 @@ namespace GoContactSyncMod
 
         public Google.Apis.Calendar.v3.Data.Event GetGoogleAppointmentById(string id)
         {
-            AtomId atomId = new AtomId(id);
+            //ToDo: Temporary remove prefix used by v2:
+            id = id.Replace("http://www.google.com/calendar/feeds/default/events/", "");
+
+            //AtomId atomId = new AtomId(id);
             foreach (Google.Apis.Calendar.v3.Data.Event appointment in GoogleAppointments)
             {                
-                if (appointment.Id.Equals(atomId))
+                if (appointment.Id.Equals(id))
                     return appointment;
             }
 
             if (AllGoogleAppointments != null)
                 foreach (Google.Apis.Calendar.v3.Data.Event appointment in AllGoogleAppointments)
                 {
-                    if (appointment.Id.Equals(atomId))
+                    if (appointment.Id.Equals(id))
                         return appointment;
                 }
 
