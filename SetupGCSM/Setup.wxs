@@ -167,17 +167,15 @@
     <!-- Set the components defined in our fragment files that will be used for our feature  -->
     <Feature Id="GoogleContactSyncModFeature" Title="!(loc.ProductName)" Level="1">
 
-      <ComponentGroupRef Id="GoogleAPIFiles" />
       <ComponentGroupRef Id="OutlookAPIFiles"/>
       <ComponentGroupRef Id="GoogleContactsSync.Binaries"/>
-      <ComponentGroupRef Id="GoogleContactsSync.Symbols"/>
-      <ComponentGroupRef Id="Shortcut"/>
+      <ComponentGroupRef Id="Shortcuts"/>
 
     </Feature>
 
     <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="!(loc.RunAfterInstall)" />
 
-    <Property Id="WixShellExecTarget" Value="[#fil314CA3CA2085C9E6AFB0D54561EC0ABD]" />
+    <Property Id="WixShellExecTarget" Value="[#fil477678C73DB17A7805DE14031B7B5A86]" />
     <CustomAction Id="LaunchApplication"
                   BinaryKey="WixCA"
                   DllEntry="WixShellExec"
