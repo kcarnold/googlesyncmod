@@ -85,18 +85,19 @@
     
     <!-- Reference the global NETFRAMEWORKxx property to check if it exists -->
     
-    <PropertyRef Id="NETFRAMEWORK35"/>
+    <PropertyRef Id="NETFRAMEWORK40FULL"/>
+    <PropertyRef Id="NETFRAMEWORK40CLIENT"/>
     
     <!-- 
-    Startup conditions that checks if .Net Framework 3.5 is installed or if 
+    Startup conditions that checks if .Net Framework 4.0 is installed or if 
     we're running the OS higher than Windows XP SP2.
     If not the installation is aborted.
     By doing the (Installed OR ...) property means that this condition will only 
     be evaluated if the app is being installed and not on uninstall or changing
     -->
     
-    <Condition Message="!(loc.DotNet35FrameworkNeeded)">
-      <![CDATA[Installed OR NETFRAMEWORK35]]>
+    <Condition Message="!(loc.DotNet40FrameworkNeeded)">
+      <![CDATA[Installed OR NETFRAMEWORK40FULL OR NETFRAMEWORK40CLIENT]]>
     </Condition>
     
     <Condition Message="!(loc.AppNotSupported)">
