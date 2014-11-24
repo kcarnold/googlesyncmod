@@ -23,12 +23,12 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>$(ProjectDir)Packages\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>GoogleAPIDir=$(SolutionDir)GoogleAPI\;OutlookAPIDir=$(SolutionDir)OutlookAPI\</DefineConstants>
+    <DefineConstants>OutlookAPIDir=$(SolutionDir)OutlookAPI\</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Fragments\BinariesAndSymbolsFilesFragment.wxs" />
-    <Compile Include="Fragments\GoogleAPIFilesFragment.wxs" />
+    <Compile Include="Fragments\BinariesFragment.wxs" />
     <Compile Include="Fragments\OutlookAPIFilesFragment.wxs" />
+    <Compile Include="Fragments\Shortcuts.wxs" />
     <Compile Include="Setup.wxs" />
   </ItemGroup>
   <ItemGroup>
@@ -57,6 +57,7 @@
     </WixExtension>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="HarvestTransform.xsl" />
     <Content Include="Includes\Variables.wxi" />
     <Content Include="Lang\GPLv3.rtf" />
     <Content Include="packages.config" />
@@ -117,10 +118,6 @@
   <PropertyGroup>
     <PostBuildEvent />
   </PropertyGroup>
-  <PropertyGroup>
-    <PreBuildEvent>REM "$(WIX)bin\heat.exe" dir "$(SolutionDir)GoogleAPI" -cg GoogleAPIFiles -gg -scom -sreg -sfrag -srd -dr INSTALLLOCATION  -var var.GoogleAPIDir -v -out "$(ProjectDir)Fragments\GoogleAPIFilesFragment.wxs
-REM "$(WIX)bin\heat.exe" dir "$(SolutionDir)OutlookAPI" -cg OutlookAPIFiles -gg -scom -sreg -sfrag -srd -dr INSTALLLOCATION  -var var.OutlookAPIDir -v -out "$(ProjectDir)Fragments\OutlookAPIFilesFragment.wxs"</PreBuildEvent>
-  </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -130,4 +127,9 @@ REM "$(WIX)bin\heat.exe" dir "$(SolutionDir)OutlookAPI" -cg OutlookAPIFiles -gg 
     <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
   </Target>
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
+  <PropertyGroup>
+    <PreBuildEvent>"$(WIX)bin\heat.exe" dir "$(SolutionDir)GoogleContactsSync\bin\Release" -cg GoogleContactsSync.Binaries -gg -scom -sreg -sfrag -srd -dr INSTALLLOCATION  -var var.GoogleContactsSync.TargetDir -v -t "$(ProjectDir)HarvestTransform.xsl" -out "$(ProjectDir)Fragments\BinariesFragment.wxs"
+REM "$(WIX)bin\heat.exe" dir "$(SolutionDir)GoogleAPI" -cg GoogleAPIFiles -gg -scom -sreg -sfrag -srd -dr INSTALLLOCATION  -var var.GoogleAPIDir -v -out "$(ProjectDir)Fragments\GoogleAPIFilesFragment.wxs"
+REM "$(WIX)bin\heat.exe" dir "$(SolutionDir)OutlookAPI" -cg OutlookAPIFiles -gg -scom -sreg -sfrag -srd -dr INSTALLLOCATION  -var var.OutlookAPIDir -v -out "$(ProjectDir)Fragments\OutlookAPIFilesFragment.wxs"</PreBuildEvent>
+  </PropertyGroup>
 </Project>

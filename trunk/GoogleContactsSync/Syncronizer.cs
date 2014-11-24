@@ -179,7 +179,7 @@ namespace GoContactSyncMod
                     {
                         credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
                         GoogleClientSecrets.Load(stream).Secrets, scopes, username, CancellationToken.None,
-                        new FileDataStore("Go Contact Sync")).Result;
+                        new FileDataStore("Go Contact Sync Mod")).Result;
                     }
  
 
@@ -361,7 +361,11 @@ namespace GoContactSyncMod
                 if (_outlookNamespace != null)
                     Marshal.ReleaseComObject(_outlookNamespace);
                 if (OutlookApplication != null)
+                {
                     Marshal.ReleaseComObject(OutlookApplication);
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
                 _outlookNamespace = null;
                 OutlookApplication = null;
                 Logger.Log("Disconnected from Outlook", EventType.Debug);
