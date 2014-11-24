@@ -679,10 +679,12 @@ namespace GoContactSyncMod
                 GoogleAppointments = new Collection<Google.Apis.Calendar.v3.Data.Event>();
 
                 
-                var query = EventRequest.List(PrimaryCalendar.Id);                
+                var query = EventRequest.List(PrimaryCalendar.Id);
 
-                query.MaxResults = 10000; //ToDo: Find a way to retrieve all appointments
-                //query.StartIndex = 0;                               
+                string pageToken = null;
+                //query.MaxResults = 256; //ToDo: Find a way to retrieve all appointments
+                
+                            
 
                 //Only Load events from month range, but onyl if not a distinct Google Appointment is searched for
                 if (restrictMonthsInPast != 0)
@@ -699,13 +701,15 @@ namespace GoContactSyncMod
                 //if (restrictStartDate != null)
                 //    query.StartDate = restrictStartDate.Value;
 
-                var feed = query.Execute();
+                Events feed;
 
-                //while (feed != null && feed.Items != null && feed.Items.Count > 0)
-                //{
+                do
+                {
+                    query.PageToken = pageToken;   
+                    feed = query.Execute();
                     foreach (Google.Apis.Calendar.v3.Data.Event a in feed.Items)
                     {
-                        if ((a.RecurringEventId != null || !a.Status.Equals("cancelled")) && 
+                        if ((a.RecurringEventId != null || !a.Status.Equals("cancelled")) &&
                             !GoogleAppointments.Contains(a) //ToDo: For an unknown reason, some appointments are duplicate in GoogleAppointments, therefore remove all duplicates before continuing  
                             )
                         {//only return not yet cancelled events (except for recurrence exceptions) and events not already in the list
@@ -715,18 +719,17 @@ namespace GoContactSyncMod
                             //ToDo: Doesn't work for all recurrences
                             /*else if (restrictStartDate != null && id != null && a.RecurringEventId != null && a.Times.Count > 0 && restrictStartDate.Value.Date.Equals(a.Times[0].StartTime.Date))
                                 if (id.Equals(new AtomId(id.AbsoluteUri.Substring(0, id.AbsoluteUri.LastIndexOf("/") + 1) + a.RecurringEventId.IdOriginal)))
-                                    ret = a;*/                                             
+                                    ret = a;*/
                         }
-                        else
-                        {
-                            Logger.Log("Skipped Appointment because it was cancelled on Google side: " + a.Summary + " - " + GetTime(a), EventType.Information);
+                        //else
+                        //{
+                        //    Logger.Log("Skipped Appointment because it was cancelled on Google side: " + a.Summary + " - " + GetTime(a), EventType.Information);
                             //SkippedCount++;
-                        }
+                        //}
                     }
-                    //query.StartIndex += query.NumberToRetrieve;
-                    //feed = query.Execute();
-
-                //}
+                    pageToken = feed.NextPageToken;
+                }
+                while (pageToken != null);
 
             }
             catch (System.Net.WebException ex)
@@ -1242,9 +1245,11 @@ namespace GoContactSyncMod
         {
             string ret = string.Empty;
 
-            if (googleAppointment.Start != null && googleAppointment.Start.DateTime != null)
+            if (googleAppointment.Start != null && !string.IsNullOrEmpty(googleAppointment.Start.Date))
+                ret += googleAppointment.Start.Date;
+            else if (googleAppointment.Start != null && googleAppointment.Start.DateTime != null)
                 ret += googleAppointment.Start.DateTime.Value.ToString();
-            if (googleAppointment.Recurrence != null)
+            if (googleAppointment.Recurrence != null && googleAppointment.Recurrence.Count > 0)
                 ret += " Recurrence"; //ToDo: Return Recurrence Start/End
 
             return ret;
@@ -1674,6 +1679,7 @@ namespace GoContactSyncMod
                 //ToDo: Doesn'T work for newly created recurrence appointments before save, because Event.Reminder is throwing NullPointerException and Reminders cannot be initialized, therefore moved to after saving
                 if (slave.Recurrence != null && slave.Reminders != null)
                 {
+                    
                     if (slave.Reminders.Overrides != null)
                     {
                         slave.Reminders.Overrides.Clear();
@@ -3201,6 +3207,7 @@ namespace GoContactSyncMod
         {
             //ToDo: Temporary remove prefix used by v2:
             id = id.Replace("http://www.google.com/calendar/feeds/default/events/", "");
+            id = id.Replace("https://www.google.com/calendar/feeds/default/events/", "");
 
             //AtomId atomId = new AtomId(id);
             foreach (Google.Apis.Calendar.v3.Data.Event appointment in GoogleAppointments)

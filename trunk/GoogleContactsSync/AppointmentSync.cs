@@ -68,12 +68,29 @@ namespace GoContactSyncMod
             slave.Location = master.Location;
 
 
-            if (!master.IsRecurring || master.RecurrenceState != Outlook.OlRecurrenceState.olApptMaster)
-            {               
-                slave.Start.DateTime = master.Start;
-                slave.End.DateTime = master.End;
-                //ToDo: AllDayEvent? Timezone?               
-            }
+            //if (!master.IsRecurring || master.RecurrenceState != Outlook.OlRecurrenceState.olApptMaster)
+            //{                   
+                if (master.AllDayEvent == true) 
+                {
+                    slave.Start.Date = master.Start.ToString("yyyy-MM-dd");
+                    slave.End.Date = master.End.ToString("yyyy-MM-dd");
+                } 
+                else 
+                {
+                    slave.Start.DateTime = master.Start;
+                    slave.End.DateTime = master.End;
+                 }
+
+                if (master.RecurrenceState == Outlook.OlRecurrenceState.olApptMaster)
+                {
+                    string timezone = Syncronizer.Timezone;
+                    if (string.IsNullOrEmpty(timezone))
+                        timezone = "Europe/Berlin"; //As timezone is mandatory for reccurring events, assume Europe/Berlin, if none was chosen
+                    slave.Start.TimeZone = Syncronizer.Timezone;
+                    slave.End.TimeZone = Syncronizer.Timezone;
+                }
+                //ToDo: Timezone?               
+            //}
             ////slave.StartInStartTimeZone = master.StartInStartTimeZone;
             ////slave.StartTimeZone = master.StartTimeZone;
             ////slave.StartUTC = master.StartUTC;
@@ -101,7 +118,7 @@ namespace GoContactSyncMod
             //slave.OptionalAttendees = master.OptionalAttendees;
 
             //ToDo: Doesn'T work for newly created appointments, because Event.Reminder is throwing NullPointerException and Reminders cannot be initialized, therefore moved to after saving
-            if (slave.Reminders.Overrides != null)
+            if (slave.Reminders != null && slave.Reminders.Overrides != null)
             {
                 slave.Reminders.Overrides.Clear();
                 if (master.ReminderSet)
@@ -159,13 +176,7 @@ namespace GoContactSyncMod
                 Logger.Log("Error when converting RTF to plain text, updating Google Appointment '"+ slave.Subject + " - " + slave.Start +"' notes to Outlook without RTF check: " + e.Message , EventType.Debug);
                 slave.Body = master.Description;
             }
-                                       
-
-            slave.BusyStatus = Outlook.OlBusyStatus.olBusy;
-            if (master.Status.Equals("tentative"))
-                slave.BusyStatus = Outlook.OlBusyStatus.olTentative;
-             else if (master.Status.Equals("cancelled"))
-                slave.BusyStatus = Outlook.OlBusyStatus.olFree;                        
+                                                                   
 
             //slave.Categories = master.Categories;
             //slave.Duration = master.Duration;
@@ -183,11 +194,15 @@ namespace GoContactSyncMod
             {//Also sync times for recurrent events, but log warning, if it is not working
                 try
                 {
-                    //if (slave.AllDayEvent != master.Times[0].AllDay)
-                    //    slave.AllDayEvent = master.Times[0].AllDay;
-                    if (master.Start.DateTime != null && slave.Start != master.Start.DateTime)
+                    if (master.Start != null && slave.AllDayEvent == string.IsNullOrEmpty(master.Start.Date))
+                        slave.AllDayEvent = !string.IsNullOrEmpty(master.Start.Date);
+                    if (master.Start != null && !string.IsNullOrEmpty(master.Start.Date))
+                        slave.Start = DateTime.Parse(master.Start.Date);
+                    else if (master.Start != null && master.Start.DateTime != null && slave.Start != master.Start.DateTime)
                         slave.Start = master.Start.DateTime.Value;
-                    if (master.End.DateTime != null && slave.End != master.End.DateTime)
+                    if (master.End != null && !string.IsNullOrEmpty(master.End.Date))
+                        slave.End = DateTime.Parse(master.End.Date);
+                    else if (master.End != null && master.End.DateTime != null && slave.End != master.End.DateTime)
                         slave.End = master.End.DateTime.Value;
                 }
                 catch (Exception ex)
@@ -202,6 +217,12 @@ namespace GoContactSyncMod
 
             //if (!IsOrganizer(GetOrganizer(master)) || !IsOrganizer(GetOrganizer(slave), slave))
             //    slave.MeetingStatus = Outlook.OlMeetingStatus.olMeetingReceived;
+
+            slave.BusyStatus = Outlook.OlBusyStatus.olBusy;
+            if (master.Status.Equals("tentative"))
+                slave.BusyStatus = Outlook.OlBusyStatus.olTentative;
+            else if (master.Status.Equals("cancelled"))
+                slave.BusyStatus = Outlook.OlBusyStatus.olFree;       
 
             #region Recipients
             //ToDo: Commented out for now, not sync participants, because otherwise Google raises quota exceptions
@@ -279,17 +300,20 @@ namespace GoContactSyncMod
 
             //slave.OptionalAttendees = master.OptionalAttendees;
             //slave.Resources = master.Resources;
-            
+
 
             slave.ReminderSet = false;
-            foreach (var reminder in master.Reminders.Overrides)
-            {
-                if (reminder.Method == "popup" && reminder.Minutes != null)
+            if (master.Reminders.UseDefault != null)
+                slave.ReminderSet = master.Reminders.UseDefault.Value;
+            if (master.Reminders.Overrides != null)
+                foreach (var reminder in master.Reminders.Overrides)
                 {
-                    slave.ReminderSet = true;
-                    slave.ReminderMinutesBeforeStart = reminder.Minutes.Value;
-                }
-            }            
+                    if (reminder.Method == "popup" && reminder.Minutes != null)
+                    {
+                        slave.ReminderSet = true;
+                        slave.ReminderMinutesBeforeStart = reminder.Minutes.Value;
+                    }
+                }            
 
             
             //slave.RTFBody = master.RTFBody; 
@@ -369,7 +393,10 @@ namespace GoContactSyncMod
                 //slaveRecurrence += DTEND;
                 //slaveRecurrence += ";"+key+":" + time.ToString(format) + "\r\n";
 
-                slave.Recurrence.Clear();
+                if (slave.Recurrence == null)
+                    slave.Recurrence = new List<string>();
+                else
+                    slave.Recurrence.Clear();
                 slaveRecurrence = RRULE + ":" + FREQ +"=";
                 switch (masterRecurrence.RecurrenceType)
                 {
@@ -472,8 +499,18 @@ namespace GoContactSyncMod
                  
                  Outlook.RecurrencePattern slaveRecurrence = slave.GetRecurrencePattern();
 
-                 slaveRecurrence.StartTime = master.Start.DateTime.Value;
-                 slaveRecurrence.PatternStartDate = master.Start.DateTime.Value;
+                 if (master.Start != null && !string.IsNullOrEmpty(master.Start.Date))
+                 {
+                     slaveRecurrence.StartTime = DateTime.Parse(master.Start.Date);
+                     slaveRecurrence.PatternStartDate = DateTime.Parse(master.Start.Date);
+                 }
+                 else if (master.Start != null && master.Start.DateTime != null)
+                 {
+                     slaveRecurrence.StartTime = master.Start.DateTime.Value;
+                     slaveRecurrence.PatternStartDate = master.Start.DateTime.Value;
+                 }                 
+
+                 
                 //string[] patterns = masterRecurrence.Value.Split(new char[] {'\r','\n'}, StringSplitOptions.RemoveEmptyEntries);
                 //foreach (string pattern in patterns)
                 //{
@@ -489,7 +526,11 @@ namespace GoContactSyncMod
                 //    }
                 //}
 
-                 slaveRecurrence.EndTime = master.End.DateTime.Value;
+                if (master.End != null && !string.IsNullOrEmpty(master.End.Date))
+                     slaveRecurrence.EndTime = DateTime.Parse(master.End.Date);
+                 if (master.End != null && master.End.DateTime != null)
+                     slaveRecurrence.EndTime = master.End.DateTime.Value;
+                 
                 //foreach (string pattern in patterns)
                 //{
                 //    if (pattern.StartsWith(DTEND))
@@ -633,9 +674,7 @@ namespace GoContactSyncMod
                         foreach (string part in parts)
                         {
                             if (part.StartsWith(COUNT))
-                            {
-                                if (master.Start.DateTime != null)
-                                    slaveRecurrence.PatternStartDate = master.Start.DateTime.Value;
+                            {                                
                                 slaveRecurrence.Occurrences = int.Parse(part.Substring(part.IndexOf('=') + 1));
                                 break;
                             }
@@ -706,10 +745,19 @@ namespace GoContactSyncMod
                              (Syncronizer.MonthsInFuture == 0 || exception.AppointmentItem.Start <= DateTime.Now.AddMonths(Syncronizer.MonthsInFuture)))
                         {
                             //slave.Times.Add(new Google.GData.Extensions.When(exception.AppointmentItem.Start, exception.AppointmentItem.Start, exception.AppointmentItem.AllDayEvent));
-                            var googleRecurrenceException = new Event();
+                            var googleRecurrenceException = Factory.NewEvent();
+                            if (slave.Sequence != null)
+                                googleRecurrenceException.Sequence = slave.Sequence + 1;
                             googleRecurrenceException.RecurringEventId = slave.Id;
-                            //googleRecurrenceException.OriginalEvent.Href = ???
-                            googleRecurrenceException.OriginalStartTime.DateTime = exception.OriginalDate.AddMinutes(exception.AppointmentItem.Duration); //, exception.AppointmentItem.AllDayEvent);
+                            //googleRecurrenceException.OriginalEvent.Href = ??? 
+                            googleRecurrenceException.OriginalStartTime = new EventDateTime();
+                            if (master.AllDayEvent == true)
+                                googleRecurrenceException.OriginalStartTime.Date = exception.OriginalDate.ToString("yyyy-MM-dd");
+                            else
+                            {
+                                //DateTime start = exception.OriginalDate.AddHours(master.Start.Hour).AddMinutes(master.Start.Minute).AddSeconds(master.Start.Second);
+                                googleRecurrenceException.OriginalStartTime.DateTime = exception.OriginalDate;
+                            }
 
 
                             try
@@ -759,12 +807,26 @@ namespace GoContactSyncMod
                              (Syncronizer.MonthsInFuture == 0 || exception.OriginalDate <= DateTime.Now.AddMonths(Syncronizer.MonthsInFuture)))
                         {
                             //First create deleted occurrences, to delete it later again
-                            var googleRecurrenceException = new Event();
-                            googleRecurrenceException.RecurringEventId = slave.RecurringEventId;
+                            var googleRecurrenceException = Factory.NewEvent();
+                            if (slave.Sequence != null)
+                                googleRecurrenceException.Sequence = slave.Sequence + 1;
+                            googleRecurrenceException.RecurringEventId = slave.Id;
                             //googleRecurrenceException.OriginalEvent.Href = ???
                             DateTime start = exception.OriginalDate.AddHours(master.Start.Hour).AddMinutes(master.Start.Minute).AddSeconds(master.Start.Second);
-                            googleRecurrenceException.OriginalStartTime.DateTime = start;
-                            googleRecurrenceException.Start.DateTime = googleRecurrenceException.OriginalStartTime.DateTime;
+                            googleRecurrenceException.OriginalStartTime =  new EventDateTime();
+                            googleRecurrenceException.OriginalStartTime.TimeZone = slave.Start.TimeZone;
+                            if (master.AllDayEvent)
+                            {
+                                googleRecurrenceException.OriginalStartTime.Date = start.ToString("yyyy-MM-dd");
+                                googleRecurrenceException.End.Date = start.AddMinutes(master.Duration).ToString("yyyy-MM-dd");
+                            }
+                            else
+                            {
+                                googleRecurrenceException.OriginalStartTime.DateTime = start;
+                                googleRecurrenceException.End.DateTime = start.AddMinutes(master.Duration);
+                            }
+                            googleRecurrenceException.Start = googleRecurrenceException.OriginalStartTime;
+                           
                             googleRecurrenceException.Summary = master.Subject;
 
                             try
