@@ -220,7 +220,19 @@ namespace GoContactSyncMod
                 if (NotificationReceived != null)
                     NotificationReceived(String.Format("Adding new Google appointment {0} of {1} by unique properties: {2} ...", i + 1, sync.GoogleAppointments.Count, googleAppointment.Summary));
 
-                if (string.IsNullOrEmpty(googleAppointment.Summary) && (googleAppointment.Start == null || googleAppointment.Start.DateTime == null))
+                
+                if (googleAppointment.RecurringEventId != null)
+                {
+                    sync.SkippedCountNotMatches++;
+                    googleAppointmentExceptions.Add(googleAppointment);
+                }
+                else if (googleAppointment.Status.Equals("cancelled"))
+                {
+                    Logger.Log("Skipping Google appointment found because it is cancelled: " + googleAppointment.Summary + " - " + Syncronizer.GetTime(googleAppointment), EventType.Debug);
+                    //sync.SkippedCount++;
+                    //sync.SkippedCountNotMatches++;
+                }
+                else if (string.IsNullOrEmpty(googleAppointment.Summary) && (googleAppointment.Start == null || googleAppointment.Start.DateTime == null && googleAppointment.Start.Date == null))
                 {
                     // no title or time
                     sync.SkippedCount++;
@@ -232,17 +244,6 @@ namespace GoContactSyncMod
                 //    Logger.Log("Skipping Google appointment because of DEBUGGING:" + googleAppointment.Summary + " - " + googleAppointment.Times[0].StartTime, EventType.Error);
                 //    continue;
                 //}
-                else if (googleAppointment.RecurringEventId != null)
-                {
-                    sync.SkippedCountNotMatches++;
-                    googleAppointmentExceptions.Add(googleAppointment);
-                }
-                else if (googleAppointment.Status.Equals("cancelled"))
-                {
-                    Logger.Log("Skipping Google appointment found because it is cancelled: " + googleAppointment.Summary + " - " + Syncronizer.GetTime(googleAppointment), EventType.Debug);
-                    //sync.SkippedCount++;
-                    //sync.SkippedCountNotMatches++;
-                }
                 else
                 {
                     Logger.Log(string.Format("No match found for Google appointment ({0}) => {1}", googleAppointment.Summary + " - " + Syncronizer.GetTime(googleAppointment), (!string.IsNullOrEmpty(AppointmentPropertiesUtils.GetGoogleOutlookAppointmentId(sync.SyncProfile, googleAppointment)) ? "Delete from Google" : "Add to Outlook")), EventType.Information);
@@ -272,7 +273,7 @@ namespace GoContactSyncMod
                 }
 
                 if (!found)
-                    Logger.Log(string.Format("No match found for Google appointment exception: {0}", googleAppointment.Summary + " - " + Syncronizer.GetTime(googleAppointment)), EventType.Warning);
+                    Logger.Log(string.Format("No match found for Google appointment exception: {0}", googleAppointment.Summary + " - " + Syncronizer.GetTime(googleAppointment)), EventType.Debug);
             }
 
             return result;
@@ -379,7 +380,7 @@ namespace GoContactSyncMod
                 }
 
                 //create a Google appointment from Outlook appointment
-                match.GoogleAppointment = new Event();
+                match.GoogleAppointment = Factory.NewEvent();
 
                 sync.UpdateAppointment(match.OutlookAppointment, ref match.GoogleAppointment);
 
@@ -449,9 +450,12 @@ namespace GoContactSyncMod
                     //consider GoogleAppointmentExceptions, because if they are updated, the master appointment doesn't have a new Saved TimeStamp
                     foreach (Event googleAppointment in match.GoogleAppointmentExceptions)
                     {
-                        DateTime lastUpdatedGoogleException = googleAppointment.Updated.Value.AddSeconds(-googleAppointment.Updated.Value.Second);
-                        if (lastUpdatedGoogleException > lastUpdatedGoogle)
-                            lastUpdatedGoogle = lastUpdatedGoogleException;
+                        if (googleAppointment.Updated != null)//happens for cancelled events
+                        {
+                            DateTime lastUpdatedGoogleException = googleAppointment.Updated.Value.AddSeconds(-googleAppointment.Updated.Value.Second);
+                            if (lastUpdatedGoogleException > lastUpdatedGoogle)
+                                lastUpdatedGoogle = lastUpdatedGoogleException;
+                        }
                     }
 
                     //check if both outlok and Google appointments where updated sync last sync

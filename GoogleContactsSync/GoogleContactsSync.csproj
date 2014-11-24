@@ -214,6 +214,7 @@
     <Compile Include="AppointmentPropertiesUtils.cs" />
     <Compile Include="AppointmentsMatcher.cs" />
     <Compile Include="AppointmentSync.cs" />
+    <Compile Include="Factory.cs" />
     <Compile Include="ConfigurationManager.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -36,6 +36,14 @@ namespace GoContactSyncMod
         {
             // check if exists
             bool found = false;
+            if (googleAppointment.ExtendedProperties == null)
+            {
+                googleAppointment.ExtendedProperties = new Event.ExtendedPropertiesData();
+            }
+            if (googleAppointment.ExtendedProperties.Shared == null)
+            {
+                googleAppointment.ExtendedProperties.Shared = new Dictionary<string, string>();
+            }
             foreach (var p in googleAppointment.ExtendedProperties.Shared)
             {
                 
