@@ -1235,7 +1235,7 @@ namespace GoContactSyncMod
                 if (runAtStartupCheckBox.Checked)
                 {
                     // add to registry
-                    regKeyAppRoot.SetValue("GoogleContactSync", Application.ExecutablePath);
+                    regKeyAppRoot.SetValue("GoogleContactSync", "\"" + Application.ExecutablePath + "\"");
                 }
                 else
                 {
