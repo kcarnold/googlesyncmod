@@ -177,34 +177,34 @@ namespace GoContactSyncMod
                     UserCredential credential;
                     using (var stream = new FileStream("client_secrets.json", FileMode.Open, FileAccess.Read))
                     {
+                        FileDataStore fDS = new FileDataStore("Go Contact Sync Mod\\OAuthToken");
                         credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
                         GoogleClientSecrets.Load(stream).Secrets, scopes, username, CancellationToken.None,
-                        new FileDataStore("Go Contact Sync Mod")).Result;
-                    }
- 
+                        fDS).Result;
 
-                    var initializer = new Google.Apis.Services.BaseClientService.Initializer();
-                    initializer.HttpClientInitializer = credential;                    
-                    var CalendarRequest = new CalendarService(initializer);
-                    //CalendarRequest.setUserCredentials(username, password);
-                    
-                    var list = CalendarRequest.CalendarList.List().Execute().Items;
-                    foreach (var calendar in list)
-                    {
-                        if (calendar.Primary != null && calendar.Primary.Value)
+                        var initializer = new Google.Apis.Services.BaseClientService.Initializer();
+                        initializer.HttpClientInitializer = credential;
+                        var CalendarRequest = new CalendarService(initializer);
+                        //CalendarRequest.setUserCredentials(username, password);
+
+                        var list = CalendarRequest.CalendarList.List().Execute().Items;
+                        foreach (var calendar in list)
                         {
-                            PrimaryCalendar = calendar;
-                            break;
+                            if (calendar.Primary != null && calendar.Primary.Value)
+                            {
+                                PrimaryCalendar = calendar;
+                                break;
+                            }
                         }
+
+                        if (PrimaryCalendar == null)
+                            throw new Exception("Primary Calendar not found");
+
+
+                        //EventQuery query = new EventQuery("https://www.google.com/calendar/feeds/default/private/full");
+                        //ToDo: Upgrade to v3, EventQuery query = new EventQuery("https://www.googleapis.com/calendar/v3/calendars/default/events");
+                        EventRequest = CalendarRequest.Events;
                     }
-
-                    if (PrimaryCalendar == null)
-                        throw new Exception("Primary Calendar not found");
-
-
-                    //EventQuery query = new EventQuery("https://www.google.com/calendar/feeds/default/private/full");
-                    //ToDo: Upgrade to v3, EventQuery query = new EventQuery("https://www.googleapis.com/calendar/v3/calendars/default/events");
-                    EventRequest = CalendarRequest.Events;
                 }
             }
 
