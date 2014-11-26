@@ -129,7 +129,12 @@ namespace GoContactSyncMod.UnitTests
             scopes.Add(CalendarService.Scope.Calendar);
 
             UserCredential credential;
-            using (var stream = new FileStream(Path.GetDirectoryName(System.Reflection.Assembly.GetAssembly(typeof(GoContactSyncMod.Syncronizer)).Location) + "\\client_secrets.json", FileMode.Open, FileAccess.Read))
+            byte[] jsonSecrets = Properties.Resources.client_secrets;
+            
+            //using (var stream = new FileStream(Path.GetDirectoryName(System.Reflection.Assembly.GetAssembly(this.GetType()).Location) + "\\client_secrets.json", FileMode.Open, FileAccess.Read))
+            //using (var stream = new FileStream("client_secrets.json", FileMode.Open, FileAccess.Read))
+                    //using (var stream = new FileStream(Application.StartupPath + "\\client_secrets.json", FileMode.Open, FileAccess.Read))
+            using (var stream = new MemoryStream(jsonSecrets))            
             {
                 FileDataStore fDS = new FileDataStore(Logger.Folder, true);
                 credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
@@ -165,7 +170,7 @@ namespace GoContactSyncMod.UnitTests
             query.MaxResults = 500;
             query.TimeMin = DateTime.Now.AddDays(-10);
             query.TimeMax = DateTime.Now.AddDays(10);
-            query.Q = "GCSM Test Appointment";
+            //query.Q = "GCSM Test Appointment";
 
             var feed = query.Execute();
             Logger.Log("Loaded Google appointments", EventType.Information);

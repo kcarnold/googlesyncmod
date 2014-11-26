@@ -175,7 +175,9 @@ namespace GoContactSyncMod
                     scopes.Add(CalendarService.Scope.Calendar);
 
                     UserCredential credential;
-                    using (var stream = new FileStream(Application.StartupPath + "\\client_secrets.json", FileMode.Open, FileAccess.Read))
+                    byte[] jsonSecrets = Properties.Resources.client_secrets;
+                    //using (var stream = new FileStream(Application.StartupPath + "\\client_secrets.json", FileMode.Open, FileAccess.Read))
+                    using (var stream = new MemoryStream(jsonSecrets))
                     {
                         FileDataStore fDS = new FileDataStore(Logger.Folder, true);
                         credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
