@@ -177,7 +177,7 @@ namespace GoContactSyncMod
                     UserCredential credential;
                     using (var stream = new FileStream(Application.StartupPath + "\\client_secrets.json", FileMode.Open, FileAccess.Read))
                     {
-                        FileDataStore fDS = new FileDataStore("Go Contact Sync Mod\\OAuthToken");
+                        FileDataStore fDS = new FileDataStore(Logger.Folder, true);
                         credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
                         GoogleClientSecrets.Load(stream).Secrets, scopes, username, CancellationToken.None,
                         fDS).Result;
