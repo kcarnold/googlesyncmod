@@ -456,6 +456,29 @@ namespace GoContactSyncMod
                             if (lastUpdatedGoogleException > lastUpdatedGoogle)
                                 lastUpdatedGoogle = lastUpdatedGoogleException;
                         }
+                        else if (match.OutlookAppointment.IsRecurring && match.OutlookAppointment.RecurrenceState == Outlook.OlRecurrenceState.olApptMaster)
+                        {
+                            Outlook.AppointmentItem outlookRecurrenceException = null;
+                            try
+                            {
+                                 var slaveRecurrence = match.OutlookAppointment.GetRecurrencePattern();
+                                if (googleAppointment.OriginalStartTime != null && !string.IsNullOrEmpty(googleAppointment.OriginalStartTime.Date))
+                                    outlookRecurrenceException = slaveRecurrence.GetOccurrence(DateTime.Parse(googleAppointment.OriginalStartTime.Date));
+                                else if (googleAppointment.OriginalStartTime != null && googleAppointment.OriginalStartTime.DateTime != null)
+                                    outlookRecurrenceException = slaveRecurrence.GetOccurrence(googleAppointment.OriginalStartTime.DateTime.Value);
+                            }
+                            catch (Exception ignored)
+                            {
+                                Logger.Log("Google Appointment with OriginalEvent found, but Outlook occurrence not found: " + googleAppointment.Summary + " - " + googleAppointment.OriginalStartTime.DateTime + ": " + ignored, EventType.Debug);
+                            }
+
+
+                            if (outlookRecurrenceException != null && outlookRecurrenceException.MeetingStatus != Outlook.OlMeetingStatus.olMeetingCanceled)
+                            {
+                                lastUpdatedGoogle = DateTime.Now;
+                                break; //no need to search further, already newest date set
+                            }
+                        }
                     }
 
                     //check if both outlok and Google appointments where updated sync last sync

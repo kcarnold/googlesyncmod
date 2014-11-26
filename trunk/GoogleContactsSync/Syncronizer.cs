@@ -175,7 +175,7 @@ namespace GoContactSyncMod
                     scopes.Add(CalendarService.Scope.Calendar);
 
                     UserCredential credential;
-                    using (var stream = new FileStream("client_secrets.json", FileMode.Open, FileAccess.Read))
+                    using (var stream = new FileStream(Application.StartupPath + "\\client_secrets.json", FileMode.Open, FileAccess.Read))
                     {
                         FileDataStore fDS = new FileDataStore("Go Contact Sync Mod\\OAuthToken");
                         credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
@@ -1681,28 +1681,28 @@ namespace GoContactSyncMod
                 slave = SaveGoogleAppointment(slave);
 
                 //ToDo: Doesn'T work for newly created recurrence appointments before save, because Event.Reminder is throwing NullPointerException and Reminders cannot be initialized, therefore moved to after saving
-                if (slave.Recurrence != null && slave.Reminders != null)
-                {
+                //if (slave.Recurrence != null && slave.Reminders != null)
+                //{
                     
-                    if (slave.Reminders.Overrides != null)
-                    {
-                        slave.Reminders.Overrides.Clear();
-                        if (master.ReminderSet)
-                        {
-                            var reminder = new Google.Apis.Calendar.v3.Data.EventReminder();
-                            reminder.Minutes = master.ReminderMinutesBeforeStart;
-                            if (reminder.Minutes > 40300)
-                            {
-                                //ToDo: Check real limit, currently 40300
-                                Logger.Log("Reminder Minutes to big (" + reminder.Minutes + "), set to maximum of 40300 minutes for appointment: " + master.Subject + " - " + master.Start, EventType.Warning);
-                                reminder.Minutes = 40300;
-                            }
-                            reminder.Method = "popup";
-                            slave.Reminders.Overrides.Add(reminder);
-                        }
-                    }
-                    slave = SaveGoogleAppointment(slave);
-                }
+                //    if (slave.Reminders.Overrides != null)
+                //    {
+                //        slave.Reminders.Overrides.Clear();
+                //        if (master.ReminderSet)
+                //        {
+                //            var reminder = new Google.Apis.Calendar.v3.Data.EventReminder();
+                //            reminder.Minutes = master.ReminderMinutesBeforeStart;
+                //            if (reminder.Minutes > 40300)
+                //            {
+                //                //ToDo: Check real limit, currently 40300
+                //                Logger.Log("Reminder Minutes to big (" + reminder.Minutes + "), set to maximum of 40300 minutes for appointment: " + master.Subject + " - " + master.Start, EventType.Warning);
+                //                reminder.Minutes = 40300;
+                //            }
+                //            reminder.Method = "popup";
+                //            slave.Reminders.Overrides.Add(reminder);
+                //        }
+                //    }
+                //    slave = SaveGoogleAppointment(slave);
+                //}
 
                 AppointmentPropertiesUtils.SetOutlookGoogleAppointmentId(this, master, slave);
                 master.Save();

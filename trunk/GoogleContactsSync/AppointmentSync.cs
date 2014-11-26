@@ -88,8 +88,7 @@ namespace GoContactSyncMod
                         timezone = "Europe/Berlin"; //As timezone is mandatory for reccurring events, assume Europe/Berlin, if none was chosen
                     slave.Start.TimeZone = Syncronizer.Timezone;
                     slave.End.TimeZone = Syncronizer.Timezone;
-                }
-                //ToDo: Timezone?               
+                }            
             //}
             ////slave.StartInStartTimeZone = master.StartInStartTimeZone;
             ////slave.StartTimeZone = master.StartTimeZone;
@@ -118,23 +117,24 @@ namespace GoContactSyncMod
             //slave.OptionalAttendees = master.OptionalAttendees;
 
             //ToDo: Doesn'T work for newly created appointments, because Event.Reminder is throwing NullPointerException and Reminders cannot be initialized, therefore moved to after saving
-            if (slave.Reminders != null && slave.Reminders.Overrides != null)
-            {
-                slave.Reminders.Overrides.Clear();
-                if (master.ReminderSet)
-                {
-                    var reminder = new EventReminder();
-                    reminder.Minutes = master.ReminderMinutesBeforeStart;
-                    if (reminder.Minutes > 40300)
-                    {
-                        //ToDo: Check real limit, currently 40300
-                        Logger.Log("Reminder Minutes to big (" + reminder.Minutes + "), set to maximum of 40300 minutes for appointment: " + master.Subject + " - " + master.Start, EventType.Warning);
-                        reminder.Minutes = 40300;                        
-                    }
-                    reminder.Method = "popup";
-                    slave.Reminders.Overrides.Add(reminder);
-                }
-            }
+            //if (slave.Reminders != null && slave.Reminders.Overrides != null)
+            //{
+            //    slave.Reminders.Overrides.Clear();
+            //    if (master.ReminderSet)
+            //    {
+            //        var reminder = new EventReminder();
+            //        reminder.Minutes = master.ReminderMinutesBeforeStart;
+            //        if (reminder.Minutes > 40300)
+            //        {
+            //            //ToDo: Check real limit, currently 40300
+            //            Logger.Log("Reminder Minutes to big (" + reminder.Minutes + "), set to maximum of 40300 minutes for appointment: " + master.Subject + " - " + master.Start, EventType.Warning);
+            //            reminder.Minutes = 40300;                        
+            //        }
+            //        reminder.Method = "popup";
+            //        slave.Reminders.Overrides.Add(reminder);
+            //    }
+            //}
+            UpdateAppointmentReminders(master, slave);
 
             //slave.Resources = master.Resources;
             //slave.RTFBody = master.RTFBody;
@@ -151,6 +151,38 @@ namespace GoContactSyncMod
                     default: slave.Visibility = "default"; break;
                 }
             }
+        }
+
+        public static void UpdateAppointmentReminders(Outlook.AppointmentItem master, Event slave)
+       {
+            if (master.ReminderSet)
+            {
+                if (slave.Reminders == null)
+                {
+                    slave.Reminders = new Event.RemindersData();
+                    slave.Reminders.Overrides = new List<EventReminder>();
+                }
+
+                slave.Reminders.UseDefault = false;
+                if (slave.Reminders.Overrides != null)
+                {
+                    slave.Reminders.Overrides.Clear();
+                }
+                else
+                {
+                    slave.Reminders.Overrides = new List<EventReminder>();
+                }
+                var reminder = new EventReminder();
+                reminder.Minutes = master.ReminderMinutesBeforeStart;
+                if (reminder.Minutes > 40300)
+                {
+                    //ToDo: Check real limit, currently 40300
+                    Logger.Log("Reminder Minutes to big ("  + reminder.Minutes + "), set to maximum of 40300 minutes for appointment: "  + master.Subject +   " - "  + master.Start, EventType.Warning);
+                    reminder.Minutes = 40300;
+                }
+                reminder.Method = "popup";
+                slave.Reminders.Overrides.Add(reminder);
+            }           
         }
 
         /// <summary>
@@ -873,7 +905,10 @@ namespace GoContactSyncMod
                 try
                 {
                     var slaveRecurrence = slave.GetRecurrencePattern();
-                    outlookRecurrenceException = slaveRecurrence.GetOccurrence(googleRecurrenceException.OriginalStartTime.DateTime.Value);
+                    if (googleRecurrenceException.OriginalStartTime != null && !string.IsNullOrEmpty(googleRecurrenceException.OriginalStartTime.Date))
+                        outlookRecurrenceException = slaveRecurrence.GetOccurrence(DateTime.Parse(googleRecurrenceException.OriginalStartTime.Date));
+                    else if (googleRecurrenceException.OriginalStartTime != null && googleRecurrenceException.OriginalStartTime.DateTime != null)
+                        outlookRecurrenceException = slaveRecurrence.GetOccurrence(googleRecurrenceException.OriginalStartTime.DateTime.Value);
                 }
                 catch (Exception ignored)
                 {
@@ -886,13 +921,33 @@ namespace GoContactSyncMod
                     //myInstance.Subject = googleAppointment.Summary;
                     //myInstance.Start = googleAppointment.Times[0].StartTime;
                     //myInstance.End = googleAppointment.Times[0].EndTime;
-                    googleRecurrenceException = sync.LoadGoogleAppointments(googleRecurrenceException.Id, 0, 0, googleRecurrenceException.Start.DateTime.Value, googleRecurrenceException.End.DateTime.Value); //Reload, just in case it was updated by master recurrence                                
+                    DateTime? timeMin = null;
+                    DateTime? timeMax = null;
+                    if (googleRecurrenceException.Start != null && !string.IsNullOrEmpty(googleRecurrenceException.Start.Date))
+                        timeMin = DateTime.Parse(googleRecurrenceException.Start.Date);
+                    else if (googleRecurrenceException.Start != null)
+                        timeMin = googleRecurrenceException.Start.DateTime;
+
+                    if (googleRecurrenceException.End != null && !string.IsNullOrEmpty(googleRecurrenceException.End.Date))
+                        timeMax = DateTime.Parse(googleRecurrenceException.End.Date);
+                    else if (googleRecurrenceException.End != null)
+                        timeMax = googleRecurrenceException.End.DateTime;
+
+                    googleRecurrenceException = sync.LoadGoogleAppointments(googleRecurrenceException.Id, 0, 0, timeMin, timeMax); //Reload, just in case it was updated by master recurrence                                
                     if (googleRecurrenceException != null)
                     {
                         if (googleRecurrenceException.Status.Equals("cancelled"))
                         {
                             outlookRecurrenceException.Delete();
-                            Logger.Log("Deleted obsolete recurrence exception from Outlook: " + googleRecurrenceException.Summary + " - " + Syncronizer.GetTime(googleRecurrenceException), EventType.Information);
+                            string timeToLog = null;
+                            if (googleRecurrenceException.OriginalStartTime != null)
+                            {   
+                                timeToLog = googleRecurrenceException.OriginalStartTime.Date;
+                                if (string.IsNullOrEmpty(timeToLog) && googleRecurrenceException.OriginalStartTime.DateTime != null)
+                                timeToLog =  googleRecurrenceException.OriginalStartTime.DateTime.Value.ToString();
+                            }
+
+                            Logger.Log("Deleted obsolete recurrence exception from Outlook: " + slave.Subject + " - " + timeToLog, EventType.Information);
                         }
                         else
                         {
