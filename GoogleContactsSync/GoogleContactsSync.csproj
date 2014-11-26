@@ -307,7 +307,9 @@
       <SubType>Designer</SubType>
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </EmbeddedResource>
-    <BaseApplicationManifest Include="Properties\app.manifest" />
+    <BaseApplicationManifest Include="Properties\app.manifest">
+      <SubType>Designer</SubType>
+    </BaseApplicationManifest>
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>

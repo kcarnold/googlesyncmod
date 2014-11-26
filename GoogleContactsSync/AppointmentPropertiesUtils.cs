@@ -75,14 +75,17 @@ namespace GoContactSyncMod
         }
         public static void ResetGoogleOutlookAppointmentId(string syncProfile, Event googleAppointment)
         {
-            // get extended prop
-            foreach (var p in googleAppointment.ExtendedProperties.Shared)
+            if (googleAppointment.ExtendedProperties != null && googleAppointment.ExtendedProperties.Shared != null)
             {
-                if (p.Key == "gos:oid:" + syncProfile + "")
+                // get extended prop
+                foreach (var p in googleAppointment.ExtendedProperties.Shared)
                 {
-                    // remove 
-                    googleAppointment.ExtendedProperties.Shared.Remove(p);
-                    return;
+                    if (p.Key == "gos:oid:" + syncProfile + "")
+                    {
+                        // remove 
+                        googleAppointment.ExtendedProperties.Shared.Remove(p);
+                        return;
+                    }
                 }
             }
         }
