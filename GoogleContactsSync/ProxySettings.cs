@@ -80,7 +80,7 @@ namespace GoContactSyncMod
                 try
                 {
                     System.Net.WebProxy myProxy = new System.Net.WebProxy(Address.Text);
-                    if (string.IsNullOrEmpty(Port.Text))
+                    if (!string.IsNullOrEmpty(Port.Text))
                         myProxy = new System.Net.WebProxy(Address.Text, Convert.ToInt16(Port.Text));
                     myProxy.BypassProxyOnLocal = true;
                     myProxy.UseDefaultCredentials = true;
