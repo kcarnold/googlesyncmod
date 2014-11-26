@@ -313,9 +313,6 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="client_secrets.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="COPYING.rtf" />
     <Compile Include="Syncronizer.cs" />
     <Compile Include="Utilities.cs" />
@@ -325,6 +322,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />
+    <None Include="Resources\client_secrets.json" />
     <None Include="Resources\sync_0.ico" />
     <None Include="Resources\sync_30.ico" />
     <None Include="Resources\sync_60.ico" />
