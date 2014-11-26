@@ -11,7 +11,12 @@ using Google.Documents;
 using Google.GData.Client.ResumableUpload;
 using Google.GData.Documents;
 using System.Collections;
-using Google.GData.Calendar;
+using Google.Apis.Calendar.v3;
+using Google.Apis.Util.Store;
+using Google.Apis.Auth.OAuth2;
+using System.Threading;
+using System.IO;
+using Google.Apis.Calendar.v3.Data;
 
 namespace GoContactSyncMod.UnitTests
 {
@@ -114,26 +119,62 @@ namespace GoContactSyncMod.UnitTests
             string syncProfile;
             GoogleAPITests.LoadSettings(out gmailUsername, out gmailPassword, out syncProfile);
 
-            RequestSettings rs = new RequestSettings("GoogleContactSyncMod", gmailUsername, gmailPassword);
-            CalendarService service = new CalendarService("GoogleContactSyncMod");
-            service.setUserCredentials(gmailUsername, gmailPassword);
+            //RequestSettings rs = new RequestSettings("GoogleContactSyncMod", gmailUsername, gmailPassword);
+            //CalendarService service = new CalendarService("GoogleContactSyncMod");
+            //service.setUserCredentials(gmailUsername, gmailPassword);
 
+            EventsResource service;
+            CalendarListEntry primaryCalendar = null;
+            var scopes = new List<string>();
+            scopes.Add(CalendarService.Scope.Calendar);
+
+            UserCredential credential;
+            using (var stream = new FileStream(Path.GetDirectoryName(System.Reflection.Assembly.GetAssembly(typeof(GoContactSyncMod.Syncronizer)).Location) + "\\client_secrets.json", FileMode.Open, FileAccess.Read))
+            {
+                FileDataStore fDS = new FileDataStore(Logger.Folder, true);
+                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+                GoogleClientSecrets.Load(stream).Secrets, scopes, gmailUsername, CancellationToken.None,
+                fDS).Result;
+
+                var initializer = new Google.Apis.Services.BaseClientService.Initializer();
+                initializer.HttpClientInitializer = credential;
+                var CalendarRequest = new CalendarService(initializer);
+                //CalendarRequest.setUserCredentials(username, password);
+
+                var list = CalendarRequest.CalendarList.List().Execute().Items;
+                foreach (var calendar in list)
+                {
+                    if (calendar.Primary != null && calendar.Primary.Value)
+                    {
+                        primaryCalendar = calendar;
+                        break;
+                    }
+                }
+
+                if (primaryCalendar == null)
+                    throw new Exception("Primary Calendar not found");
+
+
+                //EventQuery query = new EventQuery("https://www.google.com/calendar/feeds/default/private/full");
+                //ToDo: Upgrade to v3, EventQuery query = new EventQuery("https://www.googleapis.com/calendar/v3/calendars/default/events");
+                service = CalendarRequest.Events;
+            }
 
             #region Delete previously created test contact.
-            EventQuery query = new EventQuery("https://www.google.com/calendar/feeds/default/private/full");
-            query.NumberToRetrieve = 500;
-            query.StartDate = DateTime.Now.AddDays(-10);
-            query.EndDate = DateTime.Now.AddDays(10);
-            query.Query = "GCSM Test Appointment";
+            var query = service.List(primaryCalendar.Id);
+            query.MaxResults = 500;
+            query.TimeMin = DateTime.Now.AddDays(-10);
+            query.TimeMax = DateTime.Now.AddDays(10);
+            query.Q = "GCSM Test Appointment";
 
-            EventFeed feed = service.Query(query);
+            var feed = query.Execute();
             Logger.Log("Loaded Google appointments", EventType.Information);
-            foreach (EventEntry entry in feed.Entries)
+            foreach (Google.Apis.Calendar.v3.Data.Event entry in feed.Items)
             {
-                if (entry.Title != null && entry.Title.Text.Contains("GCSM Test Appointment") && !entry.Status.Equals(Google.GData.Calendar.EventEntry.EventStatus.CANCELED))
+                if (entry.Summary != null && entry.Summary.Contains("GCSM Test Appointment") && !entry.Status.Equals("cancelled"))
                 {
-                    Logger.Log("Deleting Google appointment:" +entry.Title.Text + " - " + (entry.Times.Count==0?null:entry.Times[0].StartTime.ToString()), EventType.Information);
-                    service.Delete(entry,true);
+                    Logger.Log("Deleting Google appointment:" +entry.Summary + " - " + entry.Start.DateTime.ToString(), EventType.Information);
+                    service.Delete(primaryCalendar.Id, entry.Id);
                     Logger.Log("Deleted Google appointment", EventType.Information);
                     //break;
                 }
@@ -143,24 +184,23 @@ namespace GoContactSyncMod.UnitTests
             
             #endregion
 
-            var newEntry = new EventEntry();
-            newEntry.Title.Text = "GCSM Test Appointment";
-            newEntry.Times.Add(new When(DateTime.Now, DateTime.Now, true));
-                        
-            Uri feedUri = new Uri("https://www.google.com/calendar/feeds/default/private/full");
+            var newEntry = Factory.NewEvent();
+            newEntry.Summary = "GCSM Test Appointment";
+            newEntry.Start.DateTime = DateTime.Now;
+            newEntry.End.DateTime = DateTime.Now;                                    
 
-            var createdEntry = service.Insert(feedUri, newEntry);
+            var createdEntry = service.Insert(newEntry,primaryCalendar.Id).Execute();
 
             Logger.Log("Created Google appointment", EventType.Information);
 
-            Assert.IsNotNull(createdEntry.Id.Uri);
+            Assert.IsNotNull(createdEntry.Id);
 
-            var updatedEntry = service.Update(createdEntry);
+            var updatedEntry = service.Update(createdEntry, primaryCalendar.Id,createdEntry.Id).Execute();
 
             Logger.Log("Updated Google appointment", EventType.Information);
 
             //delete test contacts
-            service.Delete(updatedEntry, true);
+            service.Delete(primaryCalendar.Id, updatedEntry.Id).Execute();
 
             Logger.Log("Deleted Google appointment", EventType.Information);
         }
