@@ -31,7 +31,7 @@ namespace GoContactSyncMod
         public static event LogUpdatedHandler LogUpdated;
         private static StreamWriter logwriter;
 
-        public static readonly string Folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Go Contact Sync Mod\\";
+        public static readonly string Folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\GoContactSyncMOD\\";
 
         static Logger()
         {
