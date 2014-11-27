@@ -807,13 +807,15 @@ namespace GoContactSyncMod
 		}
 		public void SetLastSyncText(string text)
 		{
-			if (this.InvokeRequired)
-			{
-				TextHandler h = new TextHandler(SetLastSyncText);
-				this.Invoke(h, new object[] { text });
-			}
-			else
-				lastSyncLabel.Text = text;
+            if (this.InvokeRequired)
+            {
+                TextHandler h = new TextHandler(SetLastSyncText);
+                this.Invoke(h, new object[] { text });
+            }
+            else
+            {
+                lastSyncLabel.Text = text;
+            }
 		}
 		public void SetSyncConsoleText(string text)
 		{
