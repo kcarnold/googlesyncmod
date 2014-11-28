@@ -37,6 +37,7 @@ namespace GoContactSyncMod
                 postalAddress.Region = source.HomeAddressState;
                 postalAddress.Primary = destination.PostalAddresses.Count == 0;
                 postalAddress.Rel = ContactsRelationships.IsHome;
+                //postalAddress.Subregion = source.home
                 destination.PostalAddresses.Add(postalAddress);
             }
 

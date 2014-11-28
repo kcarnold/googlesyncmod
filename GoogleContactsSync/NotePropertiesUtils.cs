@@ -257,7 +257,8 @@ namespace GoContactSyncMod
             foreach (char c in System.IO.Path.GetInvalidFileNameChars())
             {
                 fileName = fileName.Replace(c, '_');
-                syncProfile = syncProfile.Replace(c, '_');
+                if (syncProfile != null)
+                    syncProfile = syncProfile.Replace(c, '_');
             }
             
 
