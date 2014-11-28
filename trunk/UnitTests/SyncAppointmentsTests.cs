@@ -123,7 +123,7 @@ namespace GoContactSyncMod.UnitTests
 
             sync.SyncOption = SyncOption.OutlookToGoogleOnly;
 
-            var googleAppointment = new Event();
+            var googleAppointment = Factory.NewEvent();
             sync.UpdateAppointment(outlookAppointment, ref googleAppointment);
 
             googleAppointment = null;
@@ -171,7 +171,7 @@ namespace GoContactSyncMod.UnitTests
 
             sync.SyncOption = SyncOption.OutlookToGoogleOnly;
 
-            var googleAppointment = new Event();
+            var googleAppointment = Factory.NewEvent();
             sync.UpdateAppointment(outlookAppointment, ref googleAppointment);
            
             googleAppointment = null;
@@ -216,7 +216,7 @@ namespace GoContactSyncMod.UnitTests
 
             outlookAppointment.Save();
 
-            var googleAppointment = new Event();
+            var googleAppointment = Factory.NewEvent();
             sync.UpdateAppointment(outlookAppointment, ref googleAppointment);
                       
             Assert.AreEqual(name, googleAppointment.Summary);
