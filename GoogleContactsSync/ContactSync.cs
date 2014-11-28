@@ -872,8 +872,13 @@ namespace GoContactSyncMod
             }
 
             try
-            {                
-                string rtf = Utilities.ConvertToText(slave.RTFBody as byte[]);
+            {
+                string rtf;
+                if (slave.Body == null)
+                    rtf = string.Empty;
+                else
+                    rtf = Utilities.ConvertToText(slave.RTFBody as byte[]);
+
                 if (string.IsNullOrEmpty(rtf) || rtf.Equals(slave.Body) && !rtf.Equals(master.Content)) //only update, if RTF text is same as plain text and is different between master and slave
                     slave.Body = master.Content;
                 else if (!rtf.Equals(master.Content))
