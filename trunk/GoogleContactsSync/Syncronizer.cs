@@ -1349,7 +1349,7 @@ namespace GoContactSyncMod
                         SkippedCount++;
                         Logger.Log("Skipped Deletion of Google appointment because SyncDeletion is switched off: " + name + ".", EventType.Information);
                     }
-                    else
+                    else if (match.GoogleAppointment.Status != "cancelled")
                     {
                         // outlook appointment was deleted, delete Google appointment
                         Google.Apis.Calendar.v3.Data.Event item = match.GoogleAppointment;
@@ -2179,8 +2179,8 @@ namespace GoContactSyncMod
             //check if this contact was not yet inserted on google.
             if (googleAppointment.Id == null)
             {
-                //insert contact.
-                Uri feedUri = new Uri("https://www.google.com/calendar/feeds/default/private/full");
+                ////insert contact.
+                //Uri feedUri = new Uri("https://www.google.com/calendar/feeds/default/private/full");
 
                 try
                 {
@@ -2189,12 +2189,7 @@ namespace GoContactSyncMod
                 }
                 catch (Exception ex)
                 {
-                    string responseString = "";
-                    if (ex is GDataRequestException)
-                        responseString = EscapeXml(((GDataRequestException)ex).ResponseString);
-                    //string xml = GetXml(googleAppointment);
-                    //string newEx = String.Format("Error saving NEW Google appointment: {0}. \n{1}\n{2}", responseString, ex.Message, xml);
-                    string newEx = String.Format("Error saving NEW Google appointment: {0}. \n{1}", responseString, ex.Message);
+                    string newEx = String.Format("Error saving NEW Google appointment: {0}. \n{1}", googleAppointment.Summary + " - " + GetTime(googleAppointment), ex.Message);
                     throw new ApplicationException(newEx, ex);
                 }
             }
@@ -2209,12 +2204,7 @@ namespace GoContactSyncMod
                 }
                 catch (Exception ex)
                 {
-                    string responseString = "";
-                    if (ex is GDataRequestException)
-                        responseString = EscapeXml(((GDataRequestException)ex).ResponseString);
-                    //string xml = GetXml(googleAppointment);
-                    //string newEx = String.Format("Error saving EXISTING Google appointment: {0}. \n{1}\n{2}", responseString, ex.Message, xml);
-                    string newEx = String.Format("Error saving EXISTING Google appointment: {0}. \n{1}", responseString, ex.Message);
+                    string newEx = String.Format("Error saving EXISTING Google appointment: {0}. \n{1}",  googleAppointment.Summary + " - " + GetTime(googleAppointment), ex.Message);
                     throw new ApplicationException(newEx, ex);
                 }
             }

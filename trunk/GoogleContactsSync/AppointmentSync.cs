@@ -74,25 +74,34 @@ namespace GoContactSyncMod
                 {
                     slave.Start.Date = master.Start.ToString("yyyy-MM-dd");
                     slave.End.Date = master.End.ToString("yyyy-MM-dd");
+                    slave.Start.DateTime = null;
+                    slave.End.DateTime = null;
                 } 
                 else 
                 {
+                    slave.Start.Date = null;
+                    slave.End.Date = null;
                     slave.Start.DateTime = master.Start;
                     slave.End.DateTime = master.End;
                  }
 
                 if (master.RecurrenceState == Outlook.OlRecurrenceState.olApptMaster)
-                {
-                    string timezone = Syncronizer.Timezone;
-                    if (string.IsNullOrEmpty(timezone))
-                        timezone = "Europe/Berlin"; //As timezone is mandatory for reccurring events, assume Europe/Berlin, if none was chosen
-                    slave.Start.TimeZone = Syncronizer.Timezone;
-                    slave.End.TimeZone = Syncronizer.Timezone;
+                {   //As Timezone is only mandatory for recurrence events
+                    //If user has selected a timezone in settings form, use this as timezone, otherwise assign the Outlook timezoen (not working always and sometimes not compatible
+                    if (!string.IsNullOrEmpty(Syncronizer.Timezone))
+                    {
+                        slave.Start.TimeZone = Syncronizer.Timezone;
+                        slave.End.TimeZone = Syncronizer.Timezone;
+                    }
+                    else
+                    {
+                        if (master.StartTimeZone != null && !string.IsNullOrEmpty(master.StartTimeZone.Name))
+                            slave.Start.TimeZone = master.StartTimeZone.Name;                       
+                        if (master.EndTimeZone != null && !string.IsNullOrEmpty(master.EndTimeZone.Name))
+                            slave.End.TimeZone = master.EndTimeZone.Name;
+                    }
                 }            
             //}
-            ////slave.StartInStartTimeZone = master.StartInStartTimeZone;
-            ////slave.StartTimeZone = master.StartTimeZone;
-            ////slave.StartUTC = master.StartUTC;
 
 
             #region participants
@@ -137,7 +146,6 @@ namespace GoContactSyncMod
             UpdateAppointmentReminders(master, slave);
 
             //slave.Resources = master.Resources;
-            //slave.RTFBody = master.RTFBody;
 
             UpdateRecurrence(master, slave);
 
@@ -197,7 +205,12 @@ namespace GoContactSyncMod
 
             try
             {
-                string rtf = Utilities.ConvertToText(slave.RTFBody as byte[]);
+                string rtf;
+                if (slave.Body == null)
+                    rtf = string.Empty;
+                else
+                    rtf = Utilities.ConvertToText(slave.RTFBody as byte[]);
+
                 if (string.IsNullOrEmpty(rtf) || rtf.Equals(slave.Body) && !rtf.Equals(master.Description))  //only update, if RTF text is same as plain text and is different between master and slave
                     slave.Body = master.Description;
                 else if (!rtf.Equals(master.Description))
@@ -345,10 +358,7 @@ namespace GoContactSyncMod
                         slave.ReminderSet = true;
                         slave.ReminderMinutesBeforeStart = reminder.Minutes.Value;
                     }
-                }            
-
-            
-            //slave.RTFBody = master.RTFBody; 
+                }                        
             
             UpdateRecurrence(master, slave);
 
@@ -384,29 +394,29 @@ namespace GoContactSyncMod
 
                 string slaveRecurrence = string.Empty;
 
-                string format = dateFormat;
-                string key = VALUE + "=" + DATE;
-                if (!master.AllDayEvent)
-                {
-                    format += "'T'"+timeFormat;
-                    key = VALUE + "=" + DATETIME;
-                }
+                //string format = dateFormat;
+                //string key = VALUE + "=" + DATE;
+                //if (!master.AllDayEvent)
+                //{
+                //    format += "'T'"+timeFormat;
+                //    key = VALUE + "=" + DATETIME;
+                //}
 
-                //For Debugging only:
-                //if (master.Subject == "IFX_CMF-Alignment - [Conference Number: 44246/ Password: 37757]")
-                //     throw new Exception ("Debugging: IFX_CMF-Alignment - [Conference Number: 44246/ Password: 37757]");
+                ////For Debugging only:
+                ////if (master.Subject == "IFX_CMF-Alignment - [Conference Number: 44246/ Password: 37757]")
+                ////     throw new Exception ("Debugging: IFX_CMF-Alignment - [Conference Number: 44246/ Password: 37757]");
 
-                //ToDo: Find a way how to handle timezones, per default GMT (UTC+0:00) is taken
-                //if (master.StartTimeZone.ID == "W. Europe Standard Time")                
-                //    key = TZID + "=" + "Europe/Berlin";
-                //else if (master.StartTimeZone.ID == "Singapore Standard Time")
-                //    key = TZID + "=" + "Asia/Singapore";
-                if (!string.IsNullOrEmpty(Syncronizer.Timezone))
-                    key = TZID + "=" + Syncronizer.Timezone;
+                ////ToDo: Find a way how to handle timezones, per default GMT (UTC+0:00) is taken
+                ////if (master.StartTimeZone.ID == "W. Europe Standard Time")                
+                ////    key = TZID + "=" + "Europe/Berlin";
+                ////else if (master.StartTimeZone.ID == "Singapore Standard Time")
+                ////    key = TZID + "=" + "Asia/Singapore";
+                //if (!string.IsNullOrEmpty(Syncronizer.Timezone))
+                //    key = TZID + "=" + Syncronizer.Timezone;
 
-                DateTime date = masterRecurrence.PatternStartDate.Date;
-                //DateTime time = new DateTime(date.Year, date.Month, date.Day, masterRecurrence.StartTime.Hour, masterRecurrence.StartTime.Minute, masterRecurrence.StartTime.Second);
-                DateTime time = new DateTime(date.Year, date.Month, date.Day, master.Start.Hour, master.Start.Minute, master.Start.Second);
+                //DateTime date = masterRecurrence.PatternStartDate.Date;
+                ////DateTime time = new DateTime(date.Year, date.Month, date.Day, masterRecurrence.StartTime.Hour, masterRecurrence.StartTime.Minute, masterRecurrence.StartTime.Second);
+                //DateTime time = new DateTime(date.Year, date.Month, date.Day, master.Start.Hour, master.Start.Minute, master.Start.Second);
                 
 
                 // The recurrence element contains various values that
@@ -778,8 +788,8 @@ namespace GoContactSyncMod
                         {
                             //slave.Times.Add(new Google.GData.Extensions.When(exception.AppointmentItem.Start, exception.AppointmentItem.Start, exception.AppointmentItem.AllDayEvent));
                             var googleRecurrenceException = Factory.NewEvent();
-                            if (slave.Sequence != null)
-                                googleRecurrenceException.Sequence = slave.Sequence + 1;
+                            //if (slave.Sequence != null)
+                            //    googleRecurrenceException.Sequence = slave.Sequence + 1;
                             googleRecurrenceException.RecurringEventId = slave.Id;
                             //googleRecurrenceException.OriginalEvent.Href = ??? 
                             googleRecurrenceException.OriginalStartTime = new EventDateTime();
@@ -794,7 +804,7 @@ namespace GoContactSyncMod
 
                             try
                             {
-                                sync.UpdateAppointment(exception.AppointmentItem, ref googleRecurrenceException);
+                                sync.UpdateAppointment(exception.AppointmentItem, ref googleRecurrenceException);                               
                                 //googleRecurrenceExceptions.Add(googleRecurrenceException);                            
 
                                 ret = true;
@@ -840,13 +850,14 @@ namespace GoContactSyncMod
                         {
                             //First create deleted occurrences, to delete it later again
                             var googleRecurrenceException = Factory.NewEvent();
-                            if (slave.Sequence != null)
-                                googleRecurrenceException.Sequence = slave.Sequence + 1;
+                            //if (slave.Sequence != null)
+                            //    googleRecurrenceException.Sequence = slave.Sequence + 1;
                             googleRecurrenceException.RecurringEventId = slave.Id;
                             //googleRecurrenceException.OriginalEvent.Href = ???
                             DateTime start = exception.OriginalDate.AddHours(master.Start.Hour).AddMinutes(master.Start.Minute).AddSeconds(master.Start.Second);
                             googleRecurrenceException.OriginalStartTime =  new EventDateTime();
                             googleRecurrenceException.OriginalStartTime.TimeZone = slave.Start.TimeZone;
+                            
                             if (master.AllDayEvent)
                             {
                                 googleRecurrenceException.OriginalStartTime.Date = start.ToString("yyyy-MM-dd");
@@ -864,7 +875,7 @@ namespace GoContactSyncMod
                             try
                             {
                                 googleRecurrenceException = sync.SaveGoogleAppointment(googleRecurrenceException);
-                                //googleRecurrenceExceptions.Add(googleRecurrenceException);                            
+                                //googleRecurrenceExceptions.Add(googleRecurrenceException);                                  
 
                                 //ToDo: check promptDeletion and syncDeletion options
                                 sync.EventRequest.Delete(sync.PrimaryCalendar.Id, googleRecurrenceException.Id).Execute();
