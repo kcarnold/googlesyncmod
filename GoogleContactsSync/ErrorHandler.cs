@@ -61,8 +61,10 @@ namespace GoContactSyncMod
             
             try
             {
-                Clipboard.SetText(message);
-            
+                Thread thread = new Thread(() => Clipboard.SetText(message));
+                thread.SetApartmentState(ApartmentState.STA); //Set the thread to STA
+                thread.Start();
+                thread.Join();            
             }
             catch (Exception e)
             {
