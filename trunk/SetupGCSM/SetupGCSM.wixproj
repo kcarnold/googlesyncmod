@@ -18,7 +18,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>$(ProjectDir)Packages\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>GoogleAPIDir=$(SolutionDir)GoogleAPI\;OutlookAPIDir=$(SolutionDir)OutlookAPI\</DefineConstants>
+    <DefineConstants>OutlookAPIDir=$(SolutionDir)OutlookAPI\</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>$(ProjectDir)Packages\</OutputPath>
