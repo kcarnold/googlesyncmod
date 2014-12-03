@@ -163,6 +163,7 @@ namespace GoContactSyncMod
 
                     this.contactFoldersComboBox.Visible = btSyncContacts.Checked;
                     this.noteFoldersComboBox.Visible = btSyncNotes.Checked;
+                    this.labelTimezone.Visible = this.labelMonthsPast.Visible = this.labelMonthsFuture.Visible = btSyncAppointments.Checked;
                     this.appointmentFoldersComboBox.Visible = this.futureMonthTextBox.Visible = this.pastMonthTextBox.Visible = this.appointmentTimezonesComboBox.Visible = btSyncAppointments.Checked;
                     this.cmbSyncProfile.Visible = true;
 
@@ -623,7 +624,16 @@ namespace GoContactSyncMod
                         SetLastSyncText("Sync failed.");
                         notifyIcon.Text = Application.ProductName + "\nSync failed";
 
-                        string messageText = "Neither notes nor contacts  nor appointments are switched on for syncing. Please choose at least one option. Sync aborted!";
+                        string messageText = "Neither notes nor contacts nor appointments are switched on for syncing. Please choose at least one option. Sync aborted!";
+                        Logger.Log(messageText, EventType.Error);
+                        ShowForm();
+                        ShowBalloonToolTip("Error", messageText, ToolTipIcon.Error, 5000, true);
+                        return;
+                    }
+
+                    if (sync.SyncAppointments && Syncronizer.Timezone == "")
+                    {
+                        string messageText = "Please set your timezone before syncing your appointments! Sync aborted!";
                         Logger.Log(messageText, EventType.Error);
                         ShowForm();
                         ShowBalloonToolTip("Error", messageText, ToolTipIcon.Error, 5000, true);
@@ -1344,7 +1354,8 @@ namespace GoContactSyncMod
                 btSyncContacts.Checked = true;
             }
             appointmentFoldersComboBox.Visible = btSyncAppointments.Checked;
-            pastMonthTextBox.Visible = futureMonthTextBox.Visible = appointmentTimezonesComboBox.Visible = btSyncAppointments.Checked;
+            this.labelTimezone.Visible = this.labelMonthsPast.Visible = this.labelMonthsFuture.Visible = this.btSyncAppointments.Checked;
+            this.pastMonthTextBox.Visible = this.futureMonthTextBox.Visible = this.appointmentTimezonesComboBox.Visible = btSyncAppointments.Checked;
         }
     	
         private void cmbSyncProfile_SelectedIndexChanged(object sender, EventArgs e)

@@ -55,6 +55,9 @@ namespace GoContactSyncMod
             this.nextSyncLabel = new System.Windows.Forms.Label();
             this.syncTimer = new System.Windows.Forms.Timer(this.components);
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.labelMonthsFuture = new System.Windows.Forms.Label();
+            this.labelMonthsPast = new System.Windows.Forms.Label();
+            this.labelTimezone = new System.Windows.Forms.Label();
             this.appointmentTimezonesComboBox = new System.Windows.Forms.ComboBox();
             this.futureMonthTextBox = new System.Windows.Forms.TextBox();
             this.pastMonthTextBox = new System.Windows.Forms.TextBox();
@@ -162,8 +165,9 @@ namespace GoContactSyncMod
             this.syncOptionBox.FormattingEnabled = true;
             this.syncOptionBox.IntegralHeight = false;
             this.syncOptionBox.Location = new System.Drawing.Point(7, 163);
+            this.syncOptionBox.MinimumSize = new System.Drawing.Size(170, 0);
             this.syncOptionBox.Name = "syncOptionBox";
-            this.syncOptionBox.Size = new System.Drawing.Size(583, 110);
+            this.syncOptionBox.Size = new System.Drawing.Size(180, 110);
             this.syncOptionBox.TabIndex = 4;
             this.toolTip.SetToolTip(this.syncOptionBox, resources.GetString("syncOptionBox.ToolTip"));
             this.syncOptionBox.SelectedIndexChanged += new System.EventHandler(this.syncOptionBox_SelectedIndexChanged);
@@ -313,7 +317,7 @@ namespace GoContactSyncMod
             this.reportSyncResultCheckBox.AutoSize = true;
             this.reportSyncResultCheckBox.Location = new System.Drawing.Point(14, 65);
             this.reportSyncResultCheckBox.Name = "reportSyncResultCheckBox";
-            this.reportSyncResultCheckBox.Size = new System.Drawing.Size(226, 17);
+            this.reportSyncResultCheckBox.Size = new System.Drawing.Size(225, 17);
             this.reportSyncResultCheckBox.TabIndex = 6;
             this.reportSyncResultCheckBox.Text = "Re&port Sync Result in System Tray";
             this.reportSyncResultCheckBox.UseVisualStyleBackColor = true;
@@ -348,6 +352,9 @@ namespace GoContactSyncMod
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.labelMonthsFuture);
+            this.groupBox2.Controls.Add(this.labelMonthsPast);
+            this.groupBox2.Controls.Add(this.labelTimezone);
             this.groupBox2.Controls.Add(this.appointmentTimezonesComboBox);
             this.groupBox2.Controls.Add(this.futureMonthTextBox);
             this.groupBox2.Controls.Add(this.pastMonthTextBox);
@@ -370,9 +377,38 @@ namespace GoContactSyncMod
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Sync Options";
             // 
+            // labelMonthsFuture
+            // 
+            this.labelMonthsFuture.AutoSize = true;
+            this.labelMonthsFuture.Location = new System.Drawing.Point(243, 211);
+            this.labelMonthsFuture.Name = "labelMonthsFuture";
+            this.labelMonthsFuture.Size = new System.Drawing.Size(102, 13);
+            this.labelMonthsFuture.TabIndex = 16;
+            this.labelMonthsFuture.Text = "Months (Future):";
+            this.toolTip.SetToolTip(this.labelMonthsFuture, "How many months into the future (0 if all)");
+            // 
+            // labelMonthsPast
+            // 
+            this.labelMonthsPast.AutoSize = true;
+            this.labelMonthsPast.Location = new System.Drawing.Point(243, 187);
+            this.labelMonthsPast.Name = "labelMonthsPast";
+            this.labelMonthsPast.Size = new System.Drawing.Size(90, 13);
+            this.labelMonthsPast.TabIndex = 15;
+            this.labelMonthsPast.Text = "Months (Past):";
+            this.toolTip.SetToolTip(this.labelMonthsPast, "How many months into the past (0 if all)");
+            // 
+            // labelTimezone
+            // 
+            this.labelTimezone.AutoSize = true;
+            this.labelTimezone.Location = new System.Drawing.Point(243, 163);
+            this.labelTimezone.Name = "labelTimezone";
+            this.labelTimezone.Size = new System.Drawing.Size(67, 13);
+            this.labelTimezone.TabIndex = 14;
+            this.labelTimezone.Text = "Timezone:";
+            // 
             // appointmentTimezonesComboBox
             // 
-            this.appointmentTimezonesComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.appointmentTimezonesComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.appointmentTimezonesComboBox.FormattingEnabled = true;
             this.appointmentTimezonesComboBox.Items.AddRange(new object[] {
             "Africa/Abidjan",
@@ -675,7 +711,7 @@ namespace GoContactSyncMod
             "Pacific/Truk",
             "Pacific/Wake",
             "Pacific/Wallis"});
-            this.appointmentTimezonesComboBox.Location = new System.Drawing.Point(393, 119);
+            this.appointmentTimezonesComboBox.Location = new System.Drawing.Point(351, 160);
             this.appointmentTimezonesComboBox.Name = "appointmentTimezonesComboBox";
             this.appointmentTimezonesComboBox.Size = new System.Drawing.Size(121, 21);
             this.appointmentTimezonesComboBox.Sorted = true;
@@ -685,8 +721,7 @@ namespace GoContactSyncMod
             // 
             // futureMonthTextBox
             // 
-            this.futureMonthTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.futureMonthTextBox.Location = new System.Drawing.Point(556, 120);
+            this.futureMonthTextBox.Location = new System.Drawing.Point(351, 208);
             this.futureMonthTextBox.Name = "futureMonthTextBox";
             this.futureMonthTextBox.Size = new System.Drawing.Size(33, 21);
             this.futureMonthTextBox.TabIndex = 12;
@@ -696,8 +731,7 @@ namespace GoContactSyncMod
             // 
             // pastMonthTextBox
             // 
-            this.pastMonthTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.pastMonthTextBox.Location = new System.Drawing.Point(520, 120);
+            this.pastMonthTextBox.Location = new System.Drawing.Point(351, 184);
             this.pastMonthTextBox.Name = "pastMonthTextBox";
             this.pastMonthTextBox.Size = new System.Drawing.Size(33, 21);
             this.pastMonthTextBox.TabIndex = 11;
@@ -708,7 +742,7 @@ namespace GoContactSyncMod
             // btSyncAppointments
             // 
             this.btSyncAppointments.AutoSize = true;
-            this.btSyncAppointments.Location = new System.Drawing.Point(453, 46);
+            this.btSyncAppointments.Location = new System.Drawing.Point(10, 119);
             this.btSyncAppointments.Name = "btSyncAppointments";
             this.btSyncAppointments.Size = new System.Drawing.Size(136, 17);
             this.btSyncAppointments.TabIndex = 10;
@@ -723,9 +757,9 @@ namespace GoContactSyncMod
             | System.Windows.Forms.AnchorStyles.Right)));
             this.appointmentFoldersComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.appointmentFoldersComboBox.FormattingEnabled = true;
-            this.appointmentFoldersComboBox.Location = new System.Drawing.Point(6, 119);
+            this.appointmentFoldersComboBox.Location = new System.Drawing.Point(161, 119);
             this.appointmentFoldersComboBox.Name = "appointmentFoldersComboBox";
-            this.appointmentFoldersComboBox.Size = new System.Drawing.Size(381, 21);
+            this.appointmentFoldersComboBox.Size = new System.Drawing.Size(428, 21);
             this.appointmentFoldersComboBox.TabIndex = 9;
             this.toolTip.SetToolTip(this.appointmentFoldersComboBox, "Select the Outlook Appointments folder you want to sync");
             this.appointmentFoldersComboBox.SelectedIndexChanged += new System.EventHandler(this.appointmentFoldersComboBox_SelectedIndexChanged);
@@ -733,7 +767,7 @@ namespace GoContactSyncMod
             // btSyncNotes
             // 
             this.btSyncNotes.AutoSize = true;
-            this.btSyncNotes.Location = new System.Drawing.Point(357, 46);
+            this.btSyncNotes.Location = new System.Drawing.Point(10, 94);
             this.btSyncNotes.Name = "btSyncNotes";
             this.btSyncNotes.Size = new System.Drawing.Size(90, 17);
             this.btSyncNotes.TabIndex = 5;
@@ -747,7 +781,7 @@ namespace GoContactSyncMod
             this.btSyncContacts.AutoSize = true;
             this.btSyncContacts.Checked = true;
             this.btSyncContacts.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.btSyncContacts.Location = new System.Drawing.Point(243, 46);
+            this.btSyncContacts.Location = new System.Drawing.Point(10, 69);
             this.btSyncContacts.Name = "btSyncContacts";
             this.btSyncContacts.Size = new System.Drawing.Size(108, 17);
             this.btSyncContacts.TabIndex = 6;
@@ -761,7 +795,7 @@ namespace GoContactSyncMod
             this.btPromptDelete.AutoSize = true;
             this.btPromptDelete.Checked = true;
             this.btPromptDelete.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.btPromptDelete.Location = new System.Drawing.Point(119, 46);
+            this.btPromptDelete.Location = new System.Drawing.Point(121, 44);
             this.btPromptDelete.Name = "btPromptDelete";
             this.btPromptDelete.Size = new System.Drawing.Size(118, 17);
             this.btPromptDelete.TabIndex = 8;
@@ -775,9 +809,9 @@ namespace GoContactSyncMod
             | System.Windows.Forms.AnchorStyles.Right)));
             this.noteFoldersComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.noteFoldersComboBox.FormattingEnabled = true;
-            this.noteFoldersComboBox.Location = new System.Drawing.Point(6, 92);
+            this.noteFoldersComboBox.Location = new System.Drawing.Point(161, 92);
             this.noteFoldersComboBox.Name = "noteFoldersComboBox";
-            this.noteFoldersComboBox.Size = new System.Drawing.Size(583, 21);
+            this.noteFoldersComboBox.Size = new System.Drawing.Size(428, 21);
             this.noteFoldersComboBox.TabIndex = 7;
             this.toolTip.SetToolTip(this.noteFoldersComboBox, "Select the Outlook Notes folder you want to sync");
             this.noteFoldersComboBox.SelectedIndexChanged += new System.EventHandler(this.noteFoldersComboBox_SelectedIndexChanged);
@@ -797,7 +831,7 @@ namespace GoContactSyncMod
             this.btSyncDelete.AutoSize = true;
             this.btSyncDelete.Checked = true;
             this.btSyncDelete.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.btSyncDelete.Location = new System.Drawing.Point(8, 46);
+            this.btSyncDelete.Location = new System.Drawing.Point(10, 44);
             this.btSyncDelete.Name = "btSyncDelete";
             this.btSyncDelete.Size = new System.Drawing.Size(105, 17);
             this.btSyncDelete.TabIndex = 2;
@@ -814,9 +848,9 @@ namespace GoContactSyncMod
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cmbSyncProfile.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbSyncProfile.FormattingEnabled = true;
-            this.cmbSyncProfile.Location = new System.Drawing.Point(100, 19);
+            this.cmbSyncProfile.Location = new System.Drawing.Point(161, 19);
             this.cmbSyncProfile.Name = "cmbSyncProfile";
-            this.cmbSyncProfile.Size = new System.Drawing.Size(489, 21);
+            this.cmbSyncProfile.Size = new System.Drawing.Size(428, 21);
             this.cmbSyncProfile.TabIndex = 1;
             this.toolTip.SetToolTip(this.cmbSyncProfile, "This is a profile name of your choice.\r\nIt must be unique in each computer\r\nand a" +
         "ccount you intend to sync with\r\nyour Google Mail account.");
@@ -828,9 +862,9 @@ namespace GoContactSyncMod
             | System.Windows.Forms.AnchorStyles.Right)));
             this.contactFoldersComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.contactFoldersComboBox.FormattingEnabled = true;
-            this.contactFoldersComboBox.Location = new System.Drawing.Point(6, 65);
+            this.contactFoldersComboBox.Location = new System.Drawing.Point(161, 65);
             this.contactFoldersComboBox.Name = "contactFoldersComboBox";
-            this.contactFoldersComboBox.Size = new System.Drawing.Size(583, 21);
+            this.contactFoldersComboBox.Size = new System.Drawing.Size(428, 21);
             this.contactFoldersComboBox.TabIndex = 6;
             this.toolTip.SetToolTip(this.contactFoldersComboBox, "Select the Outlook Contacts folder you want to sync");
             this.contactFoldersComboBox.SelectedIndexChanged += new System.EventHandler(this.contacFoldersComboBox_SelectedIndexChanged);
@@ -973,6 +1007,7 @@ namespace GoContactSyncMod
             this.settingsGroupBox.Controls.Add(this.groupBox2);
             this.settingsGroupBox.Dock = System.Windows.Forms.DockStyle.Left;
             this.settingsGroupBox.Location = new System.Drawing.Point(0, 0);
+            this.settingsGroupBox.MinimumSize = new System.Drawing.Size(500, 0);
             this.settingsGroupBox.Name = "settingsGroupBox";
             this.settingsGroupBox.Size = new System.Drawing.Size(609, 538);
             this.settingsGroupBox.TabIndex = 0;
@@ -1154,6 +1189,9 @@ namespace GoContactSyncMod
         private System.Windows.Forms.TextBox futureMonthTextBox;
         private System.Windows.Forms.TextBox pastMonthTextBox;
         private System.Windows.Forms.ComboBox appointmentTimezonesComboBox;
+        private System.Windows.Forms.Label labelMonthsFuture;
+        private System.Windows.Forms.Label labelMonthsPast;
+        private System.Windows.Forms.Label labelTimezone;
 
     }
 }
