@@ -29,6 +29,12 @@ namespace GoContactSyncMod
         // TODO: Write a nice error dialog, that maybe supports directly E-Mail sending as bugreport
         public static void Handle(Exception ex)
         {
+            //save user culture
+            CultureInfo oldCI = Thread.CurrentThread.CurrentCulture;
+            //set culture to english for exception messages
+            Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture ("en-US");
+            Thread.CurrentThread.CurrentUICulture=new CultureInfo("en-US");
+
             Logger.Log(ex.Message, EventType.Error);
             //AppendSyncConsoleText(Logger.GetText());
             Logger.Log("Sync failed.", EventType.Error);
@@ -72,6 +78,10 @@ namespace GoContactSyncMod
             }
             //Logger.Log(message, EventType.Debug);
             MessageBox.Show(message, Application.ProductName);
+
+            //set user culture
+            Thread.CurrentThread.CurrentCulture = oldCI;
+            Thread.CurrentThread.CurrentUICulture = oldCI;
         }
 
         private static string AssemblyVersion
