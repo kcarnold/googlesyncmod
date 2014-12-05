@@ -250,7 +250,7 @@ namespace GoContactSyncMod
             0,
             0});
             this.autoSyncInterval.Minimum = new decimal(new int[] {
-            1,
+            5,
             0,
             0,
             0});
