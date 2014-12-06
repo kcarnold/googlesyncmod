@@ -111,12 +111,16 @@ namespace GoContactSyncMod
             ContactsMatcher.NotificationReceived += new ContactsMatcher.NotificationHandler(OnNotificationReceived);
             NotesMatcher.NotificationReceived += new NotesMatcher.NotificationHandler(OnNotificationReceived);
             AppointmentsMatcher.NotificationReceived += new AppointmentsMatcher.NotificationHandler(OnNotificationReceived);
-			PopulateSyncOptionBox();            
+			PopulateSyncOptionBox();
 
+            //temporary remove the listener to avoid to load the settings twice, because it is set from SettingsForm.Designer.cs
+            this.cmbSyncProfile.SelectedIndexChanged -= new System.EventHandler(this.cmbSyncProfile_SelectedIndexChanged);
             if (fillSyncProfileItems()) 
                 LoadSettings(cmbSyncProfile.Text);
             else 
                 LoadSettings(null);
+            //enable the listener
+            this.cmbSyncProfile.SelectedIndexChanged += new System.EventHandler(this.cmbSyncProfile_SelectedIndexChanged);
 
             TimerSwitch(true);
 			lastSyncLabel.Text = "Not synced";
@@ -346,6 +350,7 @@ namespace GoContactSyncMod
 
         private void LoadSettings(string _profile)
         {
+            Logger.Log("Loading settings from registry...",EventType.Information);
             RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey  + (_profile != null ? ('\\' + _profile) : "")  );
 
             if (regKeyAppRoot.GetValue("SyncOption") != null)
@@ -360,6 +365,9 @@ namespace GoContactSyncMod
                 if (regKeyAppRoot.GetValue("Password") != null)
                     Password.Text = Encryption.DecryptPassword(UserName.Text, regKeyAppRoot.GetValue("Password") as string);
             }
+
+            //temporary remove listener
+            this.autoSyncCheckBox.CheckedChanged -= new System.EventHandler(this.autoSyncCheckBox_CheckedChanged);
             if (regKeyAppRoot.GetValue("AutoSync") != null)
                 autoSyncCheckBox.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("AutoSync"));
             if (regKeyAppRoot.GetValue("AutoSyncInterval") != null)
@@ -386,14 +394,21 @@ namespace GoContactSyncMod
                 btSyncContacts.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("SyncContacts"));
             if (regKeyAppRoot.GetValue("UseFileAs") != null)
                 chkUseFileAs.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("UseFileAs"));
-
+            if (regKeyAppRoot.GetValue("LastSync") != null)
+            {
+                lastSync = new DateTime(Convert.ToInt64(regKeyAppRoot.GetValue("LastSync")));
+                SetLastSyncText(lastSync.ToString());
+            }
             LoadSettingsFolders(_profile);
 
-            autoSyncCheckBox_CheckedChanged(null, null);
+            //autoSyncCheckBox_CheckedChanged(null, null);
             btSyncContacts_CheckedChanged(null, null);
             btSyncNotes_CheckedChanged(null, null);
 
             _proxy.LoadSettings(_profile);
+
+            //enable temporary disabled listener
+            this.autoSyncCheckBox.CheckedChanged += new System.EventHandler(this.autoSyncCheckBox_CheckedChanged);
         }
 
         private void LoadSettingsFolders(string _profile)
@@ -441,6 +456,7 @@ namespace GoContactSyncMod
                 regKeyAppRoot.SetValue("SyncNotes", btSyncNotes.Checked);
                 regKeyAppRoot.SetValue("SyncContacts", btSyncContacts.Checked);
                 regKeyAppRoot.SetValue("UseFileAs", chkUseFileAs.Checked);
+                regKeyAppRoot.SetValue("LastSync", lastSync.Ticks);
 
                 //if (btSyncContacts.Checked && contactFoldersComboBox.SelectedValue != null)
                 //    regKeyAppRoot.SetValue("SyncContactsFolder", contactFoldersComboBox.SelectedValue.ToString());
@@ -513,7 +529,23 @@ namespace GoContactSyncMod
 
 		private void syncButton_Click(object sender, EventArgs e)
 		{
-			Sync();
+            TimeSpan syncTime = DateTime.Now - lastSync;
+            TimeSpan fiveMinLimit = new TimeSpan(0, 5, 0);
+#if debug
+            Logger.Log("Debug build, skipping time tolerance...", EventType.Debug);
+            Sync();
+#else
+            if ((syncTime > fiveMinLimit))
+            {
+                Sync();
+            }
+            else
+            {
+                TimeSpan tolerance = ((lastSync + fiveMinLimit) - DateTime.Now);
+                Logger.Log("There is a 5 minutes time tolerance between 2 syncs! You have to wait for another " +
+                tolerance.Minutes.ToString()+":"+ tolerance.Seconds.ToString() + " minutes!", EventType.Information);
+            }
+#endif		    
 		}
 
 		private void Sync()
@@ -625,15 +657,15 @@ namespace GoContactSyncMod
                         notifyIcon.Text = Application.ProductName + "\nSync failed";
 
                         string messageText = "Neither notes nor contacts nor appointments are switched on for syncing. Please choose at least one option. Sync aborted!";
-                        Logger.Log(messageText, EventType.Error);
-                        ShowForm();
-                        ShowBalloonToolTip("Error", messageText, ToolTipIcon.Error, 5000, true);
-                        return;
-                    }
+                    //    Logger.Log(messageText, EventType.Error);
+                    //    ShowForm();
+                    //    ShowBalloonToolTip("Error", messageText, ToolTipIcon.Error, 5000, true);
+                    //    return;
+                    //}
 
-                    if (sync.SyncAppointments && Syncronizer.Timezone == "")
-                    {
-                        string messageText = "Please set your timezone before syncing your appointments! Sync aborted!";
+                    //if (sync.SyncAppointments && Syncronizer.Timezone == "")
+                    //{
+                    //    string messageText = "Please set your timezone before syncing your appointments! Sync aborted!";
                         Logger.Log(messageText, EventType.Error);
                         ShowForm();
                         ShowBalloonToolTip("Error", messageText, ToolTipIcon.Error, 5000, true);
@@ -643,7 +675,7 @@ namespace GoContactSyncMod
 
                     sync.LoginToGoogle(UserName.Text, Password.Text);
                     sync.LoginToOutlook();
-
+                    
                     sync.Sync();
 
                     lastSync = DateTime.Now;
@@ -731,7 +763,6 @@ namespace GoContactSyncMod
                 if (won)
                 {
                     Interlocked.Exchange(ref executing, 0);
-
                     lastSync = DateTime.Now;
                     TimerSwitch(true);
                     SetFormEnabled(true);
@@ -827,6 +858,7 @@ namespace GoContactSyncMod
                 lastSyncLabel.Text = text;
             }
 		}
+
 		public void SetSyncConsoleText(string text)
 		{
 			if (this.InvokeRequired)
@@ -1064,7 +1096,7 @@ namespace GoContactSyncMod
 				ErrorHandler.Handle(ex);
 			}
 			finally
-			{                
+			{
                 lastSync = DateTime.Now;
                 TimerSwitch(true);
 				SetFormEnabled(true);
@@ -1144,11 +1176,6 @@ namespace GoContactSyncMod
                 sync.LoadNotes();
                 sync.ResetNoteMatches();
             }
-
-            
-
-
-
             lastSync = DateTime.Now;
             SetLastSyncText("Matches reset at " + lastSync.ToString());
             Logger.Log("Matches reset.", EventType.Information);
