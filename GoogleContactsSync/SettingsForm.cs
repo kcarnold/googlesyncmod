@@ -362,8 +362,12 @@ namespace GoContactSyncMod
             if (regKeyAppRoot.GetValue("Username") != null)
             {
                 UserName.Text = regKeyAppRoot.GetValue("Username") as string;
-                if (regKeyAppRoot.GetValue("Password") != null)
-                    Password.Text = Encryption.DecryptPassword(UserName.Text, regKeyAppRoot.GetValue("Password") as string);
+                //if (regKeyAppRoot.GetValue("Password") != null)
+                //    Password.Text = Encryption.DecryptPassword(UserName.Text, regKeyAppRoot.GetValue("Password") as string);
+            }
+            if (regKeyAppRoot.GetValue("Password") != null)
+            {
+                regKeyAppRoot.DeleteValue("Password");
             }
 
             //temporary remove listener
@@ -495,12 +499,12 @@ namespace GoContactSyncMod
 			get
 			{
 				bool userNameIsValid = Regex.IsMatch(UserName.Text, @"^(?'id'[a-z0-9\'\%\._\+\-]+)@(?'domain'[a-z0-9\'\%\._\+\-]+)\.(?'ext'[a-z]{2,6})$", RegexOptions.IgnoreCase);
-				bool passwordIsValid = !string.IsNullOrEmpty(Password.Text.Trim());
+				//bool passwordIsValid = !string.IsNullOrEmpty(Password.Text.Trim());
                 bool syncProfileIsValid = (cmbSyncProfile.SelectedIndex > 0 && cmbSyncProfile.SelectedIndex < cmbSyncProfile.Items.Count-1);
                
 
 				setBgColor(UserName, userNameIsValid);
-				setBgColor(Password, passwordIsValid);
+				//setBgColor(Password, passwordIsValid);
                 setBgColor(cmbSyncProfile, syncProfileIsValid);
                
 
@@ -509,13 +513,15 @@ namespace GoContactSyncMod
                     toolTip.SetToolTip(UserName, "User is of wrong format, should be full Google Mail address, e.g. user@googelmail.com");
                 else
                     toolTip.SetToolTip(UserName, String.Empty);
-                if (!passwordIsValid)
-                    toolTip.SetToolTip(Password, "Password is empty, please provide your Google Mail password");
-                else
-                    toolTip.SetToolTip(Password, String.Empty);               
+                //if (!passwordIsValid)
+                //    toolTip.SetToolTip(Password, "Password is empty, please provide your Google Mail password");
+                //else
+                //    toolTip.SetToolTip(Password, String.Empty);               
                                              
 
-                return userNameIsValid && passwordIsValid && syncProfileIsValid;
+                return userNameIsValid && 
+                       //passwordIsValid && 
+                       syncProfileIsValid;
 			}
 		}
 
