@@ -23,29 +23,29 @@ using Google.Apis.Calendar.v3.Data;
 
 namespace GoContactSyncMod
 {
-	internal class Syncronizer
-	{
-		public const int OutlookUserPropertyMaxLength = 32;
-		public const string OutlookUserPropertyTemplate = "g/con/{0}/";
+    internal class Syncronizer
+    {
+        public const int OutlookUserPropertyMaxLength = 32;
+        public const string OutlookUserPropertyTemplate = "g/con/{0}/";
         internal const string myContactsGroup = "System Group: My Contacts";
-		private static object _syncRoot = new object();
+        private static object _syncRoot = new object();
         internal static string UserName;
 
         public int TotalCount { get; private set; }
-		public int SyncedCount { get; private set; }
-        public int DeletedCount { get; private set; }		
-        public int ErrorCount { get; private set; }		
-        public int SkippedCount { get; set; }		
-        public int SkippedCountNotMatches { get; set; }		
+        public int SyncedCount { get; private set; }
+        public int DeletedCount { get; private set; }
+        public int ErrorCount { get; private set; }
+        public int SkippedCount { get; set; }
+        public int SkippedCountNotMatches { get; set; }
         public ConflictResolution ConflictResolution { get; set; }
         public DeleteResolution DeleteGoogleResolution { get; set; }
         public DeleteResolution DeleteOutlookResolution { get; set; }
 
 
-		public delegate void DuplicatesFoundHandler(string title, string message);
-		public delegate void ErrorNotificationHandler(string title, Exception ex, EventType eventType);
-		public event DuplicatesFoundHandler DuplicatesFound;
-		public event ErrorNotificationHandler ErrorEncountered;
+        public delegate void DuplicatesFoundHandler(string title, string message);
+        public delegate void ErrorNotificationHandler(string title, Exception ex, EventType eventType);
+        public event DuplicatesFoundHandler DuplicatesFound;
+        public event ErrorNotificationHandler ErrorEncountered;
 
         public ContactsRequest ContactsRequest { get; private set; }
 
@@ -54,13 +54,14 @@ namespace GoContactSyncMod
         public EventsResource EventRequest { get; private set; }
         public CalendarListEntry PrimaryCalendar;
 
-		private static Outlook.NameSpace _outlookNamespace;
+        private static Outlook.NameSpace _outlookNamespace;
         public static Outlook.NameSpace OutlookNameSpace
         {
-            get {
+            get
+            {
                 //Just create outlook instance again, in case the namespace is null
                 CreateOutlookInstance();
-                return _outlookNamespace; 
+                return _outlookNamespace;
             }
         }
 
@@ -69,7 +70,7 @@ namespace GoContactSyncMod
         public Outlook.Items OutlookNotes { get; private set; }
         public Outlook.Items OutlookAppointments { get; private set; }
         public Collection<ContactMatch> OutlookContactDuplicates { get; set; }
-        public Collection<ContactMatch> GoogleContactDuplicates { get; set; }        
+        public Collection<ContactMatch> GoogleContactDuplicates { get; set; }
         public Collection<Contact> GoogleContacts { get; private set; }
         public Collection<Document> GoogleNotes { get; private set; }
         public Collection<Google.Apis.Calendar.v3.Data.Event> GoogleAppointments { get; private set; }
@@ -78,10 +79,10 @@ namespace GoContactSyncMod
         internal Document googleNotesFolder;
         public string OutlookPropertyPrefix { get; private set; }
 
-		public string OutlookPropertyNameId
-		{
+        public string OutlookPropertyNameId
+        {
             get { return OutlookPropertyPrefix + "id"; }
-		}
+        }
 
         /*public string OutlookPropertyNameUpdated
         {
@@ -89,16 +90,16 @@ namespace GoContactSyncMod
         }*/
 
         public string OutlookPropertyNameSynced
-		{
-			get { return OutlookPropertyPrefix + "up"; }
-		}
+        {
+            get { return OutlookPropertyPrefix + "up"; }
+        }
 
-		private SyncOption _syncOption = SyncOption.MergeOutlookWins;
-		public SyncOption SyncOption
-		{
-			get { return _syncOption; }
-			set { _syncOption = value; }
-		}
+        private SyncOption _syncOption = SyncOption.MergeOutlookWins;
+        public SyncOption SyncOption
+        {
+            get { return _syncOption; }
+            set { _syncOption = value; }
+        }
 
         public string SyncProfile { get; set; }
         public static string SyncContactsFolder { get; set; }
@@ -108,12 +109,12 @@ namespace GoContactSyncMod
         public static ushort MonthsInFuture { get; set; }
         public static string Timezone { get; set; }
 
-		//private ConflictResolution? _conflictResolution;
-		//public ConflictResolution? CResolution
-		//{
-		//    get { return _conflictResolution; }
-		//    set { _conflictResolution = value; }
-		//}
+        //private ConflictResolution? _conflictResolution;
+        //public ConflictResolution? CResolution
+        //{
+        //    get { return _conflictResolution; }
+        //    set { _conflictResolution = value; }
+        //}
 
         public List<ContactMatch> Contacts { get; private set; }
 
@@ -130,9 +131,9 @@ namespace GoContactSyncMod
         //    }
         //}
 
-		/// <summary>
-		/// If true deletes contacts if synced before, but one is missing. Otherwise contacts will bever be automatically deleted
-		/// </summary>
+        /// <summary>
+        /// If true deletes contacts if synced before, but one is missing. Otherwise contacts will bever be automatically deleted
+        /// </summary>
         public bool SyncDelete { get; set; }
         public bool PromptDelete { get; set; }
         /// <summary>
@@ -155,38 +156,76 @@ namespace GoContactSyncMod
         /// </summary>
         public bool UseFileAs { get; set; }
 
-		public void LoginToGoogle(string username, string password)
-		{
-			Logger.Log("Connecting to Google...", EventType.Information);
-            if (ContactsRequest == null && SyncContacts || DocumentsRequest==null && SyncNotes || EventRequest==null & SyncAppointments)
+        public void LoginToGoogle(string username, string password)
+        {
+            Logger.Log("Connecting to Google...", EventType.Information);
+            if (ContactsRequest == null && SyncContacts || DocumentsRequest == null && SyncNotes || EventRequest == null & SyncAppointments)
             {
-                RequestSettings rs = new RequestSettings("GoogleContactSyncMod", username, password); 
-                if (SyncContacts)
-                    ContactsRequest = new ContactsRequest(rs);
-                if (SyncNotes)
-                {
-                    DocumentsRequest = new DocumentsRequest(rs);
-                    //Instantiate an Authenticator object according to your authentication, to use ResumableUploader
-                    authenticator = new ClientLoginAuthenticator(Application.ProductName, DocumentsRequest.Service.ServiceIdentifier, username, password);
-                }
-                if (SyncAppointments)
-                {
-                    var scopes = new List<string>();
-                    scopes.Add(CalendarService.Scope.Calendar);
+                //OAuth2 for all services
+                List<String> scopes = new List<string>();
 
-                    UserCredential credential;
-                    byte[] jsonSecrets = Properties.Resources.client_secrets;
-                    //using (var stream = new FileStream(Application.StartupPath + "\\client_secrets.json", FileMode.Open, FileAccess.Read))
-                    using (var stream = new MemoryStream(jsonSecrets))
+                //Contacts-Scope
+                scopes.Add("https://www.google.com/m8/feeds");
+                //Notes-Scope
+                scopes.Add("https://docs.google.com/feeds/");
+                //Calendar-Scope
+                scopes.Add("https://www.googleapis.com/auth/calendar");
+
+                //take user credentials
+                UserCredential credential;
+
+                //load client secret from ressources
+                byte[] jsonSecrets = Properties.Resources.client_secrets;
+
+                //RequestSettings rs = new RequestSettings("GoogleContactSyncMod", username, password);
+
+                //using (var stream = new FileStream(Application.StartupPath + "\\client_secrets.json", FileMode.Open, FileAccess.Read))
+                using (var stream = new MemoryStream(jsonSecrets))
+                {
+                    FileDataStore fDS = new FileDataStore(Logger.Folder, true);
+                    GoogleClientSecrets clientSecrets = GoogleClientSecrets.Load(stream);
+
+                    credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+                                    clientSecrets.Secrets,
+                                    scopes.ToArray(),
+                                    username,
+                                    CancellationToken.None,
+                                    fDS).
+                                    Result;
+
+                    var initializer = new Google.Apis.Services.BaseClientService.Initializer();
+                    initializer.HttpClientInitializer = credential;
+
+                    OAuth2Parameters parameters = new OAuth2Parameters
                     {
-                        FileDataStore fDS = new FileDataStore(Logger.Folder, true);
-                        credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                        GoogleClientSecrets.Load(stream).Secrets, scopes, username, CancellationToken.None,
-                        fDS).Result;
+                        ClientId = clientSecrets.Secrets.ClientId,
+                        ClientSecret = clientSecrets.Secrets.ClientSecret,
+                        // Note: AccessToken is valid only for 60 minutes
+                        AccessToken = credential.Token.AccessToken,
+                        RefreshToken = credential.Token.RefreshToken
+                    };
 
-                        var initializer = new Google.Apis.Services.BaseClientService.Initializer();
-                        initializer.HttpClientInitializer = credential;
+                    RequestSettings settings = new RequestSettings(
+                        "GO Contact Sync Mod", parameters);
+
+                    if (SyncContacts)
+                    {
+                        //ContactsRequest = new ContactsRequest(rs);
+                        ContactsRequest = new ContactsRequest(settings);
+                    }
+
+                    if (SyncNotes)
+                    {
+                        //DocumentsRequest = new DocumentsRequest(rs);
+                        DocumentsRequest = new DocumentsRequest(settings);
+                        //Instantiate an Authenticator object according to your authentication, to use ResumableUploader
+                        //authenticator = new ClientLoginAuthenticator(Application.ProductName, DocumentsRequest.Service.ServiceIdentifier, username, password);
+                    }
+                    if (SyncAppointments)
+                    {
+                        //ContactsRequest = new Google.Contacts.ContactsRequest()
                         var CalendarRequest = new CalendarService(initializer);
+
                         //CalendarRequest.setUserCredentials(username, password);
 
                         var list = CalendarRequest.CalendarList.List().Execute().Items;
@@ -202,7 +241,6 @@ namespace GoContactSyncMod
                         if (PrimaryCalendar == null)
                             throw new Exception("Primary Calendar not found");
 
-
                         //EventQuery query = new EventQuery("https://www.google.com/calendar/feeds/default/private/full");
                         //ToDo: Upgrade to v3, EventQuery query = new EventQuery("https://www.googleapis.com/calendar/v3/calendars/default/events");
                         EventRequest = CalendarRequest.Events;
@@ -212,56 +250,58 @@ namespace GoContactSyncMod
 
             Syncronizer.UserName = username;
 
-			int maxUserIdLength = Syncronizer.OutlookUserPropertyMaxLength - (Syncronizer.OutlookUserPropertyTemplate.Length - 3 + 2);//-3 = to remove {0}, +2 = to add length for "id" or "up"
-			string userId = username;
-			if (userId.Length > maxUserIdLength)
-				userId = userId.GetHashCode().ToString("X"); //if a user id would overflow UserProperty name, then use that user id hash code as id.
+            int maxUserIdLength = Syncronizer.OutlookUserPropertyMaxLength - (Syncronizer.OutlookUserPropertyTemplate.Length - 3 + 2);//-3 = to remove {0}, +2 = to add length for "id" or "up"
+            string userId = username;
+            if (userId.Length > maxUserIdLength)
+                userId = userId.GetHashCode().ToString("X"); //if a user id would overflow UserProperty name, then use that user id hash code as id.
             //Remove characters not allowed for Outlook user property names: []_#
             userId = userId.Replace("#", "").Replace("[", "").Replace("]", "").Replace("_", "");
 
-			OutlookPropertyPrefix = string.Format(Syncronizer.OutlookUserPropertyTemplate, userId);
-		}
+            OutlookPropertyPrefix = string.Format(Syncronizer.OutlookUserPropertyTemplate, userId);
+        }
 
-		public void LoginToOutlook()
-		{
-			Logger.Log("Connecting to Outlook...", EventType.Information);
 
-			try
-			{
+
+        public void LoginToOutlook()
+        {
+            Logger.Log("Connecting to Outlook...", EventType.Information);
+
+            try
+            {
                 CreateOutlookInstance();
-			}
-			catch (Exception e)
-			{
+            }
+            catch (Exception e)
+            {
 
-                if (!(e is COMException) && !(e is System.InvalidCastException)) 
+                if (!(e is COMException) && !(e is System.InvalidCastException))
                     throw;
 
-				try
-				{
-					// If outlook was closed/terminated inbetween, we will receive an Exception
-					// System.Runtime.InteropServices.COMException (0x800706BA): The RPC server is unavailable. (Exception from HRESULT: 0x800706BA)
-					// so recreate outlook instance
+                try
+                {
+                    // If outlook was closed/terminated inbetween, we will receive an Exception
+                    // System.Runtime.InteropServices.COMException (0x800706BA): The RPC server is unavailable. (Exception from HRESULT: 0x800706BA)
+                    // so recreate outlook instance
                     //And sometimes we we receive an Exception
                     // System.InvalidCastException 0x8001010E (RPC_E_WRONG_THREAD))
-					Logger.Log("Cannot connect to Outlook, creating new instance....", EventType.Information);
-					/*OutlookApplication = new Outlook.Application();
-					_outlookNamespace = OutlookApplication.GetNamespace("mapi");
-					_outlookNamespace.Logon();*/
+                    Logger.Log("Cannot connect to Outlook, creating new instance....", EventType.Information);
+                    /*OutlookApplication = new Outlook.Application();
+                    _outlookNamespace = OutlookApplication.GetNamespace("mapi");
+                    _outlookNamespace.Logon();*/
                     OutlookApplication = null;
                     _outlookNamespace = null;
                     CreateOutlookInstance();
 
-                    
-				}
-				catch (Exception ex)
-				{
-					string message = "Cannot connect to Outlook.\r\nPlease restart "+Application.ProductName+" and try again. If error persists, please inform developers on OutlookForge.";
-					// Error again? We need full stacktrace, display it!
-					throw new Exception(message, ex);
-				}
-			}
 
-		}
+                }
+                catch (Exception ex)
+                {
+                    string message = "Cannot connect to Outlook.\r\nPlease restart " + Application.ProductName + " and try again. If error persists, please inform developers on OutlookForge.";
+                    // Error again? We need full stacktrace, display it!
+                    throw new Exception(message, ex);
+                }
+            }
+
+        }
 
         private static void CreateOutlookInstance()
         {
@@ -293,7 +333,7 @@ namespace GoContactSyncMod
                             System.Threading.Thread.Sleep(1000 * 10);
                     }
                 }
-                      
+
                 if (OutlookApplication == null)
                     throw new NotSupportedException("Could not create instance of 'Microsoft Outlook'. Make sure Outlook 2003 or above version is installed and retry.");
 
@@ -313,7 +353,7 @@ namespace GoContactSyncMod
                         else //wait ten seconds and try again
                             System.Threading.Thread.Sleep(1000 * 10);
                     }
-                }                                   
+                }
 
                 if (_outlookNamespace == null)
                     throw new NotSupportedException("Could not connect to 'Microsoft Outlook'. Make sure Outlook 2003 or above version is installed and retry.");
@@ -335,7 +375,7 @@ namespace GoContactSyncMod
             //Just try to access the outlookNamespace to check, if it is still accessible, throws COMException, if not reachable           
             if (string.IsNullOrEmpty(SyncContactsFolder))
             {
-               _outlookNamespace.GetDefaultFolder(Outlook.OlDefaultFolders.olFolderContacts);
+                _outlookNamespace.GetDefaultFolder(Outlook.OlDefaultFolders.olFolderContacts);
             }
             else
             {
@@ -343,8 +383,8 @@ namespace GoContactSyncMod
             }
         }
 
-		public void LogoffOutlook()
-		{
+        public void LogoffOutlook()
+        {
             try
             {
                 Logger.Log("Disconnecting from Outlook...", EventType.Debug);
@@ -372,11 +412,11 @@ namespace GoContactSyncMod
                 OutlookApplication = null;
                 Logger.Log("Disconnected from Outlook", EventType.Debug);
             }
-		}
+        }
 
         public void LogoffGoogle()
-        {            
-            ContactsRequest = null;            
+        {
+            ContactsRequest = null;
         }
 
         private void LoadOutlookContacts()
@@ -415,7 +455,7 @@ namespace GoContactSyncMod
                 mapiFolder = OutlookNameSpace.GetFolderFromID(syncFolder);
                 if (mapiFolder == null)
                     throw new Exception("Error getting OutlookFolder: " + syncFolder);
-                
+
                 //Outlook.MAPIFolder Folder = OutlookNameSpace.GetFolderFromID(_syncFolder);
                 //if (Folder != null)
                 //{
@@ -447,15 +487,15 @@ namespace GoContactSyncMod
                 mapiFolder = null;
             }
         }
-        
-        
+
+
         ///// <summary>
         ///// Moves duplicates from OutlookContacts to OutlookContactDuplicates
         ///// </summary>
         //private void FilterOutlookContactDuplicates()
         //{
         //    OutlookContactDuplicates = new Collection<Outlook.ContactItem>();
-            
+
         //    if (OutlookContacts.Count < 2)
         //        return;
 
@@ -495,34 +535,34 @@ namespace GoContactSyncMod
         private void LoadGoogleContacts()
         {
             LoadGoogleContacts(null);
-            Logger.Log("Google Contacts Found: " + GoogleContacts.Count, EventType.Debug);                
+            Logger.Log("Google Contacts Found: " + GoogleContacts.Count, EventType.Debug);
         }
 
-		private Contact LoadGoogleContacts(AtomId id)
-		{
+        private Contact LoadGoogleContacts(AtomId id)
+        {
             string message = "Error Loading Google Contacts. Cannot connect to Google.\r\nPlease ensure you are connected to the internet. If you are behind a proxy, change your proxy configuration!";
 
             Contact ret = null;
-			try
-			{
+            try
+            {
                 if (id == null) // Only log, if not specific Google Contacts are searched                    
-				    Logger.Log("Loading Google Contacts...", EventType.Information);
-                
+                    Logger.Log("Loading Google Contacts...", EventType.Information);
+
                 GoogleContacts = new Collection<Contact>();
 
-				ContactsQuery query = new ContactsQuery(ContactsQuery.CreateContactsUri("default"));
-				query.NumberToRetrieve = 256;
-				query.StartIndex = 0;
+                ContactsQuery query = new ContactsQuery(ContactsQuery.CreateContactsUri("default"));
+                query.NumberToRetrieve = 256;
+                query.StartIndex = 0;
 
                 //Only load Google Contacts in My Contacts group (to avoid syncing accounts added automatically to "Weitere Kontakte"/"Further Contacts")
                 Group group = GetGoogleGroupByName(myContactsGroup);
                 if (group != null)
                     query.Group = group.Id;
 
-				//query.ShowDeleted = false;
-				//query.OrderBy = "lastmodified";
-                				
-                Feed<Contact> feed=ContactsRequest.Get<Contact>(query);
+                //query.ShowDeleted = false;
+                //query.OrderBy = "lastmodified";
+
+                Feed<Contact> feed = ContactsRequest.Get<Contact>(query);
 
                 while (feed != null)
                 {
@@ -534,10 +574,10 @@ namespace GoContactSyncMod
                     }
                     query.StartIndex += query.NumberToRetrieve;
                     feed = ContactsRequest.Get<Contact>(feed, FeedRequestType.Next);
-                    
-                }                
-	
-			}
+
+                }
+
+            }
             catch (System.Net.WebException ex)
             {
                 //Logger.Log(message, EventType.Error);
@@ -550,9 +590,9 @@ namespace GoContactSyncMod
             }
 
             return ret;
-		}
-		private void LoadGoogleGroups()
-		{
+        }
+        private void LoadGoogleGroups()
+        {
             string message = "Error Loading Google Groups. Cannot connect to Google.\r\nPlease ensure you are connected to the internet. If you are behind a proxy, change your proxy configuration!";
             try
             {
@@ -564,7 +604,7 @@ namespace GoContactSyncMod
 
                 GoogleGroups = new Collection<Group>();
 
-                Feed<Group> feed = ContactsRequest.Get<Group>(query);               
+                Feed<Group> feed = ContactsRequest.Get<Group>(query);
 
                 while (feed != null)
                 {
@@ -580,24 +620,24 @@ namespace GoContactSyncMod
                 ////Only for debugging or reset purpose: Delete all Gougle Groups:
                 //for (int i = GoogleGroups.Count; i > 0;i-- )
                 //    _googleService.Delete(GoogleGroups[i-1]);
-            }            
-			catch (System.Net.WebException ex)
-			{                               				
-				//Logger.Log(message, EventType.Error);
+            }
+            catch (System.Net.WebException ex)
+            {
+                //Logger.Log(message, EventType.Error);
                 throw new GDataRequestException(message, ex);
-			}
+            }
             catch (System.NullReferenceException ex)
             {
                 //Logger.Log(message, EventType.Error);
                 throw new GDataRequestException(message, new System.Net.WebException("Error accessing feed", ex));
             }
 
-		}
+        }
 
         private void LoadGoogleNotes()
         {
             LoadGoogleNotes(null, null);
-            Logger.Log("Google Notes Found: " + GoogleNotes.Count, EventType.Debug);                
+            Logger.Log("Google Notes Found: " + GoogleNotes.Count, EventType.Debug);
         }
 
         internal Document LoadGoogleNotes(string folderUri, AtomId id)
@@ -617,7 +657,7 @@ namespace GoContactSyncMod
                 if (googleNotesFolder == null)
                     googleNotesFolder = GetOrCreateGoogleFolder(null, "Notes");//ToDo: Make the folder name Notes configurable in SettingsForm, for now hardcode to "Notes");
 
-               
+
                 if (folderUri == null)
                 {
                     if (id == null)
@@ -629,7 +669,7 @@ namespace GoContactSyncMod
                 DocumentQuery query = new DocumentQuery(folderUri);
                 query.Categories.Add(new QueryCategory(new AtomCategory("document")));
                 query.NumberToRetrieve = 256;
-                query.StartIndex = 0;                
+                query.StartIndex = 0;
 
                 //query.ShowDeleted = false;
                 //query.OrderBy = "lastmodified";
@@ -678,19 +718,19 @@ namespace GoContactSyncMod
         {
             string message = "Error Loading Google appointments. Cannot connect to Google.\r\nPlease ensure you are connected to the internet. If you are behind a proxy, change your proxy configuration!";
 
-           Google.Apis.Calendar.v3.Data.Event ret = null;
+            Google.Apis.Calendar.v3.Data.Event ret = null;
             try
-            {                    
+            {
 
                 GoogleAppointments = new Collection<Google.Apis.Calendar.v3.Data.Event>();
 
-                
+
                 var query = EventRequest.List(PrimaryCalendar.Id);
 
                 string pageToken = null;
                 //query.MaxResults = 256; //ToDo: Find a way to retrieve all appointments
-                
-                            
+
+
 
                 //Only Load events from month range, but onyl if not a distinct Google Appointment is searched for
                 if (restrictMonthsInPast != 0)
@@ -711,7 +751,7 @@ namespace GoContactSyncMod
 
                 do
                 {
-                    query.PageToken = pageToken;   
+                    query.PageToken = pageToken;
                     feed = query.Execute();
                     foreach (Google.Apis.Calendar.v3.Data.Event a in feed.Items)
                     {
@@ -730,7 +770,7 @@ namespace GoContactSyncMod
                         //else
                         //{
                         //    Logger.Log("Skipped Appointment because it was cancelled on Google side: " + a.Summary + " - " + GetTime(a), EventType.Information);
-                            //SkippedCount++;
+                        //SkippedCount++;
                         //}
                     }
                     pageToken = feed.NextPageToken;
@@ -794,7 +834,7 @@ namespace GoContactSyncMod
 
                     if (isEmpty)
                     {
-                        DocumentsRequest.Delete(new Uri(Google.GData.Documents.DocumentsListQuery.documentsBaseUri + "/" +categoryFolder.ResourceId), categoryFolder.ETag);
+                        DocumentsRequest.Delete(new Uri(Google.GData.Documents.DocumentsListQuery.documentsBaseUri + "/" + categoryFolder.ResourceId), categoryFolder.ETag);
                         Logger.Log("Deleted empty Google category folder: " + categoryFolder.Title, EventType.Information);
                     }
 
@@ -832,12 +872,12 @@ namespace GoContactSyncMod
 
         private Document GetOrCreateGoogleFolder(Document parentFolder, string title)
         {
-            Document ret=null;                       
+            Document ret = null;
 
             lock (this) //Synchronize the threads
             {
                 ret = GetGoogleFolder(parentFolder, title, null);
-                
+
                 if (ret == null)
                 {
                     ret = new Document();
@@ -853,7 +893,7 @@ namespace GoContactSyncMod
 
         internal Document GetGoogleFolder(Document parentFolder, string title, string uri)
         {
-            Document ret = null;           
+            Document ret = null;
 
             //First get the Notes folder or create it, if not yet existing            
             DocumentQuery query = new DocumentQuery(DocumentsRequest.BaseUri);
@@ -861,14 +901,14 @@ namespace GoContactSyncMod
             query.Categories.Add(new QueryCategory(new AtomCategory("folder")));
             if (!string.IsNullOrEmpty(title))
                 query.Title = title;
-            
+
             Feed<Document> feed = DocumentsRequest.Get<Document>(query);
 
             if (feed != null)
             {
                 foreach (Document a in feed.Entries)
                 {
-                    if ((string.IsNullOrEmpty(uri) || a.Self == uri) && 
+                    if ((string.IsNullOrEmpty(uri) || a.Self == uri) &&
                         (parentFolder == null || IsInFolder(parentFolder, a)))
                     {
                         ret = a;
@@ -899,7 +939,7 @@ namespace GoContactSyncMod
         public void LoadAppointments()
         {
             LoadOutlookAppointments();
-            LoadGoogleAppointments();           
+            LoadGoogleAppointments();
         }
 
 
@@ -907,22 +947,22 @@ namespace GoContactSyncMod
         /// Load the contacts from Google and Outlook and match them
         /// </summary>
         public void MatchContacts()
-		{
-            LoadContacts();                            
+        {
+            LoadContacts();
 
-			DuplicateDataException duplicateDataException;
-			Contacts = ContactsMatcher.MatchContacts(this, out duplicateDataException);
-			if (duplicateDataException != null)
-			{
-				
-				if (DuplicatesFound != null)
+            DuplicateDataException duplicateDataException;
+            Contacts = ContactsMatcher.MatchContacts(this, out duplicateDataException);
+            if (duplicateDataException != null)
+            {
+
+                if (DuplicatesFound != null)
                     DuplicatesFound("Google duplicates found", duplicateDataException.Message);
                 else
                     Logger.Log(duplicateDataException.Message, EventType.Warning);
-			}
+            }
 
             Logger.Log("Contact Matches Found: " + Contacts.Count, EventType.Debug);
-		}
+        }
 
         /// <summary>
         /// Load the contacts from Google and Outlook and match them
@@ -955,8 +995,8 @@ namespace GoContactSyncMod
         }
 
 
-		public void Sync()
-		{
+        public void Sync()
+        {
             lock (_syncRoot)
             {
                 try
@@ -987,7 +1027,7 @@ namespace GoContactSyncMod
                         MatchAppointments();
 
 #if debug
-                        this.DebugContacts();
+                    this.DebugContacts();
 #endif
 
                     if (SyncContacts)
@@ -1013,7 +1053,7 @@ namespace GoContactSyncMod
                                     Contacts.Remove(match);
                                 }
                             }
-                        }                                                            
+                        }
 
 
                         Logger.Log("Syncing groups...", EventType.Information);
@@ -1051,7 +1091,7 @@ namespace GoContactSyncMod
                             if (match.AsyncUpdateCompleted.HasValue && !match.AsyncUpdateCompleted.Value)
                                 Logger.Log("Asynchronous upload of note didn't finish within " + timeout + " seconds: " + match.GoogleNote.Title, EventType.Warning);
                         }
-                        
+
 
 
                         //Delete empty Google note folders
@@ -1063,14 +1103,14 @@ namespace GoContactSyncMod
                         if (Appointments == null)
                             return;
 
-                        TotalCount += Appointments.Count + SkippedCountNotMatches; ;                        
+                        TotalCount += Appointments.Count + SkippedCountNotMatches; ;
 
                         Logger.Log("Syncing appointments...", EventType.Information);
-                        AppointmentsMatcher.SyncAppointments(this);                        
+                        AppointmentsMatcher.SyncAppointments(this);
 
                         DeleteAppointments(Appointments);
 
-                        
+
 
                     }
 
@@ -1105,9 +1145,9 @@ namespace GoContactSyncMod
 
                 }
             }
-		}
+        }
 
-        
+
 
         private void ResolveDuplicateContacts(Collection<ContactMatch> googleContactDuplicates)
         {
@@ -1119,7 +1159,7 @@ namespace GoContactSyncMod
         }
 
         private void ResolveDuplicateContact(ContactMatch match)
-        { 
+        {
             if (Contacts.Contains(match))
             {
                 if (_syncOption == SyncOption.MergePrompt)
@@ -1257,9 +1297,9 @@ namespace GoContactSyncMod
                 ret += " Recurrence"; //ToDo: Return Recurrence Start/End
 
             return ret;
-        }        
+        }
 
-        
+
         public void DeleteAppointment(AppointmentMatch match)
         {
             if (match.GoogleAppointment != null && match.OutlookAppointment != null)
@@ -1287,7 +1327,7 @@ namespace GoContactSyncMod
                 //}                
             }
             else if (match.GoogleAppointment == null && match.OutlookAppointment != null)
-            {                
+            {
                 if (match.OutlookAppointment.ItemProperties[this.OutlookPropertyNameId] != null)
                 {
                     string name = match.OutlookAppointment.Subject;
@@ -1386,29 +1426,29 @@ namespace GoContactSyncMod
             }
         }
 
-		public void SaveContacts(List<ContactMatch> contacts)
-		{
-			foreach (ContactMatch match in contacts)
-			{
-				try
-				{
-					SaveContact(match);
-				}
-				catch (Exception ex)
-				{
-					if (ErrorEncountered != null)
-					{
+        public void SaveContacts(List<ContactMatch> contacts)
+        {
+            foreach (ContactMatch match in contacts)
+            {
+                try
+                {
+                    SaveContact(match);
+                }
+                catch (Exception ex)
+                {
+                    if (ErrorEncountered != null)
+                    {
                         ErrorCount++;
                         SyncedCount--;
                         string message = String.Format("Failed to synchronize contact: {0}. \nPlease check the contact, if any Email already exists on Google contacts side or if there is too much or invalid data in the notes field. \nIf the problem persists, please try recreating the contact or report the error on OutlookForge:\n{1}", match.OutlookContact != null ? match.OutlookContact.FileAs : match.GoogleContact.Title, ex.Message);
-						Exception newEx = new Exception(message, ex);
-						ErrorEncountered("Error", newEx, EventType.Error);
-					}
-					else
-						throw;
-				}
-			}
-		}
+                        Exception newEx = new Exception(message, ex);
+                        ErrorEncountered("Error", newEx, EventType.Error);
+                    }
+                    else
+                        throw;
+                }
+            }
+        }
 
         public void SaveNotes(List<NoteMatch> notes)
         {
@@ -1434,27 +1474,27 @@ namespace GoContactSyncMod
             }
         }
 
-       
+
         public void SaveContact(ContactMatch match)
         {
             if (match.GoogleContact != null && match.OutlookContact != null)
-			{
-				//bool googleChanged, outlookChanged;
-				//SaveContactGroups(match, out googleChanged, out outlookChanged);
+            {
+                //bool googleChanged, outlookChanged;
+                //SaveContactGroups(match, out googleChanged, out outlookChanged);
                 if (match.GoogleContact.ContactEntry.Dirty || match.GoogleContact.ContactEntry.IsDirty())
                 {
                     //google contact was modified. save.
-                    SyncedCount++;					
-					SaveGoogleContact(match);
-					Logger.Log("Updated Google contact from Outlook: \"" + match.OutlookContact.FileAs + "\".", EventType.Information);
-				}
+                    SyncedCount++;
+                    SaveGoogleContact(match);
+                    Logger.Log("Updated Google contact from Outlook: \"" + match.OutlookContact.FileAs + "\".", EventType.Information);
+                }
 
-               
-			}
+
+            }
             else if (match.GoogleContact == null && match.OutlookContact != null)
-			{
+            {
                 if (match.OutlookContact.UserProperties.GoogleContactId != null)
-				{
+                {
                     string name = match.OutlookContact.FileAs;
                     if (_syncOption == SyncOption.OutlookToGoogleOnly)
                     {
@@ -1476,7 +1516,7 @@ namespace GoContactSyncMod
                             {
                                 //First reset OutlookGoogleContactId to restore it later from trash
                                 ContactPropertiesUtils.ResetOutlookGoogleContactId(this, item);
-                                item.Save();                                
+                                item.Save();
                             }
                             catch (Exception)
                             {
@@ -1493,12 +1533,12 @@ namespace GoContactSyncMod
                             item = null;
                         }
                     }
-				}
-			}
+                }
+            }
             else if (match.GoogleContact != null && match.OutlookContact == null)
-			{
-				if (ContactPropertiesUtils.GetGoogleOutlookContactId(SyncProfile, match.GoogleContact) != null)
-				{                    
+            {
+                if (ContactPropertiesUtils.GetGoogleOutlookContactId(SyncProfile, match.GoogleContact) != null)
+                {
 
                     if (_syncOption == SyncOption.GoogleToOutlookOnly)
                     {
@@ -1528,15 +1568,15 @@ namespace GoContactSyncMod
                         DeletedCount++;
                         Logger.Log("Deleted Google contact: \"" + ContactMatch.GetName(match.GoogleContact) + "\".", EventType.Information);
                     }
-				}
-			}
-			else
-			{
-				//TODO: ignore for now: 
+                }
+            }
+            else
+            {
+                //TODO: ignore for now: 
                 throw new ArgumentNullException("To save contacts, at least a GoogleContacat or OutlookContact must be present.");
-				//Logger.Log("Both Google and Outlook contact: \"" + match.OutlookContact.FileAs + "\" have been changed! Not implemented yet.", EventType.Warning);
-			}
-		}
+                //Logger.Log("Both Google and Outlook contact: \"" + match.OutlookContact.FileAs + "\" have been changed! Not implemented yet.", EventType.Warning);
+            }
+        }
 
         public void SaveNote(NoteMatch match)
         {
@@ -1551,7 +1591,7 @@ namespace GoContactSyncMod
                     SaveGoogleNote(match);
                     //Don't log here, because the DocumentsRequest uses async upload, log when async upload was successful
                     //Logger.Log("Updated Google note from Outlook: \"" + match.OutlookNote.Subject + "\".", EventType.Information);
-                } 
+                }
                 else if (!match.OutlookNote.Saved)// || outlookChanged) //If google note is saved above, Saving the OutlookNote not necessary anymore, because this will be done when updating NoteMatchId during saving the Google Note above
                 {
                     //outlook note was modified. save.
@@ -1559,7 +1599,7 @@ namespace GoContactSyncMod
                     NotePropertiesUtils.SetOutlookGoogleNoteId(this, match.OutlookNote, match.GoogleNote);
                     match.OutlookNote.Save();
                     Logger.Log("Updated Outlook note from Google: \"" + match.OutlookNote.Subject + "\".", EventType.Information);
-                }                
+                }
 
                 // save photos
                 //SaveNotePhotos(match);
@@ -1586,26 +1626,26 @@ namespace GoContactSyncMod
                         //try
                         //{
                         string outlookNoteId = NotePropertiesUtils.GetOutlookGoogleNoteId(this, match.OutlookNote);
-                            try
-                            {
-                                //First reset OutlookGoogleContactId to restore it later from trash
-                                NotePropertiesUtils.ResetOutlookGoogleNoteId(this, item);
-                                item.Save();
-                            }
-                            catch (Exception)
-                            {
-                                Logger.Log("Error resetting match for Outlook note: \"" + name + "\".", EventType.Warning);
-                            }
+                        try
+                        {
+                            //First reset OutlookGoogleContactId to restore it later from trash
+                            NotePropertiesUtils.ResetOutlookGoogleNoteId(this, item);
+                            item.Save();
+                        }
+                        catch (Exception)
+                        {
+                            Logger.Log("Error resetting match for Outlook note: \"" + name + "\".", EventType.Warning);
+                        }
 
-                            item.Delete();
-                            try
-                            { //Delete also the according temporary NoteFile
-                                File.Delete(NotePropertiesUtils.GetFileName(outlookNoteId, SyncProfile));
-                            }
-                            catch (Exception)
-                            { }
-                            DeletedCount++;
-                            Logger.Log("Deleted Outlook note: \"" + name + "\".", EventType.Information);
+                        item.Delete();
+                        try
+                        { //Delete also the according temporary NoteFile
+                            File.Delete(NotePropertiesUtils.GetFileName(outlookNoteId, SyncProfile));
+                        }
+                        catch (Exception)
+                        { }
+                        DeletedCount++;
+                        Logger.Log("Deleted Outlook note: \"" + name + "\".", EventType.Information);
                         //}
                         //finally
                         //{
@@ -1619,7 +1659,7 @@ namespace GoContactSyncMod
             {
                 if (NotePropertiesUtils.NoteFileExists(match.GoogleNote.Id, SyncProfile))
                 {
-                    string name = match.GoogleNote.Title;                    
+                    string name = match.GoogleNote.Title;
 
                     if (_syncOption == SyncOption.GoogleToOutlookOnly)
                     {
@@ -1642,13 +1682,13 @@ namespace GoContactSyncMod
                         //Document deletedNote = LoadGoogleNotes(match.GoogleNote.DocumentEntry.Id);
                         //if (deletedNote != null)
                         //    DocumentsRequest.Delete(deletedNote);
-                        
+
                         try
-                         {//Delete also the according temporary NoteFile
-                             File.Delete(NotePropertiesUtils.GetFileName(match.GoogleNote.Id, SyncProfile));
-                         }
-                         catch (Exception)
-                         {}
+                        {//Delete also the according temporary NoteFile
+                            File.Delete(NotePropertiesUtils.GetFileName(match.GoogleNote.Id, SyncProfile));
+                        }
+                        catch (Exception)
+                        { }
 
                         DeletedCount++;
                         Logger.Log("Deleted Google note: \"" + name + "\".", EventType.Information);
@@ -1667,53 +1707,53 @@ namespace GoContactSyncMod
         /// Updates Outlook appointment from master to slave (including groups/categories)
         /// </summary>
         public void UpdateAppointment(Outlook.AppointmentItem master, ref Google.Apis.Calendar.v3.Data.Event slave)
-        {            
+        {
             //if (master.Recipients.Count == 0 || 
             //    master.Organizer == null || 
             //    AppointmentSync.IsOrganizer(AppointmentSync.GetOrganizer(master), master)||
             //    slave.Id.Uri == null
             //    )
             //{//Only update, if this appointment was organized on Outlook side or freshly created during this sync
-                
-                AppointmentSync.UpdateAppointment(master, slave);
 
-                AppointmentPropertiesUtils.SetGoogleOutlookAppointmentId(SyncProfile, slave, master);
+            AppointmentSync.UpdateAppointment(master, slave);
+
+            AppointmentPropertiesUtils.SetGoogleOutlookAppointmentId(SyncProfile, slave, master);
+            slave = SaveGoogleAppointment(slave);
+
+            //ToDo: Doesn'T work for newly created recurrence appointments before save, because Event.Reminder is throwing NullPointerException and Reminders cannot be initialized, therefore moved to after saving
+            //if (slave.Recurrence != null && slave.Reminders != null)
+            //{
+
+            //    if (slave.Reminders.Overrides != null)
+            //    {
+            //        slave.Reminders.Overrides.Clear();
+            //        if (master.ReminderSet)
+            //        {
+            //            var reminder = new Google.Apis.Calendar.v3.Data.EventReminder();
+            //            reminder.Minutes = master.ReminderMinutesBeforeStart;
+            //            if (reminder.Minutes > 40300)
+            //            {
+            //                //ToDo: Check real limit, currently 40300
+            //                Logger.Log("Reminder Minutes to big (" + reminder.Minutes + "), set to maximum of 40300 minutes for appointment: " + master.Subject + " - " + master.Start, EventType.Warning);
+            //                reminder.Minutes = 40300;
+            //            }
+            //            reminder.Method = "popup";
+            //            slave.Reminders.Overrides.Add(reminder);
+            //        }
+            //    }
+            //    slave = SaveGoogleAppointment(slave);
+            //}
+
+            AppointmentPropertiesUtils.SetOutlookGoogleAppointmentId(this, master, slave);
+            master.Save();
+
+            //After saving Google Appointment => also sync recurrence exceptions and save again
+            if (master.IsRecurring && master.RecurrenceState == Outlook.OlRecurrenceState.olApptMaster && AppointmentSync.UpdateRecurrenceExceptions(master, slave, this))
                 slave = SaveGoogleAppointment(slave);
 
-                //ToDo: Doesn'T work for newly created recurrence appointments before save, because Event.Reminder is throwing NullPointerException and Reminders cannot be initialized, therefore moved to after saving
-                //if (slave.Recurrence != null && slave.Reminders != null)
-                //{
-                    
-                //    if (slave.Reminders.Overrides != null)
-                //    {
-                //        slave.Reminders.Overrides.Clear();
-                //        if (master.ReminderSet)
-                //        {
-                //            var reminder = new Google.Apis.Calendar.v3.Data.EventReminder();
-                //            reminder.Minutes = master.ReminderMinutesBeforeStart;
-                //            if (reminder.Minutes > 40300)
-                //            {
-                //                //ToDo: Check real limit, currently 40300
-                //                Logger.Log("Reminder Minutes to big (" + reminder.Minutes + "), set to maximum of 40300 minutes for appointment: " + master.Subject + " - " + master.Start, EventType.Warning);
-                //                reminder.Minutes = 40300;
-                //            }
-                //            reminder.Method = "popup";
-                //            slave.Reminders.Overrides.Add(reminder);
-                //        }
-                //    }
-                //    slave = SaveGoogleAppointment(slave);
-                //}
+            SyncedCount++;
+            Logger.Log("Updated appointment from Outlook to Google: \"" + master.Subject + " - " + master.Start + "\".", EventType.Information);
 
-                AppointmentPropertiesUtils.SetOutlookGoogleAppointmentId(this, master, slave);
-                master.Save();
-
-                //After saving Google Appointment => also sync recurrence exceptions and save again
-                if (master.IsRecurring && master.RecurrenceState == Outlook.OlRecurrenceState.olApptMaster && AppointmentSync.UpdateRecurrenceExceptions(master, slave, this))
-                    slave = SaveGoogleAppointment(slave);
-
-                SyncedCount++;
-                Logger.Log("Updated appointment from Outlook to Google: \"" + master.Subject + " - " + master.Start + "\".", EventType.Information);
-                
             //}
             //else
             //{
@@ -1723,22 +1763,22 @@ namespace GoContactSyncMod
             //    Logger.Log("Skipped Updating appointment from Outlook to Google because meeting was received by Outlook: \"" + master.Subject + " - " + master.Start + "\".", EventType.Information);
             //}
 
-            
+
         }
 
-        
+
 
         /// <summary>
         /// Updates Outlook appointment from master to slave (including groups/categories)
         /// </summary>
         public void UpdateAppointment(ref Google.Apis.Calendar.v3.Data.Event master, Outlook.AppointmentItem slave, List<Google.Apis.Calendar.v3.Data.Event> googleAppointmentExceptions)
-        {                        
+        {
 
             bool updated = false;
             //if (master.Participants.Count > 1)
             //{
             //    bool organizerIsGoogle = AppointmentSync.IsOrganizer(AppointmentSync.GetOrganizer(master));
-                
+
             //    if (organizerIsGoogle || AppointmentPropertiesUtils.GetOutlookGoogleAppointmentId(this, slave) == null)
             //    {//Only update, if this appointment was organized on Google side or freshly created during tis sync                    
             //        updated = true;
@@ -1767,7 +1807,7 @@ namespace GoContactSyncMod
                     case SyncOption.MergeGoogleWins:
                     case SyncOption.GoogleToOutlookOnly:
                         //overwrite outlook appointment
-                        Logger.Log("Multiple participants found, invitation maybe NOT sent by Google, but Google appointment is overwriting Outlook because of SyncOption " + SyncOption + ": " + master.Summary +" - " + Syncronizer.GetTime(master) + ".", EventType.Information);
+                        Logger.Log("Multiple participants found, invitation maybe NOT sent by Google, but Google appointment is overwriting Outlook because of SyncOption " + SyncOption + ": " + master.Summary + " - " + Syncronizer.GetTime(master) + ".", EventType.Information);
                         updated = true;
                         break;
                     case SyncOption.MergePrompt:
@@ -1801,8 +1841,8 @@ namespace GoContactSyncMod
 
                         break;
                 }
-                
-                
+
+
                 //if (MessageBox.Show("Cannot update appointment from Google to Outlook because multiple participants found, invitation maybe NOT sent by Google: \"" + master.Summary + " - " + Syncronizer.GetTime(master) + "\". Do you want to update it back from Outlook to Google?", "Outlook appointment cannot be overwritten from Google", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 //    UpdateAppointment(slave, ref master);
                 //else
@@ -1837,10 +1877,10 @@ namespace GoContactSyncMod
                 if (master.Recurrence != null && googleAppointmentExceptions != null && AppointmentSync.UpdateRecurrenceExceptions(googleAppointmentExceptions, slave, this))
                     SyncedCount++;
             }
-               
-            
+
+
         }
-        
+
 
         private void SaveOutlookContact(ref Contact googleContact, Outlook.ContactItem outlookContact)
         {
@@ -1866,7 +1906,7 @@ namespace GoContactSyncMod
             //    //    // set dirty to back, cause we don't want the changed content go back to Google without reason
             //    //    match.GoogleContact.ContactEntry.Content.Dirty = wasDirty;
             //    //    updatedEntry = _googleService.Update(match.GoogleContact);
-                    
+
             //    //}
             //    //else 
             //    if (!String.IsNullOrEmpty(tmpEx.ResponseString))
@@ -1880,13 +1920,13 @@ namespace GoContactSyncMod
             outlookContact.Save();
             SaveOutlookPhoto(googleContact, outlookContact);
         }
-		private static string EscapeXml(string xml)
-		{
-			string encodedXml = System.Security.SecurityElement.Escape(xml);
-			return encodedXml;
-		}
-		public void SaveGoogleContact(ContactMatch match)
-		{
+        private static string EscapeXml(string xml)
+        {
+            string encodedXml = System.Security.SecurityElement.Escape(xml);
+            return encodedXml;
+        }
+        public void SaveGoogleContact(ContactMatch match)
+        {
             Outlook.ContactItem outlookContactItem = match.OutlookContact.GetOriginalItemFromOutlook();
             try
             {
@@ -1896,7 +1936,7 @@ namespace GoContactSyncMod
                 outlookContactItem.Save();
 
                 //Now save the Photo
-                SaveGooglePhoto(match, outlookContactItem);                       
+                SaveGooglePhoto(match, outlookContactItem);
 
             }
             finally
@@ -1904,7 +1944,7 @@ namespace GoContactSyncMod
                 Marshal.ReleaseComObject(outlookContactItem);
                 outlookContactItem = null;
             }
-		}
+        }
 
         public void SaveGoogleNote(NoteMatch match)
         {
@@ -1912,49 +1952,49 @@ namespace GoContactSyncMod
             //try
             //{  
 
-                //ToDo: Somewhow, the content is not uploaded to Google, only an empty document                
-                //match.GoogleNote = SaveGoogleNote(match.GoogleNote);
+            //ToDo: Somewhow, the content is not uploaded to Google, only an empty document                
+            //match.GoogleNote = SaveGoogleNote(match.GoogleNote);
 
             //New approach how to update an existing document: https://developers.google.com/google-apps/documents-list/#updatingchanging_documents_and_files
             // Instantiate the ResumableUploader component.      
             ResumableUploader uploader = new ResumableUploader();
             // Set the handlers for the completion and progress events                  
             //uploader.AsyncOperationProgress += new AsyncOperationProgressEventHandler(OnProgress);
-                
-                //ToDo: Therefoe I use DocumentService.UploadDocument instead and move it to the NotesFolder
-                string oldOutlookGoogleNoteId = NotePropertiesUtils.GetOutlookGoogleNoteId(this, outlookNoteItem);
-                if (match.GoogleNote.DocumentEntry.Id.Uri != null)
-                {
-                    //DocumentsRequest.Delete(new Uri(Google.GData.Documents.DocumentsListQuery.documentsBaseUri + "/" + match.GoogleNote.ResourceId), match.GoogleNote.ETag);
-                    ////DocumentsRequest.Delete(match.GoogleNote); //ToDo: Currently, the Delete only removes the Notes label from the document but keeps the document in the root folder
-                    //NotePropertiesUtils.ResetOutlookGoogleNoteId(this, outlookNoteItem);                                        
 
-                    ////ToDo: Currently, the Delete only removes the Notes label from the document but keeps the document in the root folder
-                    //Document deletedNote = LoadGoogleNotes(match.GoogleNote.DocumentEntry.Id);
-                    //if (deletedNote != null)
-                    //    DocumentsRequest.Delete(deletedNote);
+            //ToDo: Therefoe I use DocumentService.UploadDocument instead and move it to the NotesFolder
+            string oldOutlookGoogleNoteId = NotePropertiesUtils.GetOutlookGoogleNoteId(this, outlookNoteItem);
+            if (match.GoogleNote.DocumentEntry.Id.Uri != null)
+            {
+                //DocumentsRequest.Delete(new Uri(Google.GData.Documents.DocumentsListQuery.documentsBaseUri + "/" + match.GoogleNote.ResourceId), match.GoogleNote.ETag);
+                ////DocumentsRequest.Delete(match.GoogleNote); //ToDo: Currently, the Delete only removes the Notes label from the document but keeps the document in the root folder
+                //NotePropertiesUtils.ResetOutlookGoogleNoteId(this, outlookNoteItem);                                        
 
-                    // Start the update process.  
-                    uploader.AsyncOperationCompleted += new AsyncOperationCompletedEventHandler(OnGoogleNoteUpdated);    
-                    uploader.UpdateAsync(authenticator, match.GoogleNote.DocumentEntry, match);
-                    //uploader.Update(_authenticator, match.GoogleNote.DocumentEntry);
+                ////ToDo: Currently, the Delete only removes the Notes label from the document but keeps the document in the root folder
+                //Document deletedNote = LoadGoogleNotes(match.GoogleNote.DocumentEntry.Id);
+                //if (deletedNote != null)
+                //    DocumentsRequest.Delete(deletedNote);
 
-                }
-                else
-                {
-                    uploader.AsyncOperationCompleted += new AsyncOperationCompletedEventHandler(OnGoogleNoteCreated);
-                    CreateGoogleNote(match.GoogleNote, match, DocumentsRequest, uploader, authenticator);                
-                }
+                // Start the update process.  
+                uploader.AsyncOperationCompleted += new AsyncOperationCompletedEventHandler(OnGoogleNoteUpdated);
+                uploader.UpdateAsync(authenticator, match.GoogleNote.DocumentEntry, match);
+                //uploader.Update(_authenticator, match.GoogleNote.DocumentEntry);
 
-                match.AsyncUpdateCompleted = false;
+            }
+            else
+            {
+                uploader.AsyncOperationCompleted += new AsyncOperationCompletedEventHandler(OnGoogleNoteCreated);
+                CreateGoogleNote(match.GoogleNote, match, DocumentsRequest, uploader, authenticator);
+            }
 
-                //Google.GData.Documents.DocumentEntry entry = DocumentsRequest.Service.UploadDocument(NotePropertiesUtils.GetFileName(outlookNoteItem.EntryID, SyncProfile), match.GoogleNote.Title.Replace(":", String.Empty));                               
-                //Document newNote = LoadGoogleNotes(entry.Id);
-                //match.GoogleNote = DocumentsRequest.MoveDocumentTo(GoogleNotesFolder, newNote);
+            match.AsyncUpdateCompleted = false;
 
-                //First delete old temporary file, because it was saved with old GoogleNoteID, because every sync to Google becomes a new ID, because updateMedia doesn't work
-                //File.Delete(NotePropertiesUtils.GetFileName(oldOutlookGoogleNoteId, SyncProfile));
-                //UpdateNoteMatchId(match);
+            //Google.GData.Documents.DocumentEntry entry = DocumentsRequest.Service.UploadDocument(NotePropertiesUtils.GetFileName(outlookNoteItem.EntryID, SyncProfile), match.GoogleNote.Title.Replace(":", String.Empty));                               
+            //Document newNote = LoadGoogleNotes(entry.Id);
+            //match.GoogleNote = DocumentsRequest.MoveDocumentTo(GoogleNotesFolder, newNote);
+
+            //First delete old temporary file, because it was saved with old GoogleNoteID, because every sync to Google becomes a new ID, because updateMedia doesn't work
+            //File.Delete(NotePropertiesUtils.GetFileName(oldOutlookGoogleNoteId, SyncProfile));
+            //UpdateNoteMatchId(match);
             //}
             //finally
             //{
@@ -1991,7 +2031,7 @@ namespace GoContactSyncMod
         }
 
         private void OnGoogleNoteCreated(object sender, AsyncOperationCompletedEventArgs e)
-        {           
+        {
             MoveGoogleNote(e.Entry as DocumentEntry, e.UserState as NoteMatch, true, e.Error, e.Cancelled);
         }
 
@@ -2003,7 +2043,7 @@ namespace GoContactSyncMod
         {
             if (ex != null)
             {
-                ErrorHandler.Handle(new Exception("Google Note couldn't be " + (create?"created":"updated") + " :" + entry == null ? null : entry.Summary.ToString(), ex));
+                ErrorHandler.Handle(new Exception("Google Note couldn't be " + (create ? "created" : "updated") + " :" + entry == null ? null : entry.Summary.ToString(), ex));
                 return;
             }
 
@@ -2013,7 +2053,7 @@ namespace GoContactSyncMod
                 return;
             }
 
-           //Get updated Google Note
+            //Get updated Google Note
             Document newNote = LoadGoogleNotes(null, entry.Id);
             match.GoogleNote = newNote;
 
@@ -2040,17 +2080,17 @@ namespace GoContactSyncMod
 
             //Move now to all categories subfolder (if not already there)
             foreach (string category in Utilities.GetOutlookGroups(match.OutlookNote.Categories))
-            {                
-                Document categoryFolder = GetOrCreateGoogleFolder(googleNotesFolder, category);    
-            
+            {
+                Document categoryFolder = GetOrCreateGoogleFolder(googleNotesFolder, category);
+
                 if (!IsInFolder(categoryFolder, newNote))
                     newNote = DocumentsRequest.MoveDocumentTo(categoryFolder, newNote);
-            }           
+            }
 
             //Then update the match IDs
             UpdateNoteMatchId(match);
 
-            Logger.Log((create?"Created":"Updated") + " Google note from Outlook: \"" + match.OutlookNote.Subject + "\".", EventType.Information);
+            Logger.Log((create ? "Created" : "Updated") + " Google note from Outlook: \"" + match.OutlookNote.Subject + "\".", EventType.Information);
             //Then release this match as completed (to not log the summary already before each single note result has been synced
             match.AsyncUpdateCompleted = true;
         }
@@ -2074,17 +2114,17 @@ namespace GoContactSyncMod
             return false;
         }
 
-        
 
-		private string GetXml(Contact contact)
-		{
-			MemoryStream ms = new MemoryStream();
-			contact.ContactEntry.SaveToXml(ms);
-			StreamReader sr = new StreamReader(ms);
-			ms.Seek(0, SeekOrigin.Begin);
-			string xml = sr.ReadToEnd();
-			return xml;
-		}
+
+        private string GetXml(Contact contact)
+        {
+            MemoryStream ms = new MemoryStream();
+            contact.ContactEntry.SaveToXml(ms);
+            StreamReader sr = new StreamReader(ms);
+            ms.Seek(0, SeekOrigin.Begin);
+            string xml = sr.ReadToEnd();
+            return xml;
+        }
 
         private static string GetXml(Document note)
         {
@@ -2110,19 +2150,19 @@ namespace GoContactSyncMod
         /// Only save the google contact without photo update
         /// </summary>
         /// <param name="googleContact"></param>
-		internal Contact SaveGoogleContact(Contact googleContact)
-		{
-			//check if this contact was not yet inserted on google.
-			if (googleContact.ContactEntry.Id.Uri == null)
-			{
-				//insert contact.
-				Uri feedUri = new Uri(ContactsQuery.CreateContactsUri("default"));
+        internal Contact SaveGoogleContact(Contact googleContact)
+        {
+            //check if this contact was not yet inserted on google.
+            if (googleContact.ContactEntry.Id.Uri == null)
+            {
+                //insert contact.
+                Uri feedUri = new Uri(ContactsQuery.CreateContactsUri("default"));
 
-				try
-				{
-					Contact createdEntry = ContactsRequest.Insert(feedUri, googleContact);
+                try
+                {
+                    Contact createdEntry = ContactsRequest.Insert(feedUri, googleContact);
                     return createdEntry;
-				}
+                }
                 catch (Exception ex)
                 {
                     string responseString = "";
@@ -2132,13 +2172,13 @@ namespace GoContactSyncMod
                     string newEx = String.Format("Error saving NEW Google contact: {0}. \n{1}\n{2}", responseString, ex.Message, xml);
                     throw new ApplicationException(newEx, ex);
                 }
-			}
-			else
-			{
-				try
-				{
-					//contact already present in google. just update
-					
+            }
+            else
+            {
+                try
+                {
+                    //contact already present in google. just update
+
                     // User can create an empty label custom field on the web, but when I retrieve, and update, it throws this:
                     // Data Request Error Response: [Line 12, Column 44, element gContact:userDefinedField] Missing attribute: &#39;key&#39;
                     // Even though I didn't touch it.  So, I will search for empty keys, and give them a simple name.  Better than deleting...
@@ -2155,7 +2195,7 @@ namespace GoContactSyncMod
                     //TODO: this will fail if original contact had an empty name or rpimary email address.
                     Contact updated = ContactsRequest.Update(googleContact);
                     return updated;
-				}
+                }
                 catch (Exception ex)
                 {
                     string responseString = "";
@@ -2165,8 +2205,8 @@ namespace GoContactSyncMod
                     string newEx = String.Format("Error saving EXISTING Google contact: {0}. \n{1}\n{2}", responseString, ex.Message, xml);
                     throw new ApplicationException(newEx, ex);
                 }
-			}
-		}
+            }
+        }
 
         /// <summary>
         /// Save the google Appointment
@@ -2197,12 +2237,12 @@ namespace GoContactSyncMod
                 {
                     //contact already present in google. just update
 
-                    Google.Apis.Calendar.v3.Data.Event updated = EventRequest.Update(googleAppointment,PrimaryCalendar.Id,googleAppointment.Id).Execute();
+                    Google.Apis.Calendar.v3.Data.Event updated = EventRequest.Update(googleAppointment, PrimaryCalendar.Id, googleAppointment.Id).Execute();
                     return updated;
                 }
                 catch (Exception ex)
                 {
-                    string newEx = String.Format("Error saving EXISTING Google appointment: {0}. \n{1}",  googleAppointment.Summary + " - " + GetTime(googleAppointment), ex.Message);
+                    string newEx = String.Format("Error saving EXISTING Google appointment: {0}. \n{1}", googleAppointment.Summary + " - " + GetTime(googleAppointment), ex.Message);
                     throw new ApplicationException(newEx, ex);
                 }
             }
@@ -2231,8 +2271,8 @@ namespace GoContactSyncMod
                     { }
                 }
 
-                if (feedUri == null)                
-                    feedUri = new Uri(documentsRequest.BaseUri);               
+                if (feedUri == null)
+                    feedUri = new Uri(documentsRequest.BaseUri);
 
                 try
                 {
@@ -2272,7 +2312,7 @@ namespace GoContactSyncMod
                     throw new ApplicationException(newEx, ex);
                 }
             }
-        }         
+        }
 
         //public void SaveContactPhotos(ContactMatch match)
         //{
@@ -2330,7 +2370,7 @@ namespace GoContactSyncMod
                     {
                         try
                         {
-                           
+
                             using (MemoryStream stream = new MemoryStream(Utilities.BitmapToBytes(new Bitmap(outlookPhoto))))
                             {
                                 // Save image to stream.
@@ -2338,13 +2378,13 @@ namespace GoContactSyncMod
 
                                 //Don'T crop, because maybe someone wants to keep his photo like it is on Outlook
                                 //outlookPhoto = Utilities.CropImageGoogleFormat(outlookPhoto);                        
-                                ContactsRequest.SetPhoto(match.GoogleContact, stream);                        
+                                ContactsRequest.SetPhoto(match.GoogleContact, stream);
 
                                 //Just save the Outlook Contact to have the same lastUpdate date as Google
                                 ContactPropertiesUtils.SetOutlookGoogleContactId(this, outlookContactitem, match.GoogleContact);
                                 outlookContactitem.Save();
                                 outlookPhoto.Dispose();
-                        
+
                             }
 
                             break; //Exit because photo save succeeded
@@ -2455,39 +2495,39 @@ namespace GoContactSyncMod
             }
         }
 
-	
-		public Group SaveGoogleGroup(Group group)
-		{
-			//check if this group was not yet inserted on google.
-			if (group.GroupEntry.Id.Uri == null)
-			{
-				//insert group.
-				Uri feedUri = new Uri(GroupsQuery.CreateGroupsUri("default"));
 
-				try
-				{
-					return ContactsRequest.Insert(feedUri, group);
-				}
-				catch
-				{
-					//TODO: save google group xml for diagnistics
-					throw;
-				}
-			}
-			else
-			{
-				try
-				{
-					//group already present in google. just update
-					return ContactsRequest.Update(group);
-				}
-				catch
-				{
-					//TODO: save google group xml for diagnistics
-					throw;
-				}
-			}
-		}
+        public Group SaveGoogleGroup(Group group)
+        {
+            //check if this group was not yet inserted on google.
+            if (group.GroupEntry.Id.Uri == null)
+            {
+                //insert group.
+                Uri feedUri = new Uri(GroupsQuery.CreateGroupsUri("default"));
+
+                try
+                {
+                    return ContactsRequest.Insert(feedUri, group);
+                }
+                catch
+                {
+                    //TODO: save google group xml for diagnistics
+                    throw;
+                }
+            }
+            else
+            {
+                try
+                {
+                    //group already present in google. just update
+                    return ContactsRequest.Update(group);
+                }
+                catch
+                {
+                    //TODO: save google group xml for diagnistics
+                    throw;
+                }
+            }
+        }
 
         /// <summary>
         /// Updates Google contact from Outlook (including groups/categories)
@@ -2517,7 +2557,7 @@ namespace GoContactSyncMod
         /// </summary>
         public void UpdateNote(Outlook.NoteItem master, Document slave)
         {
-            if (!string.IsNullOrEmpty(master.Subject))            
+            if (!string.IsNullOrEmpty(master.Subject))
                 slave.Title = master.Subject.Replace(":", String.Empty);
 
             string fileName = NotePropertiesUtils.CreateNoteFile(master.EntryID, master.Body, SyncProfile);
@@ -2530,7 +2570,7 @@ namespace GoContactSyncMod
 
         }
 
-        
+
 
 
         /// <summary>
@@ -2548,12 +2588,12 @@ namespace GoContactSyncMod
                 //if (result != DialogResult.Yes)
                 //{
                 //    Logger.Log("The body of Google note '" + master.Title + "' is empty. The user decided to skip this note and not to syncronize an empty Google note to a not yet empty Outlook note.", EventType.Information);
-                    Logger.Log("The body of Google note '" + master.Title + "' is empty. It is skipped from syncing, because Outlook note is not empty.", EventType.Warning);
-                    SkippedCount++;
-                    return;
+                Logger.Log("The body of Google note '" + master.Title + "' is empty. It is skipped from syncing, because Outlook note is not empty.", EventType.Warning);
+                SkippedCount++;
+                return;
                 //}
                 //Logger.Log("The body of Google note '" + master.Title + "' is empty. The user decided to syncronize an empty Google note to a not yet empty Outlook note (" + slave.Body + ").", EventType.Warning);                
-                
+
             }
 
             slave.Body = body;
@@ -2562,11 +2602,11 @@ namespace GoContactSyncMod
             List<string> newCats = new List<string>();
             foreach (string category in master.ParentFolders)
             {
-                Document categoryFolder = GetGoogleFolder(googleNotesFolder, null, category);                
+                Document categoryFolder = GetGoogleFolder(googleNotesFolder, null, category);
 
                 if (categoryFolder != null)
                     newCats.Add(categoryFolder.Title);
-                
+
             }
 
             slave.Categories = string.Join(", ", newCats.ToArray());
@@ -2575,49 +2615,49 @@ namespace GoContactSyncMod
 
         }
 
-		/// <summary>
-		/// Updates Google contact's groups from Outlook contact
-		/// </summary>
-		private void OverwriteContactGroups(Outlook.ContactItem master, Contact slave)
-		{
-			Collection<Group> currentGroups = Utilities.GetGoogleGroups(this, slave);
+        /// <summary>
+        /// Updates Google contact's groups from Outlook contact
+        /// </summary>
+        private void OverwriteContactGroups(Outlook.ContactItem master, Contact slave)
+        {
+            Collection<Group> currentGroups = Utilities.GetGoogleGroups(this, slave);
 
-			// get outlook categories
-			string[] cats = Utilities.GetOutlookGroups(master.Categories);
+            // get outlook categories
+            string[] cats = Utilities.GetOutlookGroups(master.Categories);
 
-			// remove obsolete groups
-			Collection<Group> remove = new Collection<Group>();
-			bool found;
-			foreach (Group group in currentGroups)
-			{
-				found = false;
-				foreach (string cat in cats)
-				{
-					if (group.Title == cat)
-					{
-						found = true;
-						break;
-					}
-				}
-				if (!found)
-					remove.Add(group);
-			}
-			while (remove.Count != 0)
-			{
-				Utilities.RemoveGoogleGroup(slave, remove[0]);
-				remove.RemoveAt(0);
-			}
+            // remove obsolete groups
+            Collection<Group> remove = new Collection<Group>();
+            bool found;
+            foreach (Group group in currentGroups)
+            {
+                found = false;
+                foreach (string cat in cats)
+                {
+                    if (group.Title == cat)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                    remove.Add(group);
+            }
+            while (remove.Count != 0)
+            {
+                Utilities.RemoveGoogleGroup(slave, remove[0]);
+                remove.RemoveAt(0);
+            }
 
-			// add new groups
-			Group g;
-			foreach (string cat in cats)
-			{
-				if (!Utilities.ContainsGroup(this, slave, cat))
-				{
-					// add group to contact
-					g = GetGoogleGroupByName(cat);
-					if (g == null)
-					{
+            // add new groups
+            Group g;
+            foreach (string cat in cats)
+            {
+                if (!Utilities.ContainsGroup(this, slave, cat))
+                {
+                    // add group to contact
+                    g = GetGoogleGroupByName(cat);
+                    if (g == null)
+                    {
                         // try to create group again (if not yet created before
                         g = CreateGroup(cat);
 
@@ -2631,13 +2671,13 @@ namespace GoContactSyncMod
                         }
                         else
                             Logger.Log("Google Groups were supposed to be created prior to saving a contact. Unfortunately the group '" + cat + "' couldn't be created and was not assigned to the contact: " + master.FileAs, EventType.Warning);
-                        
-					}
 
-                    if (g!= null)
-					    Utilities.AddGoogleGroup(slave, g);
-				}
-			}
+                    }
+
+                    if (g != null)
+                        Utilities.AddGoogleGroup(slave, g);
+                }
+            }
 
             //add system Group My Contacts            
             if (!Utilities.ContainsGroup(this, slave, myContactsGroup))
@@ -2650,32 +2690,32 @@ namespace GoContactSyncMod
                 }
                 Utilities.AddGoogleGroup(slave, g);
             }
-		}
+        }
 
-		/// <summary>
-		/// Updates Outlook contact's categories (groups) from Google groups
-		/// </summary>
-		private void OverwriteContactGroups(Contact master, Outlook.ContactItem slave)
-		{
-			Collection<Group> newGroups = Utilities.GetGoogleGroups(this, master);
+        /// <summary>
+        /// Updates Outlook contact's categories (groups) from Google groups
+        /// </summary>
+        private void OverwriteContactGroups(Contact master, Outlook.ContactItem slave)
+        {
+            Collection<Group> newGroups = Utilities.GetGoogleGroups(this, master);
 
-			List<string> newCats = new List<string>(newGroups.Count);
-			foreach (Group group in newGroups)
+            List<string> newCats = new List<string>(newGroups.Count);
+            foreach (Group group in newGroups)
             {   //Only add groups that are no SystemGroup (e.g. "System Group: Meine Kontakte") automatically tracked by Google
                 if (group.Title != null && !group.Title.Equals(myContactsGroup))
-				    newCats.Add(group.Title);
-			}
+                    newCats.Add(group.Title);
+            }
 
-			slave.Categories = string.Join(", ", newCats.ToArray());
-		}
+            slave.Categories = string.Join(", ", newCats.ToArray());
+        }
 
-		/// <summary>
-		/// Resets associantions of Outlook contacts with Google contacts via user props
-		/// and resets associantions of Google contacts with Outlook contacts via extended properties.
-		/// </summary>
-		public void ResetContactMatches()
-		{
-			Debug.Assert(OutlookContacts != null, "Outlook Contacts object is null - this should not happen. Please inform Developers.");
+        /// <summary>
+        /// Resets associantions of Outlook contacts with Google contacts via user props
+        /// and resets associantions of Google contacts with Outlook contacts via extended properties.
+        /// </summary>
+        public void ResetContactMatches()
+        {
+            Debug.Assert(OutlookContacts != null, "Outlook Contacts object is null - this should not happen. Please inform Developers.");
             Debug.Assert(GoogleContacts != null, "Google Contacts object is null - this should not happen. Please inform Developers.");
 
             try
@@ -2685,27 +2725,27 @@ namespace GoContactSyncMod
                     Logger.Log("Must set a sync profile. This should be different on each user/computer you sync on.", EventType.Error);
                     return;
                 }
-               
 
-			    lock (_syncRoot)
-			    {
+
+                lock (_syncRoot)
+                {
                     Logger.Log("Resetting Google Contact matches...", EventType.Information);
-				    foreach (Contact googleContact in GoogleContacts)
-				    {
+                    foreach (Contact googleContact in GoogleContacts)
+                    {
                         try
                         {
                             if (googleContact != null)
                                 ResetMatch(googleContact);
                         }
                         catch (Exception ex)
-                        {                           
+                        {
                             Logger.Log("The match of Google contact " + ContactMatch.GetName(googleContact) + " couldn't be reset: " + ex.Message, EventType.Warning);
                         }
-				    }
+                    }
 
                     Logger.Log("Resetting Outlook Contact matches...", EventType.Information);
                     //1 based array
-                    for (int i=1; i <= OutlookContacts.Count; i++)
+                    for (int i = 1; i <= OutlookContacts.Count; i++)
                     {
                         Outlook.ContactItem outlookContact = null;
 
@@ -2721,13 +2761,13 @@ namespace GoContactSyncMod
                         catch (Exception ex)
                         {
                             //this is needed because some contacts throw exceptions
-                            Logger.Log("Accessing Outlook contact threw and exception. Skipping: " + ex.Message, EventType.Warning);                               
+                            Logger.Log("Accessing Outlook contact threw and exception. Skipping: " + ex.Message, EventType.Warning);
                             continue;
                         }
 
                         try
                         {
-                            ResetMatch(outlookContact);                            
+                            ResetMatch(outlookContact);
                         }
                         catch (Exception ex)
                         {
@@ -2746,8 +2786,8 @@ namespace GoContactSyncMod
                 }
                 GoogleContacts = null;
             }
-						
-		}
+
+        }
 
         /// <summary>
         /// Resets associantions of Outlook notes with Google contacts via user props
@@ -2755,64 +2795,64 @@ namespace GoContactSyncMod
         /// </summary>
         public void ResetNoteMatches()
         {
-            Debug.Assert(OutlookNotes != null, "Outlook Notes object is null - this should not happen. Please inform Developers.");            
+            Debug.Assert(OutlookNotes != null, "Outlook Notes object is null - this should not happen. Please inform Developers.");
 
             //try
             //{
-                if (string.IsNullOrEmpty(SyncProfile))
+            if (string.IsNullOrEmpty(SyncProfile))
+            {
+                Logger.Log("Must set a sync profile. This should be different on each user/computer you sync on.", EventType.Error);
+                return;
+            }
+
+
+            lock (_syncRoot)
+            {
+                Logger.Log("Resetting Google Note matches...", EventType.Information);
+
+                try
                 {
-                    Logger.Log("Must set a sync profile. This should be different on each user/computer you sync on.", EventType.Error);
-                    return;
+                    NotePropertiesUtils.DeleteNoteFiles(SyncProfile);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log("The Google Note matches couldn't be reset: " + ex.Message, EventType.Warning);
                 }
 
 
-                lock (_syncRoot)
+                Logger.Log("Resetting Outlook Note matches...", EventType.Information);
+                //1 based array
+                for (int i = 1; i <= OutlookNotes.Count; i++)
                 {
-                    Logger.Log("Resetting Google Note matches...", EventType.Information);
+                    Outlook.NoteItem outlookNote = null;
 
                     try
                     {
-                        NotePropertiesUtils.DeleteNoteFiles(SyncProfile);
-                    }
-                    catch (Exception ex)
-                    {                           
-                        Logger.Log("The Google Note matches couldn't be reset: " + ex.Message, EventType.Warning);
-                    }
-                    
-
-                    Logger.Log("Resetting Outlook Note matches...", EventType.Information);
-                    //1 based array
-                    for (int i = 1; i <= OutlookNotes.Count; i++)
-                    {
-                        Outlook.NoteItem outlookNote = null;
-
-                        try
+                        outlookNote = OutlookNotes[i] as Outlook.NoteItem;
+                        if (outlookNote == null)
                         {
-                            outlookNote = OutlookNotes[i] as Outlook.NoteItem;
-                            if (outlookNote == null)
-                            {
-                                Logger.Log("Empty Outlook Note found (maybe distribution list). Skipping", EventType.Warning);
-                                continue;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            //this is needed because some notes throw exceptions
-                            Logger.Log("Accessing Outlook Note threw and exception. Skipping: " + ex.Message, EventType.Warning);
+                            Logger.Log("Empty Outlook Note found (maybe distribution list). Skipping", EventType.Warning);
                             continue;
                         }
-
-                        try
-                        {
-                            ResetMatch(outlookNote);
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Log("The match of Outlook note " + outlookNote.Subject + " couldn't be reset: " + ex.Message, EventType.Warning);
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        //this is needed because some notes throw exceptions
+                        Logger.Log("Accessing Outlook Note threw and exception. Skipping: " + ex.Message, EventType.Warning);
+                        continue;
                     }
 
+                    try
+                    {
+                        ResetMatch(outlookNote);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log("The match of Outlook note " + outlookNote.Subject + " couldn't be reset: " + ex.Message, EventType.Warning);
+                    }
                 }
+
+            }
             //}
             //finally
             //{
@@ -2835,14 +2875,14 @@ namespace GoContactSyncMod
         //{           
         //    if (match == null)
         //        throw new ArgumentNullException("match", "Given ContactMatch is null");
-            
+
 
         //    if (match.GoogleContact != null)
         //    {
         //        ContactPropertiesUtils.ResetGoogleOutlookContactId(SyncProfile, match.GoogleContact);
         //        SaveGoogleContact(match.GoogleContact);
         //    }
-            
+
         //    if (match.OutlookContact != null)
         //    {
         //        Outlook.ContactItem outlookContactItem = match.OutlookContact.GetOriginalItemFromOutlook(this);
@@ -2856,7 +2896,7 @@ namespace GoContactSyncMod
         //            Marshal.ReleaseComObject(outlookContactItem);
         //            outlookContactItem = null;
         //        }
-              
+
         //        //Reset also Google duplicatesC
         //        foreach (Contact duplicate in match.AllGoogleContactMatches)
         //        {
@@ -2868,7 +2908,7 @@ namespace GoContactSyncMod
         //        }
         //    }
 
-            
+
         //}
 
         /// <summary>
@@ -2883,11 +2923,11 @@ namespace GoContactSyncMod
             //{
 
             lock (_syncRoot)
-            {                
+            {
 
                 Logger.Log("Resetting Outlook appointment matches...", EventType.Information);
                 //1 based array
-                for (int i = OutlookAppointments.Count; i >=1; i--)
+                for (int i = OutlookAppointments.Count; i >= 1; i--)
                 {
                     Outlook.AppointmentItem outlookAppointment = null;
 
@@ -2948,7 +2988,7 @@ namespace GoContactSyncMod
 
                     if (deleteGoogleAppointments)
                     {
-                        EventRequest.Delete(PrimaryCalendar.Id,googleAppointment.Id).Execute();
+                        EventRequest.Delete(PrimaryCalendar.Id, googleAppointment.Id).Execute();
                     }
                     else
                     {
@@ -3008,7 +3048,7 @@ namespace GoContactSyncMod
         /// Reset the match link between Outlook and Google contact
         /// </summary>
         public void ResetMatch(Outlook.ContactItem outlookContact)
-        {           
+        {
 
             if (outlookContact != null)
             {
@@ -3022,7 +3062,7 @@ namespace GoContactSyncMod
                     Marshal.ReleaseComObject(outlookContact);
                     outlookContact = null;
                 }
-                
+
             }
 
 
@@ -3038,8 +3078,8 @@ namespace GoContactSyncMod
             {
                 //try
                 //{
-                    NotePropertiesUtils.ResetOutlookGoogleNoteId(this, outlookNote);
-                    outlookNote.Save();
+                NotePropertiesUtils.ResetOutlookGoogleNoteId(this, outlookNote);
+                outlookNote.Save();
                 //}
                 //finally
                 //{
@@ -3078,7 +3118,7 @@ namespace GoContactSyncMod
         }
 
         public ContactMatch ContactByProperty(string name, string email)
-        {            
+        {
             foreach (ContactMatch m in Contacts)
             {
                 if (m.GoogleContact != null &&
@@ -3097,7 +3137,7 @@ namespace GoContactSyncMod
             }
             return null;
         }
-		
+
         //public ContactMatch ContactEmail(string email)
         //{
         //    foreach (ContactMatch m in Contacts)
@@ -3116,14 +3156,14 @@ namespace GoContactSyncMod
         //    return null;
         //}
 
-		/// <summary>
-		/// Used to find duplicates.
-		/// </summary>
-		/// <param name="name"></param>
-		/// <param name="value"></param>
-		/// <returns></returns>
-		public Collection<OutlookContactInfo> OutlookContactByProperty(string name, string value)
-		{
+        /// <summary>
+        /// Used to find duplicates.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public Collection<OutlookContactInfo> OutlookContactByProperty(string name, string value)
+        {
             Collection<OutlookContactInfo> col = new Collection<OutlookContactInfo>();
             //foreach (Outlook.ContactItem outlookContact in OutlookContacts)
             //{
@@ -3137,7 +3177,7 @@ namespace GoContactSyncMod
             Outlook.ContactItem item = null;
             try
             {
-                item = OutlookContacts.Find("["+name+"] = \"" + value + "\"") as Outlook.ContactItem;
+                item = OutlookContacts.Find("[" + name + "] = \"" + value + "\"") as Outlook.ContactItem;
                 while (item != null)
                 {
                     col.Add(new OutlookContactInfo(item, this));
@@ -3146,16 +3186,16 @@ namespace GoContactSyncMod
                 }
             }
             catch (Exception)
-			{
-				//TODO: should not get here.
-			}
+            {
+                //TODO: should not get here.
+            }
 
-			return col;
-		}
-        
-		public Group GetGoogleGroupById(string id)
-		{
-			//return GoogleGroups.FindById(new AtomId(id)) as Group;
+            return col;
+        }
+
+        public Group GetGoogleGroupById(string id)
+        {
+            //return GoogleGroups.FindById(new AtomId(id)) as Group;
             AtomId atomId = new AtomId(id);
             foreach (Group group in GoogleGroups)
             {
@@ -3163,17 +3203,17 @@ namespace GoContactSyncMod
                     return group;
             }
             return null;
-		}
+        }
 
-		public Group GetGoogleGroupByName(string name)
-		{
-			foreach (Group group in GoogleGroups)
-			{
-				if (group.Title == name)
-					return group;
-			}
-			return null;
-		}
+        public Group GetGoogleGroupByName(string name)
+        {
+            foreach (Group group in GoogleGroups)
+            {
+                if (group.Title == name)
+                    return group;
+            }
+            return null;
+        }
 
         public Contact GetGoogleContactById(string id)
         {
@@ -3205,7 +3245,7 @@ namespace GoContactSyncMod
 
             //AtomId atomId = new AtomId(id);
             foreach (Google.Apis.Calendar.v3.Data.Event appointment in GoogleAppointments)
-            {                
+            {
                 if (appointment.Id.Equals(id))
                     return appointment;
             }
@@ -3225,10 +3265,10 @@ namespace GoContactSyncMod
 
         //    if (id == null)
         //        return null;
-            
+
         //    foreach (Event appointment in GoogleAppointments)
         //    {
-                
+
         //        if (appointment.OriginalEvent != null && appointment.Times.Count > 0 && restrictStartDate.Date.Equals(appointment.Times[0].StartTime.Date))
         //            if (id.Equals(new AtomId(id.AbsoluteUri.Substring(0, id.AbsoluteUri.LastIndexOf("/") + 1) + appointment.OriginalEvent.IdOriginal)))
         //                return appointment;                                         
@@ -3248,33 +3288,33 @@ namespace GoContactSyncMod
         //}
 
 
-		public Group CreateGroup(string name)
-		{
-			Group group = new Group();
-			group.Title = name;
-			group.GroupEntry.Dirty = true;
-			return group;
-		}
+        public Group CreateGroup(string name)
+        {
+            Group group = new Group();
+            group.Title = name;
+            group.GroupEntry.Dirty = true;
+            return group;
+        }
 
-		public static bool AreEqual(Outlook.ContactItem c1, Outlook.ContactItem c2)
-		{
-			return c1.Email1Address == c2.Email1Address;
-		}
-		public static int IndexOf(Collection<Outlook.ContactItem> col, Outlook.ContactItem outlookContact)
-		{
+        public static bool AreEqual(Outlook.ContactItem c1, Outlook.ContactItem c2)
+        {
+            return c1.Email1Address == c2.Email1Address;
+        }
+        public static int IndexOf(Collection<Outlook.ContactItem> col, Outlook.ContactItem outlookContact)
+        {
 
-			for (int i = 0; i < col.Count; i++)
-			{
-				if (AreEqual(col[i], outlookContact))
-					return i;
-			}
-			return -1;
-		}
+            for (int i = 0; i < col.Count; i++)
+            {
+                if (AreEqual(col[i], outlookContact))
+                    return i;
+            }
+            return -1;
+        }
 
-		internal void DebugContacts()
-		{
-			string msg = "DEBUG INFORMATION\nPlease submit to developer:\n\n{0}\n{1}\n{2}";
-          
+        internal void DebugContacts()
+        {
+            string msg = "DEBUG INFORMATION\nPlease submit to developer:\n\n{0}\n{1}\n{2}";
+
 
             if (SyncContacts)
             {
@@ -3302,7 +3342,7 @@ namespace GoContactSyncMod
 
                 MessageBox.Show(string.Format(msg, oCount, gCount, mCount), "DEBUG INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-		}
+        }
         public static Outlook.ContactItem CreateOutlookContactItem(string syncContactsFolder)
         {
             //outlookContact = OutlookApplication.CreateItem(Outlook.OlItemType.olContactItem) as Outlook.ContactItem; //This will only create it in the default folder, but we have to consider the selected folder
@@ -3344,7 +3384,7 @@ namespace GoContactSyncMod
             }
             return outlookNote;
         }
-	
+
 
         public static Outlook.AppointmentItem CreateOutlookAppointmentItem(string syncAppointmentsFolder)
         {
@@ -3366,14 +3406,14 @@ namespace GoContactSyncMod
             }
             return outlookAppointment;
         }
-	}
+    }
 
-	internal enum SyncOption
-	{
-		MergePrompt,
-		MergeOutlookWins,
-		MergeGoogleWins,
-		OutlookToGoogleOnly,
-		GoogleToOutlookOnly,
-	}
+    internal enum SyncOption
+    {
+        MergePrompt,
+        MergeOutlookWins,
+        MergeGoogleWins,
+        OutlookToGoogleOnly,
+        GoogleToOutlookOnly,
+    }
 }
