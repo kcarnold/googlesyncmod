@@ -171,6 +171,9 @@ namespace GoContactSyncMod
                 //Calendar-Scope
                 scopes.Add("https://www.googleapis.com/auth/calendar");
 
+                //add user log for authorization uri
+                scopes.Add("&login_hint=" + username);
+
                 //take user credentials
                 UserCredential credential;
 
@@ -184,7 +187,7 @@ namespace GoContactSyncMod
                 {
                     FileDataStore fDS = new FileDataStore(Logger.Folder, true);
                     GoogleClientSecrets clientSecrets = GoogleClientSecrets.Load(stream);
-
+                    
                     credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
                                     clientSecrets.Secrets,
                                     scopes.ToArray(),
