@@ -202,7 +202,6 @@ namespace GoContactSyncMod
                             }
                         }
                                                                         
-
                         if (outlookContactFolders != null) // && outlookContactFolders.Count > 0)
                         {
                             outlookContactFolders.Sort();
