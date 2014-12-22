@@ -20,6 +20,10 @@ using Google.Apis.Calendar.v3;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Util.Store;
 using Google.Apis.Calendar.v3.Data;
+using System.Threading.Tasks;
+using Google.Apis.Auth.OAuth2.Flows;
+using Google.Apis.Auth.OAuth2.Requests;
+using Newtonsoft.Json;
 
 namespace GoContactSyncMod
 {
@@ -155,7 +159,7 @@ namespace GoContactSyncMod
         /// if true, use Outlook's FileAs for Google Title/FullName. If false, use Outlook's Fullname
         /// </summary>
         public bool UseFileAs { get; set; }
-
+   
         public void LoginToGoogle(string username, string password)
         {
             Logger.Log("Connecting to Google...", EventType.Information);
@@ -171,6 +175,10 @@ namespace GoContactSyncMod
                 //Calendar-Scope
                 scopes.Add("https://www.googleapis.com/auth/calendar");
 
+                //[Google.Apis.Util.RequestParameterAttribute("login_hint", "email@gmail.com")];
+                //GoogleAuthorizationCodeRequestUrl ls = new GoogleAuthorizationCodeRequestUrl();
+                //ls.LoginHint = "ronny.berndt@gmail.com";
+
                 //add user log for authorization uri
                 //scopes.Add("&login_hint=" + username);
 
@@ -180,16 +188,14 @@ namespace GoContactSyncMod
                 //load client secret from ressources
                 byte[] jsonSecrets = Properties.Resources.client_secrets;
 
-                //RequestSettings rs = new RequestSettings("GoogleContactSyncMod", username, password);
-
                 //using (var stream = new FileStream(Application.StartupPath + "\\client_secrets.json", FileMode.Open, FileAccess.Read))
                 using (var stream = new MemoryStream(jsonSecrets))
                 {
                     FileDataStore fDS = new FileDataStore(Logger.Folder, true);
-                    
+
                     GoogleClientSecrets clientSecrets = GoogleClientSecrets.Load(stream);
-                    
-                    credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+
+                    credential = GCSMOAuth2WebAuthorizationBroker.AuthorizeAsync(
                                     clientSecrets.Secrets,
                                     scopes.ToArray(),
                                     username,
@@ -204,6 +210,7 @@ namespace GoContactSyncMod
                     {
                         ClientId = clientSecrets.Secrets.ClientId,
                         ClientSecret = clientSecrets.Secrets.ClientSecret,
+
                         // Note: AccessToken is valid only for 60 minutes
                         AccessToken = credential.Token.AccessToken,
                         RefreshToken = credential.Token.RefreshToken
