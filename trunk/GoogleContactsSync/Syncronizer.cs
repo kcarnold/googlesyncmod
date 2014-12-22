@@ -175,13 +175,6 @@ namespace GoContactSyncMod
                 //Calendar-Scope
                 scopes.Add("https://www.googleapis.com/auth/calendar");
 
-                //[Google.Apis.Util.RequestParameterAttribute("login_hint", "email@gmail.com")];
-                //GoogleAuthorizationCodeRequestUrl ls = new GoogleAuthorizationCodeRequestUrl();
-                //ls.LoginHint = "ronny.berndt@gmail.com";
-
-                //add user log for authorization uri
-                //scopes.Add("&login_hint=" + username);
-
                 //take user credentials
                 UserCredential credential;
 
