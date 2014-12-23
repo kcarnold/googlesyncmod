@@ -14,6 +14,7 @@ using System.Runtime.Remoting;
 using System.Runtime.InteropServices;
 using System.Collections;
 using System.Globalization;
+using Google.Apis.Util.Store;
 
 
 namespace GoContactSyncMod
@@ -50,7 +51,7 @@ namespace GoContactSyncMod
 		private bool requestClose = false;
         private bool boolShowBalloonTip = true;
 
-        public const string AppRootKey = @"Software\Webgear\GOContactSync";
+        public const string AppRootKey = @"Software\GoContactSyncMOD";
 
         private ProxySettingsForm _proxy = new ProxySettingsForm();
 
@@ -313,7 +314,6 @@ namespace GoContactSyncMod
         private void ClearSettings()
         {
             SetSyncOption(0);
-            UserName.Text = Password.Text = "";
             autoSyncCheckBox.Checked = runAtStartupCheckBox.Checked = reportSyncResultCheckBox.Checked = false;
             autoSyncInterval.Value = 120;
             _proxy.ClearSettings();
@@ -351,6 +351,13 @@ namespace GoContactSyncMod
         {
             Logger.Log("Loading settings from registry...",EventType.Information);
             RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey  + (_profile != null ? ('\\' + _profile) : "")  );
+
+            //delete old registry settings
+            if (Registry.CurrentUser.OpenSubKey(@"Software\WebGear") != null)
+            {
+                MessageBox.Show("Your settings have been deleted because of an upgrade! You simply need to reconfigure them. Thx!", Application.ProductName + " - INFORMATION",MessageBoxButtons.OK);
+                Registry.CurrentUser.DeleteSubKeyTree(@"Software\WebGear");
+            }
 
             if (regKeyAppRoot.GetValue("SyncOption") != null)
             {
@@ -443,8 +450,6 @@ namespace GoContactSyncMod
                 if (!string.IsNullOrEmpty(UserName.Text))
                 {
                     regKeyAppRoot.SetValue("Username", UserName.Text);
-                    if (!string.IsNullOrEmpty(Password.Text))
-                        regKeyAppRoot.SetValue("Password", Encryption.EncryptPassword(UserName.Text, Password.Text));
                 }
                 regKeyAppRoot.SetValue("AutoSync", autoSyncCheckBox.Checked.ToString());
                 regKeyAppRoot.SetValue("AutoSyncInterval", autoSyncInterval.Value.ToString());
@@ -678,7 +683,7 @@ namespace GoContactSyncMod
                     }
 
 
-                    sync.LoginToGoogle(UserName.Text, Password.Text);
+                    sync.LoginToGoogle(UserName.Text);
                     sync.LoginToOutlook();
                     
                     sync.Sync();
@@ -1144,7 +1149,7 @@ namespace GoContactSyncMod
             Syncronizer.SyncAppointmentsFolder = syncAppointmentsFolder;
             sync.SyncProfile = syncProfile;
 
-            sync.LoginToGoogle(UserName.Text, Password.Text);
+            sync.LoginToGoogle(UserName.Text);
             sync.LoginToOutlook();
 
            
@@ -1254,7 +1259,6 @@ namespace GoContactSyncMod
 		private void SettingsForm_Load(object sender, EventArgs e)
 		{
 			if (string.IsNullOrEmpty(UserName.Text) ||
-				string.IsNullOrEmpty(Password.Text) ||
                 string.IsNullOrEmpty(cmbSyncProfile.Text) /*||
                 string.IsNullOrEmpty(contactFoldersComboBox.Text)*/ )
 			{
@@ -1628,6 +1632,21 @@ namespace GoContactSyncMod
         private void appointmentTimezonesComboBox_TextChanged(object sender, EventArgs e)
         {
             this.Timezone = appointmentTimezonesComboBox.Text;
+        }
+
+        private void linkLabelRevokeAuthentification_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            try
+            {
+                Logger.Log("Trying to remove Authentification...", EventType.Information);
+                FileDataStore fDS = new FileDataStore(Logger.AuthFolder, true);
+                fDS.ClearAsync();
+                Logger.Log("Removed Authentification...", EventType.Information); 
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex.ToString(), EventType.Error);
+            }
         }
 
 

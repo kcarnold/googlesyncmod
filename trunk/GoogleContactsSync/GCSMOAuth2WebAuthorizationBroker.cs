@@ -4,6 +4,7 @@ using Google.Apis.Auth.OAuth2.Requests;
 using Google.Apis.Util.Store;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,14 +18,21 @@ namespace GoContactSyncMod
             IEnumerable<string> scopes, string user, CancellationToken taskCancellationToken,
             IDataStore dataStore = null)
         {
-            var initializer = new GCSMAuthorizationCodeFlow.Initializer
+            var initializer = new GoogleAuthorizationCodeFlow.Initializer
             {
                 ClientSecrets = clientSecrets,
-                Scopes = scopes,
-                DataStore = dataStore ?? new FileDataStore(Folder)
             };
+            return await AuthorizeAsyncCore(initializer, scopes, user, taskCancellationToken, dataStore)
+                .ConfigureAwait(false);
+        }
 
-            var flow = new GCSMAuthorizationCodeFlow(initializer, user);
+        private static async Task<UserCredential> AuthorizeAsyncCore(
+            GoogleAuthorizationCodeFlow.Initializer initializer, IEnumerable<string> scopes, string user,
+            CancellationToken taskCancellationToken, IDataStore dataStore = null)
+        {
+            initializer.Scopes = scopes;
+            initializer.DataStore = dataStore ?? new FileDataStore(Folder);
+            var flow = new GCSMAuthorizationCodeFlow(initializer,user);
 
             // Create an authorization code installed app instance and authorize the user.
             return await new AuthorizationCodeInstalledApp(flow, new LocalServerCodeReceiver()).AuthorizeAsync
@@ -49,7 +57,7 @@ namespace GoContactSyncMod
             {
                 ClientId = ClientSecrets.ClientId,
                 Scope = string.Join(" ", Scopes),
-                //appen duser to url
+                //append user to url
                 LoginHint = userId,
                 RedirectUri = redirectUri
             };

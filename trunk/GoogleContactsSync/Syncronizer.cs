@@ -1,29 +1,23 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using Google.GData.Contacts;
-using Google.GData.Client;
-using Outlook = Microsoft.Office.Interop.Outlook;
-using System.Drawing;
-using System.IO;
-using System.Collections.ObjectModel;
-using System.Windows.Forms;
-using System.Runtime.InteropServices;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Calendar.v3;
+using Google.Apis.Calendar.v3.Data;
+using Google.Apis.Util.Store;
 using Google.Contacts;
 using Google.Documents;
+using Google.GData.Client;
 using Google.GData.Client.ResumableUpload;
+using Google.GData.Contacts;
 using Google.GData.Documents;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
-using Google.Apis.Calendar;
-using Google.GData.Extensions;
-using Google.Apis.Calendar.v3;
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.Util.Store;
-using Google.Apis.Calendar.v3.Data;
-using System.Threading.Tasks;
-using Google.Apis.Auth.OAuth2.Flows;
-using Google.Apis.Auth.OAuth2.Requests;
-using Newtonsoft.Json;
+using System.Windows.Forms;
+using Outlook = Microsoft.Office.Interop.Outlook;
 
 namespace GoContactSyncMod
 {
@@ -160,7 +154,7 @@ namespace GoContactSyncMod
         /// </summary>
         public bool UseFileAs { get; set; }
    
-        public void LoginToGoogle(string username, string password)
+        public void LoginToGoogle(string username)
         {
             Logger.Log("Connecting to Google...", EventType.Information);
             if (ContactsRequest == null && SyncContacts || DocumentsRequest == null && SyncNotes || EventRequest == null & SyncAppointments)
@@ -184,10 +178,10 @@ namespace GoContactSyncMod
                 //using (var stream = new FileStream(Application.StartupPath + "\\client_secrets.json", FileMode.Open, FileAccess.Read))
                 using (var stream = new MemoryStream(jsonSecrets))
                 {
-                    FileDataStore fDS = new FileDataStore(Logger.Folder, true);
-
+                    FileDataStore fDS = new FileDataStore(Logger.AuthFolder, true);
+                    
                     GoogleClientSecrets clientSecrets = GoogleClientSecrets.Load(stream);
-
+                    
                     credential = GCSMOAuth2WebAuthorizationBroker.AuthorizeAsync(
                                     clientSecrets.Secrets,
                                     scopes.ToArray(),
@@ -208,9 +202,9 @@ namespace GoContactSyncMod
                         AccessToken = credential.Token.AccessToken,
                         RefreshToken = credential.Token.RefreshToken
                     };
-
+                    Logger.Log(Application.ProductName, EventType.Information);
                     RequestSettings settings = new RequestSettings(
-                        "GO Contact Sync Mod", parameters);
+                        Application.ProductName, parameters);
 
                     if (SyncContacts)
                     {
@@ -222,8 +216,12 @@ namespace GoContactSyncMod
                     {
                         //DocumentsRequest = new DocumentsRequest(rs);
                         DocumentsRequest = new DocumentsRequest(settings);
+                  
                         //Instantiate an Authenticator object according to your authentication, to use ResumableUploader
-                        //authenticator = new ClientLoginAuthenticator(Application.ProductName, DocumentsRequest.Service.ServiceIdentifier, username, password);
+                        GDataCredentials cred = new GDataCredentials(credential.Token.AccessToken);
+                        GOAuth2RequestFactory rf = new GOAuth2RequestFactory(null, Application.ProductName, parameters);
+                      
+                        authenticator = new ClientLoginAuthenticator(Application.ProductName, DocumentsRequest.Service.ServiceIdentifier, cred);
                     }
                     if (SyncAppointments)
                     {
@@ -1981,6 +1979,7 @@ namespace GoContactSyncMod
                 // Start the update process.  
                 uploader.AsyncOperationCompleted += new AsyncOperationCompletedEventHandler(OnGoogleNoteUpdated);
                 uploader.UpdateAsync(authenticator, match.GoogleNote.DocumentEntry, match);
+                
                 //uploader.Update(_authenticator, match.GoogleNote.DocumentEntry);
 
             }

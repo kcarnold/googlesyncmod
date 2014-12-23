@@ -32,11 +32,15 @@ namespace GoContactSyncMod
         private static StreamWriter logwriter;
 
         public static readonly string Folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\GoContactSyncMOD\\";
+        public static readonly string AuthFolder = Folder + "\\Auth\\";
 
         static Logger()
         {
             if (!Directory.Exists(Folder))
+            {
                 Directory.CreateDirectory(Folder);
+                Directory.CreateDirectory(AuthFolder);
+            }
             try
             {
                 string logFileName = Folder + "log.txt";
