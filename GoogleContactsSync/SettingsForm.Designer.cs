@@ -30,9 +30,7 @@ namespace GoContactSyncMod
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsForm));
-            this.Password = new System.Windows.Forms.TextBox();
             this.UserName = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.syncButton = new System.Windows.Forms.Button();
             this.syncOptionBox = new System.Windows.Forms.CheckedListBox();
@@ -76,6 +74,7 @@ namespace GoContactSyncMod
             this.logGroupBox = new System.Windows.Forms.GroupBox();
             this.syncConsole = new System.Windows.Forms.TextBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.linkLabelRevokeAuthentification = new System.Windows.Forms.LinkLabel();
             this.chkUseFileAs = new System.Windows.Forms.CheckBox();
             this.proxySettingsLinkLabel = new System.Windows.Forms.LinkLabel();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
@@ -102,38 +101,16 @@ namespace GoContactSyncMod
             this.MainPanel.SuspendLayout();
             this.SuspendLayout();
             // 
-            // Password
-            // 
-            this.Password.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.Password.Enabled = false;
-            this.Password.Location = new System.Drawing.Point(100, 44);
-            this.Password.Name = "Password";
-            this.Password.PasswordChar = '*';
-            this.Password.ReadOnly = true;
-            this.Password.Size = new System.Drawing.Size(489, 21);
-            this.Password.TabIndex = 3;
-            this.toolTip.SetToolTip(this.Password, "Type in your Google Mail Password");
-            this.Password.TextChanged += new System.EventHandler(this.Password_TextChanged);
-            // 
             // UserName
             // 
             this.UserName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.UserName.Location = new System.Drawing.Point(100, 18);
             this.UserName.Name = "UserName";
-            this.UserName.Size = new System.Drawing.Size(489, 21);
+            this.UserName.Size = new System.Drawing.Size(342, 21);
             this.UserName.TabIndex = 1;
             this.toolTip.SetToolTip(this.UserName, "Type in your Google Mail User Name (full name)");
             this.UserName.TextChanged += new System.EventHandler(this.UserName_TextChanged);
-            // 
-            // label3
-            // 
-            this.label3.Location = new System.Drawing.Point(7, 44);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(75, 16);
-            this.label3.TabIndex = 2;
-            this.label3.Text = "&Password:";
             // 
             // label2
             // 
@@ -319,7 +296,7 @@ namespace GoContactSyncMod
             this.reportSyncResultCheckBox.AutoSize = true;
             this.reportSyncResultCheckBox.Location = new System.Drawing.Point(14, 65);
             this.reportSyncResultCheckBox.Name = "reportSyncResultCheckBox";
-            this.reportSyncResultCheckBox.Size = new System.Drawing.Size(225, 17);
+            this.reportSyncResultCheckBox.Size = new System.Drawing.Size(226, 17);
             this.reportSyncResultCheckBox.TabIndex = 6;
             this.reportSyncResultCheckBox.Text = "Re&port Sync Result in System Tray";
             this.reportSyncResultCheckBox.UseVisualStyleBackColor = true;
@@ -920,18 +897,30 @@ namespace GoContactSyncMod
             // 
             this.groupBox4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox4.Controls.Add(this.linkLabelRevokeAuthentification);
             this.groupBox4.Controls.Add(this.chkUseFileAs);
             this.groupBox4.Controls.Add(this.proxySettingsLinkLabel);
             this.groupBox4.Controls.Add(this.label2);
-            this.groupBox4.Controls.Add(this.label3);
             this.groupBox4.Controls.Add(this.UserName);
-            this.groupBox4.Controls.Add(this.Password);
             this.groupBox4.Location = new System.Drawing.Point(6, 20);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(597, 92);
             this.groupBox4.TabIndex = 0;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Google Account";
+            // 
+            // linkLabelRevokeAuthentification
+            // 
+            this.linkLabelRevokeAuthentification.AutoSize = true;
+            this.linkLabelRevokeAuthentification.Location = new System.Drawing.Point(7, 42);
+            this.linkLabelRevokeAuthentification.Name = "linkLabelRevokeAuthentification";
+            this.linkLabelRevokeAuthentification.Size = new System.Drawing.Size(142, 13);
+            this.linkLabelRevokeAuthentification.TabIndex = 8;
+            this.linkLabelRevokeAuthentification.TabStop = true;
+            this.linkLabelRevokeAuthentification.Text = "Revoke Authentification";
+            this.toolTip.SetToolTip(this.linkLabelRevokeAuthentification, "If you want to authentificate GoogleContactsSyncMod again, or if something didn\'t" +
+        " work corecctly with autehtification.");
+            this.linkLabelRevokeAuthentification.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelRevokeAuthentification_LinkClicked);
             // 
             // chkUseFileAs
             // 
@@ -1135,9 +1124,7 @@ namespace GoContactSyncMod
 
         #endregion
 
-        private System.Windows.Forms.TextBox Password;
         private System.Windows.Forms.TextBox UserName;
-        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button syncButton;
         private System.Windows.Forms.CheckedListBox syncOptionBox;
@@ -1194,6 +1181,7 @@ namespace GoContactSyncMod
         private System.Windows.Forms.Label labelMonthsFuture;
         private System.Windows.Forms.Label labelMonthsPast;
         private System.Windows.Forms.Label labelTimezone;
+        private System.Windows.Forms.LinkLabel linkLabelRevokeAuthentification;
 
     }
 }
