@@ -104,10 +104,22 @@ namespace GoContactSyncMod
         {
             RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(SettingsForm.AppRootKey);
 
+            //only for downside compliance reasons: load old registry settings first and save them later on in new structure
+            if (Registry.CurrentUser.OpenSubKey(@"Software\Webgear\GOContactSync") != null)
+            {
+                regKeyAppRoot = Registry.CurrentUser.CreateSubKey(@"Software\Webgear\GOContactSync");
+            }
+
             if (null != regKeyAppRoot.GetValue("UseGlobalProxySettings"))
                 cbUseGlobalSettings.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("UseGlobalProxySettings"));
 
             regKeyAppRoot = Registry.CurrentUser.CreateSubKey(SettingsForm.AppRootKey + (_profile != null && !cbUseGlobalSettings.Checked ? ('\\' + _profile) : ""));
+
+            //only for downside compliance reasons: load old registry settings first and save them later on in new structure
+            if (Registry.CurrentUser.OpenSubKey(@"Software\Webgear\GOContactSync") != null)
+            {
+                regKeyAppRoot = Registry.CurrentUser.CreateSubKey(@"Software\Webgear\GOContactSync" + (_profile != null && !cbUseGlobalSettings.Checked ? ('\\' + _profile) : ""));
+            }
 
             if (regKeyAppRoot.GetValue("ProxyUsage") != null)
             {

@@ -2989,7 +2989,7 @@ namespace GoContactSyncMod
                         continue;
                     }
 
-                    if (deleteGoogleAppointments)
+                    if (deleteGoogleAppointments && googleAppointment.Status != "cancelled")
                     {
                         EventRequest.Delete(PrimaryCalendar.Id, googleAppointment.Id).Execute();
                     }

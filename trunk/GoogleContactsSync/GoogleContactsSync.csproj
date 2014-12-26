@@ -322,7 +322,9 @@
     <Content Include="Resources\contacts-sync.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Resources\client_secrets.json" />
     <None Include="Resources\sync_0.ico" />
     <None Include="Resources\sync_30.ico" />
