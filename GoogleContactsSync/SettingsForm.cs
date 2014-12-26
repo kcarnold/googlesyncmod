@@ -65,6 +65,12 @@ namespace GoContactSyncMod
             get
             {
                 RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey);
+
+                //only for downside compliance reasons: load old registry settings first and save them later on in new structure
+                if (Registry.CurrentUser.OpenSubKey(@"Software\Webgear\GOContactSync") != null)
+                {
+                    regKeyAppRoot = Registry.CurrentUser.CreateSubKey(@"Software\Webgear\GOContactSync");
+                }
                 return (regKeyAppRoot.GetValue("SyncProfile") != null) ?
                        (string)regKeyAppRoot.GetValue("SyncProfile") : null;
             }
@@ -322,6 +328,13 @@ namespace GoContactSyncMod
         private bool fillSyncProfileItems()
         {
             RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey);
+            //only for downside compliance reasons: load old registry settings first and save them later on in new structure
+            if (Registry.CurrentUser.OpenSubKey(@"Software\Webgear\GOContactSync") != null)
+            {                
+                regKeyAppRoot = Registry.CurrentUser.CreateSubKey(@"Software\Webgear\GOContactSync");
+            }
+
+
             bool vReturn = false;
 
             cmbSyncProfile.Items.Clear();
@@ -352,11 +365,12 @@ namespace GoContactSyncMod
             Logger.Log("Loading settings from registry...",EventType.Information);
             RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey  + (_profile != null ? ('\\' + _profile) : "")  );
 
-            //delete old registry settings
-            if (Registry.CurrentUser.OpenSubKey(@"Software\WebGear") != null)
+            //only for downside compliance reasons: load old registry settings first and save them later on in new structure
+            if (Registry.CurrentUser.OpenSubKey(@"Software\Webgear\GOContactSync") != null)
             {
-                MessageBox.Show("Your settings have been deleted because of an upgrade! You simply need to reconfigure them. Thx!", Application.ProductName + " - INFORMATION",MessageBoxButtons.OK);
-                Registry.CurrentUser.DeleteSubKeyTree(@"Software\WebGear");
+                //MessageBox.Show("Your settings have been deleted because of an upgrade! You simply need to reconfigure them. Thx!", Application.ProductName + " - INFORMATION",MessageBoxButtons.OK);
+                //Registry.CurrentUser.DeleteSubKeyTree(@"Software\Webgear\GOContactSync");
+                regKeyAppRoot = Registry.CurrentUser.CreateSubKey(@"Software\Webgear\GOContactSync" + (_profile != null ? ('\\' + _profile) : ""));
             }
 
             if (regKeyAppRoot.GetValue("SyncOption") != null)
@@ -371,10 +385,10 @@ namespace GoContactSyncMod
                 //if (regKeyAppRoot.GetValue("Password") != null)
                 //    Password.Text = Encryption.DecryptPassword(UserName.Text, regKeyAppRoot.GetValue("Password") as string);
             }
-            if (regKeyAppRoot.GetValue("Password") != null)
-            {
-                regKeyAppRoot.DeleteValue("Password");
-            }
+            //if (regKeyAppRoot.GetValue("Password") != null)
+            //{
+            //    regKeyAppRoot.DeleteValue("Password");
+            //}
 
             //temporary remove listener
             this.autoSyncCheckBox.CheckedChanged -= new System.EventHandler(this.autoSyncCheckBox_CheckedChanged);
@@ -417,6 +431,13 @@ namespace GoContactSyncMod
 
             _proxy.LoadSettings(_profile);
 
+            //only for downside compliance reasons: load old registry settings first and save them later on in new structure
+            if (Registry.CurrentUser.OpenSubKey(@"Software\Webgear\GOContactSync") != null)
+            {
+                SaveSettings(_profile);
+                Registry.CurrentUser.DeleteSubKeyTree(@"Software\Webgear\GOContactSync");                
+            }
+
             //enable temporary disabled listener
             this.autoSyncCheckBox.CheckedChanged += new System.EventHandler(this.autoSyncCheckBox_CheckedChanged);
         }
@@ -425,6 +446,12 @@ namespace GoContactSyncMod
         {
 
             RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey + (_profile != null ? ('\\' + _profile) : ""));
+
+            //only for downside compliance reasons: load old registry settings first and save them later on in new structure
+            if (Registry.CurrentUser.OpenSubKey(@"Software\Webgear\GOContactSync") != null)
+            {
+                regKeyAppRoot = Registry.CurrentUser.CreateSubKey(@"Software\Webgear\GOContactSync" + (_profile != null ? ('\\' + _profile) : ""));
+            }
 
             if (regKeyAppRoot.GetValue("SyncContactsFolder") != null)
                 contactFoldersComboBox.SelectedValue = regKeyAppRoot.GetValue("SyncContactsFolder") as string;
@@ -539,23 +566,23 @@ namespace GoContactSyncMod
 
 		private void syncButton_Click(object sender, EventArgs e)
 		{
-            TimeSpan syncTime = DateTime.Now - lastSync;
-            TimeSpan fiveMinLimit = new TimeSpan(0, 5, 0);
-#if debug
-            Logger.Log("Debug build, skipping time tolerance...", EventType.Debug);
-            Sync();
-#else
-            if ((syncTime > fiveMinLimit))
-            {
+//            TimeSpan syncTime = DateTime.Now - lastSync;
+//            TimeSpan fiveMinLimit = new TimeSpan(0, 5, 0);
+//#if debug
+//            Logger.Log("Debug build, skipping time tolerance...", EventType.Debug);
+//            Sync();
+//#else
+//            if ((syncTime > fiveMinLimit))
+//            {
                 Sync();
-            }
-            else
-            {
-                TimeSpan tolerance = ((lastSync + fiveMinLimit) - DateTime.Now);
-                Logger.Log("There is a 5 minutes time tolerance between 2 syncs! You have to wait for another " +
-                tolerance.Minutes.ToString()+":"+ tolerance.Seconds.ToString() + " minutes!", EventType.Information);
-            }
-#endif		    
+//            }
+//            else
+//            {
+//                TimeSpan tolerance = ((lastSync + fiveMinLimit) - DateTime.Now);
+//                Logger.Log("There is a 5 minutes time tolerance between 2 syncs! You have to wait for another " +
+//                tolerance.Minutes.ToString()+":"+ tolerance.Seconds.ToString() + " minutes!", EventType.Information);
+//            }
+//#endif		    
 		}
 
 		private void Sync()
