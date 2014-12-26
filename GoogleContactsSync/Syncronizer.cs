@@ -165,7 +165,7 @@ namespace GoContactSyncMod
                 //Contacts-Scope
                 scopes.Add("https://www.google.com/m8/feeds");
                 //Notes-Scope
-                scopes.Add("https://docs.google.com/feeds/");
+                scopes.Add("https://docs.google.com/feeds");
                 //Calendar-Scope
                 scopes.Add("https://www.googleapis.com/auth/calendar");
 
@@ -219,7 +219,7 @@ namespace GoContactSyncMod
                   
                         //Instantiate an Authenticator object according to your authentication, to use ResumableUploader
                         GDataCredentials cred = new GDataCredentials(credential.Token.AccessToken);
-                        GOAuth2RequestFactory rf = new GOAuth2RequestFactory(null, Application.ProductName, parameters);
+                        //GOAuth2RequestFactory rf = new GOAuth2RequestFactory(null, Application.ProductName, parameters);
                       
                         authenticator = new ClientLoginAuthenticator(Application.ProductName, DocumentsRequest.Service.ServiceIdentifier, cred);
                     }
