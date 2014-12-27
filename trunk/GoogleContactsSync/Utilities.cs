@@ -46,7 +46,8 @@ namespace GoContactSyncMod
             try
             {
                 WebClient client = new WebClient();
-                client.Headers.Add(HttpRequestHeader.Authorization, "GoogleLogin auth=" + sync.ContactsRequest.Service.QueryClientLoginToken());
+                //client.Headers.Add(HttpRequestHeader.Authorization, "GoogleLogin auth=" + sync.ContactsRequest.Service.QueryClientLoginToken());
+                client.Headers.Add(HttpRequestHeader.Authorization, "Bearer " + sync.ContactsRequest.Settings.OAuth2Parameters.AccessToken);
                 client.Headers.Add(HttpRequestHeader.ContentType, "image/*");
                 Bitmap pic = new Bitmap(image);
                 Stream s = client.OpenWrite(googleContact.ContactEntry.PhotoUri.AbsoluteUri, "PUT");
@@ -73,8 +74,9 @@ namespace GoContactSyncMod
             try
             {
                 WebClient client = new WebClient();
-                client.Headers.Add(HttpRequestHeader.Authorization, "GoogleLogin auth=" + sync.ContactsRequest.Service.QueryClientLoginToken());
-                Stream stream = client.OpenRead(googleContact.PhotoUri.AbsoluteUri);
+                //client.Headers.Add(HttpRequestHeader.Authorization, "GoogleLogin auth=" + sync.ContactsRequest.Service.QueryClientLoginToken());
+                client.Headers.Add(HttpRequestHeader.Authorization, "Bearer " + sync.ContactsRequest.Settings.OAuth2Parameters.AccessToken);
+                Stream stream = client.OpenRead(googleContact.PhotoUri.AbsoluteUri);                
                 BinaryReader reader = new BinaryReader(stream);
                 Image image = Image.FromStream(stream);
                 reader.Close();
@@ -84,7 +86,7 @@ namespace GoContactSyncMod
 
                 return image;
             }
-            catch
+            catch (Exception ex)
             {
                 return null;
             }
