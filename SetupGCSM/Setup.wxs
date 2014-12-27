@@ -86,7 +86,7 @@
     <!-- Reference the global NETFRAMEWORKxx property to check if it exists -->
     
     <PropertyRef Id="NETFRAMEWORK40FULL"/>
-    <PropertyRef Id="NETFRAMEWORK40CLIENT"/>
+    <!--<PropertyRef Id="NETFRAMEWORK40CLIENT"/>-->
     
     <!-- 
     Startup conditions that checks if .Net Framework 4.0 is installed or if 
@@ -97,7 +97,7 @@
     -->
     
     <Condition Message="!(loc.DotNet40FrameworkNeeded)">
-      <![CDATA[Installed OR NETFRAMEWORK40FULL OR NETFRAMEWORK40CLIENT]]>
+      <![CDATA[Installed OR NETFRAMEWORK40FULL]]>
     </Condition>
     
     <Condition Message="!(loc.AppNotSupported)">
