@@ -47,7 +47,7 @@ namespace GoContactSyncMod
 
         public ContactsRequest ContactsRequest { get; private set; }
 
-        private ClientLoginAuthenticator authenticator;
+        private OAuth2Authenticator authenticator;
         public DocumentsRequest DocumentsRequest { get; private set; }
         public EventsResource EventRequest { get; private set; }
         public CalendarListEntry PrimaryCalendar;
@@ -165,9 +165,12 @@ namespace GoContactSyncMod
                 //Contacts-Scope
                 scopes.Add("https://www.google.com/m8/feeds");
                 //Notes-Scope
-                scopes.Add("https://docs.google.com/feeds");
+                scopes.Add("https://docs.google.com/feeds/");
+                //scopes.Add("https://docs.googleusercontent.com/");
+                //scopes.Add("https://spreadsheets.google.com/feeds/");
                 //Calendar-Scope
-                scopes.Add("https://www.googleapis.com/auth/calendar");
+                //scopes.Add("https://www.googleapis.com/auth/calendar");
+                scopes.Add(CalendarService.Scope.Calendar);
 
                 //take user credentials
                 UserCredential credential;
@@ -218,10 +221,11 @@ namespace GoContactSyncMod
                         DocumentsRequest = new DocumentsRequest(settings);
                   
                         //Instantiate an Authenticator object according to your authentication, to use ResumableUploader
-                        GDataCredentials cred = new GDataCredentials(credential.Token.AccessToken);
+                        //GDataCredentials cred = new GDataCredentials(credential.Token.AccessToken);
                         //GOAuth2RequestFactory rf = new GOAuth2RequestFactory(null, Application.ProductName, parameters);
+                        //DocumentsRequest.Service.RequestFactory = rf;
                       
-                        authenticator = new ClientLoginAuthenticator(Application.ProductName, DocumentsRequest.Service.ServiceIdentifier, cred);
+                        authenticator = new OAuth2Authenticator(Application.ProductName, parameters);                        
                     }
                     if (SyncAppointments)
                     {
@@ -2006,7 +2010,7 @@ namespace GoContactSyncMod
             //}
         }
 
-        public static void CreateGoogleNote(/*Document parentFolder, */Document googleNote, object UserData, DocumentsRequest documentsRequest, ResumableUploader uploader, ClientLoginAuthenticator authenticator)
+        public static void CreateGoogleNote(/*Document parentFolder, */Document googleNote, object UserData, DocumentsRequest documentsRequest, ResumableUploader uploader, OAuth2Authenticator authenticator)
         {
             // Define the resumable upload link      
             Uri createUploadUrl = new Uri("https://docs.google.com/feeds/upload/create-session/default/private/full");
