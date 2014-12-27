@@ -23,7 +23,7 @@ namespace GoContactSyncMod.UnitTests
     [TestFixture]
     public class GoogleAPITests
     {
-        ClientLoginAuthenticator _authenticator;
+        OAuth2Authenticator _authenticator;
         static Logger.LogUpdatedHandler _logUpdateHandler = null;
         void Logger_LogUpdated(string message)
         {
@@ -45,12 +45,55 @@ namespace GoContactSyncMod.UnitTests
         public void CreateNewContact()
         {
             string gmailUsername;
-            string gmailPassword;
             string syncProfile;
-            GoogleAPITests.LoadSettings(out gmailUsername, out gmailPassword, out syncProfile);
+            GoogleAPITests.LoadSettings(out gmailUsername, out syncProfile);
 
-            RequestSettings rs = new RequestSettings("GoogleContactSyncMod", gmailUsername, gmailPassword);
-            ContactsRequest service = new ContactsRequest(rs);
+            ContactsRequest service;
+
+            var scopes = new List<string>();
+            //Contacts-Scope
+            scopes.Add("https://www.google.com/m8/feeds");
+            //Notes-Scope
+            scopes.Add("https://docs.google.com/feeds/");
+            //scopes.Add("https://docs.googleusercontent.com/");
+            //scopes.Add("https://spreadsheets.google.com/feeds/");
+            //Calendar-Scope
+            //scopes.Add("https://www.googleapis.com/auth/calendar");
+            scopes.Add(CalendarService.Scope.Calendar);
+
+            UserCredential credential;
+            byte[] jsonSecrets = Properties.Resources.client_secrets;
+            
+            using (var stream = new MemoryStream(jsonSecrets))
+            {
+                FileDataStore fDS = new FileDataStore(Logger.AuthFolder, true);
+
+                GoogleClientSecrets clientSecrets = GoogleClientSecrets.Load(stream);
+
+                credential = GCSMOAuth2WebAuthorizationBroker.AuthorizeAsync(
+                                clientSecrets.Secrets,
+                                scopes.ToArray(),
+                                gmailUsername,
+                                CancellationToken.None,
+                                fDS).
+                                Result;
+                
+                OAuth2Parameters parameters = new OAuth2Parameters
+                {
+                    ClientId = clientSecrets.Secrets.ClientId,
+                    ClientSecret = clientSecrets.Secrets.ClientSecret,
+
+                    // Note: AccessToken is valid only for 60 minutes
+                    AccessToken = credential.Token.AccessToken,
+                    RefreshToken = credential.Token.RefreshToken
+                };
+               
+                RequestSettings settings = new RequestSettings("GoContactSyncMod", parameters);
+
+                service = new ContactsRequest(settings);
+            }
+
+            
 
 
             #region Delete previously created test contact.
@@ -115,17 +158,20 @@ namespace GoContactSyncMod.UnitTests
         public void CreateNewAppointment()
         {
             string gmailUsername;
-            string gmailPassword;
             string syncProfile;
-            GoogleAPITests.LoadSettings(out gmailUsername, out gmailPassword, out syncProfile);
-
-            //RequestSettings rs = new RequestSettings("GoogleContactSyncMod", gmailUsername, gmailPassword);
-            //CalendarService service = new CalendarService("GoogleContactSyncMod");
-            //service.setUserCredentials(gmailUsername, gmailPassword);
+            GoogleAPITests.LoadSettings(out gmailUsername, out syncProfile);
 
             EventsResource service;
             CalendarListEntry primaryCalendar = null;
             var scopes = new List<string>();
+            //Contacts-Scope
+            scopes.Add("https://www.google.com/m8/feeds");
+            //Notes-Scope
+            scopes.Add("https://docs.google.com/feeds/");
+            //scopes.Add("https://docs.googleusercontent.com/");
+            //scopes.Add("https://spreadsheets.google.com/feeds/");
+            //Calendar-Scope
+            //scopes.Add("https://www.googleapis.com/auth/calendar");
             scopes.Add(CalendarService.Scope.Calendar);
 
             UserCredential credential;
@@ -136,7 +182,7 @@ namespace GoContactSyncMod.UnitTests
                     //using (var stream = new FileStream(Application.StartupPath + "\\client_secrets.json", FileMode.Open, FileAccess.Read))
             using (var stream = new MemoryStream(jsonSecrets))            
             {
-                FileDataStore fDS = new FileDataStore(Logger.Folder, true);
+                FileDataStore fDS = new FileDataStore(Logger.AuthFolder, true);
                 credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
                 GoogleClientSecrets.Load(stream).Secrets, scopes, gmailUsername, CancellationToken.None,
                 fDS).Result;
@@ -215,14 +261,58 @@ namespace GoContactSyncMod.UnitTests
         public void CreateNewNote()
         {
             string gmailUsername;
-            string gmailPassword;
             string syncProfile;
-            GoogleAPITests.LoadSettings(out gmailUsername, out gmailPassword, out syncProfile);
+            GoogleAPITests.LoadSettings(out gmailUsername, out syncProfile);
 
-            RequestSettings rs = new RequestSettings("GoogleContactSyncMod", gmailUsername, gmailPassword);
-            DocumentsRequest service = new DocumentsRequest(rs);
-            //Instantiate an Authenticator object according to your authentication, to use ResumableUploader
-            _authenticator = new ClientLoginAuthenticator("GCSM Unit Tests", service.Service.ServiceIdentifier, gmailUsername, gmailPassword);
+            DocumentsRequest service;
+
+            var scopes = new List<string>();
+            //Contacts-Scope
+            scopes.Add("https://www.google.com/m8/feeds");
+            //Notes-Scope
+            scopes.Add("https://docs.google.com/feeds/");
+            //scopes.Add("https://docs.googleusercontent.com/");
+            //scopes.Add("https://spreadsheets.google.com/feeds/");
+            //Calendar-Scope
+            //scopes.Add("https://www.googleapis.com/auth/calendar");
+            scopes.Add(CalendarService.Scope.Calendar);
+
+            UserCredential credential;
+            byte[] jsonSecrets = Properties.Resources.client_secrets;
+
+            using (var stream = new MemoryStream(jsonSecrets))
+            {
+                FileDataStore fDS = new FileDataStore(Logger.AuthFolder, true);
+
+                GoogleClientSecrets clientSecrets = GoogleClientSecrets.Load(stream);
+
+                credential = GCSMOAuth2WebAuthorizationBroker.AuthorizeAsync(
+                                clientSecrets.Secrets,
+                                scopes.ToArray(),
+                                gmailUsername,
+                                CancellationToken.None,
+                                fDS).
+                                Result;
+
+                OAuth2Parameters parameters = new OAuth2Parameters
+                {
+                    ClientId = clientSecrets.Secrets.ClientId,
+                    ClientSecret = clientSecrets.Secrets.ClientSecret,
+
+                    // Note: AccessToken is valid only for 60 minutes
+                    AccessToken = credential.Token.AccessToken,
+                    RefreshToken = credential.Token.RefreshToken
+                };
+
+                RequestSettings settings = new RequestSettings("GoContactSyncMod", parameters);
+
+                service = new DocumentsRequest(settings);
+
+                //Instantiate an Authenticator object according to your authentication, to use ResumableUploader
+                _authenticator = new OAuth2Authenticator("GCSM Unit Tests", parameters);
+            }
+
+            
 
             //Delete previously created test note.            
             DeleteTestNote(service);
@@ -324,9 +414,9 @@ namespace GoContactSyncMod.UnitTests
             }
         }
 
-        internal static void LoadSettings(out string gmailUsername, out string gmailPassword, out string syncProfile, out string syncContactsFolder, out string syncNotesFolder, out string syncAppointmentsFolder)
+        internal static void LoadSettings(out string gmailUsername, out string syncProfile, out string syncContactsFolder, out string syncNotesFolder, out string syncAppointmentsFolder)
         {
-            Microsoft.Win32.RegistryKey regKeyAppRoot = LoadSettings(out gmailUsername, out gmailPassword, out syncProfile);
+            Microsoft.Win32.RegistryKey regKeyAppRoot = LoadSettings(out gmailUsername, out syncProfile);
 
             syncContactsFolder = "";
             syncNotesFolder = "";
@@ -389,16 +479,15 @@ namespace GoContactSyncMod.UnitTests
                     syncAppointmentsFolder = regKeyAppRoot.GetValue("SyncAppointmentsFolder") as string;           
         }
 
-        private static Microsoft.Win32.RegistryKey LoadSettings(out string gmailUsername, out string gmailPassword, out string syncProfile)
-        {
+        private static Microsoft.Win32.RegistryKey LoadSettings(out string gmailUsername, out string syncProfile)
+        { 
             //sync.LoginToGoogle(ConfigurationManager.AppSettings["Gmail.Username"],  ConfigurationManager.AppSettings["Gmail.Password"]);
             //ToDo: Reading the username and config from the App.Config file doesn't work. If it works, consider special characters like & = &amp; in the XML file
             //ToDo: Maybe add a common Test account to the App.config and read it from there, encrypt the password
-            //For now, read the userName and Password from the Registry (same settings as for GoogleContactsSync Application
+            //For now, read the userName from the Registry (same settings as for GoogleContactsSync Application
             gmailUsername = "";
-            gmailPassword = "";
 
-            const string appRootKey = @"Software\Webgear\GOContactSync";
+            const string appRootKey = SettingsForm.AppRootKey;
             Microsoft.Win32.RegistryKey regKeyAppRoot = regKeyAppRoot = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(appRootKey);
             syncProfile = "Default Profile";
             if (regKeyAppRoot.GetValue("SyncProfile") != null)
@@ -409,8 +498,7 @@ namespace GoContactSyncMod.UnitTests
             if (regKeyAppRoot.GetValue("Username") != null)
             {
                 gmailUsername = regKeyAppRoot.GetValue("Username") as string;
-                if (regKeyAppRoot.GetValue("Password") != null)
-                    gmailPassword = Encryption.DecryptPassword(gmailUsername, regKeyAppRoot.GetValue("Password") as string);
+                
             }
 
             return regKeyAppRoot;

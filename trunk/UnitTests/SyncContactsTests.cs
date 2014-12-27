@@ -47,7 +47,7 @@ namespace GoContactSyncMod.UnitTests
             string syncNotesFolder;
             string syncAppointmentsFolder;
 
-            GoogleAPITests.LoadSettings(out gmailUsername, out gmailPassword, out syncProfile, out syncContactsFolder, out syncNotesFolder, out syncAppointmentsFolder);
+            GoogleAPITests.LoadSettings(out gmailUsername, out syncProfile, out syncContactsFolder, out syncNotesFolder, out syncAppointmentsFolder);
 
             sync = new Syncronizer();
             sync.SyncContacts = true;
@@ -56,7 +56,7 @@ namespace GoContactSyncMod.UnitTests
             sync.SyncProfile = syncProfile;
             Syncronizer.SyncContactsFolder = syncContactsFolder;  
 
-            sync.LoginToGoogle(gmailUsername, gmailPassword);
+            sync.LoginToGoogle(gmailUsername);
             sync.LoginToOutlook();
 
         }
