@@ -1,5 +1,17 @@
 # +++ NEWS +++ NEWS +++ NEWS +++
 
+### Version [3.9.2] - 27.12.2014
+
+###### SVN commits
+**r511 - r513**
+
+  - **FIX**: Switched from Debugging to Release, prepared setup 3.9.2
+  - **FIX**: Handle AccessViolation exceptions to avoid crashes when accessing RTF Body
+
+**Free Open Source Software, Hell Yeah!**
+
+[3.9.2]: http://sourceforge.net/projects/googlesyncmod/files/Releases/3.9.2/SetupGCSM-3.9.2.msi/download 
+ 
 ### Version [3.9.1] - 27.12.2014
 
 ###### SVN commits
@@ -38,6 +50,7 @@
 **Free Open Source Software, Hell Yeah!**
 
 [3.9.1]: http://sourceforge.net/projects/googlesyncmod/files/Releases/3.9.1/SetupGCSM-3.9.1.msi/download
+
 
 ### Version 3.9.0 
 FIX: Got UnitTests running and confirmed pass results, to create setup for version 3.9.0
