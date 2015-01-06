@@ -41,7 +41,7 @@ namespace GoContactSyncMod.UnitTests
             }
             
             string gmailUsername;
-            string gmailPassword;
+            //string gmailPassword;
             string syncProfile;
             string syncContactsFolder;
             string syncNotesFolder;
