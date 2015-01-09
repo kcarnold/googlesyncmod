@@ -602,6 +602,8 @@ namespace GoContactSyncMod
                 //IconTimerSwitch(true);
 				ThreadStart starter = new ThreadStart(Sync_ThreadStarter);
 				syncThread = new Thread(starter);
+                syncThread.CurrentCulture = CultureInfo.CreateSpecificCulture ("en-US");
+                syncThread.CurrentUICulture = new CultureInfo("en-US");
                 syncThread.Start();
 
 				// wait for thread to start

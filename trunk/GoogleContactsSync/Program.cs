@@ -1,5 +1,6 @@
 using Microsoft.Win32;
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -16,6 +17,8 @@ namespace GoContactSyncMod
         [STAThread]
         static void Main()
         {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
+            Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
             //prevent more than one instance of the program
             if (IsRunning())
             {   //Instance already exists, so show only Main-Window  
