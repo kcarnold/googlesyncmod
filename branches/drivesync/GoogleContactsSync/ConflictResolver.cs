@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Google.Contacts;
-using Google.Documents;
 using System.Reflection;
 using Google.Apis.Calendar;
 using Google.Apis.Calendar.v3.Data;
@@ -235,7 +234,7 @@ namespace GoContactSyncMod
         //    return ret;
         //}
 
-        public ConflictResolution Resolve(Microsoft.Office.Interop.Outlook.NoteItem outlookNote, Document googleNote, Syncronizer sync, bool isNewMatch)
+        public ConflictResolution Resolve(Microsoft.Office.Interop.Outlook.NoteItem outlookNote, Google.Apis.Drive.v2.Data.File googleNote, Syncronizer sync, bool isNewMatch)
         {
             string name = string.Empty;
 
@@ -291,7 +290,7 @@ namespace GoContactSyncMod
             return ResolveDeletedGoogle();
         }
 
-        public DeleteResolution ResolveDelete(Document googleNote, Syncronizer sync)
+        public DeleteResolution ResolveDelete(Google.Apis.Drive.v2.Data.File googleNote, Syncronizer sync)
         {
 
             _form.Text = "Outlook note deleted";

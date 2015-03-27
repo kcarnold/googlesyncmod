@@ -3,11 +3,9 @@ using Google.Apis.Calendar.v3;
 using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Util.Store;
 using Google.Contacts;
-using Google.Documents;
 using Google.GData.Client;
 using Google.GData.Client.ResumableUpload;
 using Google.GData.Contacts;
-using Google.GData.Documents;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -18,6 +16,8 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using Outlook = Microsoft.Office.Interop.Outlook;
+using Google.Apis.Drive.v2;
+using Google.Apis.Drive.v2.Data;
 
 namespace GoContactSyncMod
 {
@@ -46,9 +46,7 @@ namespace GoContactSyncMod
         public event ErrorNotificationHandler ErrorEncountered;
 
         public ContactsRequest ContactsRequest { get; private set; }
-
-        private OAuth2Authenticator authenticator;
-        public DocumentsRequest DocumentsRequest { get; private set; }
+        public FilesResource DocumentsRequest { get; private set; }
         public EventsResource EventRequest { get; private set; }
         public CalendarListEntry PrimaryCalendar;
 
@@ -70,11 +68,11 @@ namespace GoContactSyncMod
         public Collection<ContactMatch> OutlookContactDuplicates { get; set; }
         public Collection<ContactMatch> GoogleContactDuplicates { get; set; }
         public Collection<Contact> GoogleContacts { get; private set; }
-        public Collection<Document> GoogleNotes { get; private set; }
+        public Collection<File> GoogleNotes { get; private set; }
         public Collection<Google.Apis.Calendar.v3.Data.Event> GoogleAppointments { get; private set; }
         public Collection<Google.Apis.Calendar.v3.Data.Event> AllGoogleAppointments { get; private set; }
         public Collection<Group> GoogleGroups { get; set; }
-        internal Document googleNotesFolder;
+        internal File googleNotesFolder;
         public string OutlookPropertyPrefix { get; private set; }
 
         public string OutlookPropertyNameId
@@ -165,7 +163,7 @@ namespace GoContactSyncMod
                 //Contacts-Scope
                 scopes.Add("https://www.google.com/m8/feeds");
                 //Notes-Scope
-                scopes.Add("https://docs.google.com/feeds/");
+                scopes.Add("https://www.googleapis.com/auth/drive");
                 //scopes.Add("https://docs.googleusercontent.com/");
                 //scopes.Add("https://spreadsheets.google.com/feeds/");
                 //Calendar-Scope
@@ -211,28 +209,18 @@ namespace GoContactSyncMod
 
                     if (SyncContacts)
                     {
-                        //ContactsRequest = new ContactsRequest(rs);
                         ContactsRequest = new ContactsRequest(settings);
                     }
 
                     if (SyncNotes)
-                    {
-                        //DocumentsRequest = new DocumentsRequest(rs);
-                        DocumentsRequest = new DocumentsRequest(settings);
-                  
-                        //Instantiate an Authenticator object according to your authentication, to use ResumableUploader
-                        //GDataCredentials cred = new GDataCredentials(credential.Token.AccessToken);
-                        //GOAuth2RequestFactory rf = new GOAuth2RequestFactory(null, Application.ProductName, parameters);
-                        //DocumentsRequest.Service.RequestFactory = rf;
-                      
-                        authenticator = new OAuth2Authenticator(Application.ProductName, parameters);                        
+                    {                        
+                        var driveService = new DriveService(initializer);
+                        DocumentsRequest = driveService.Files;         
                     }
                     if (SyncAppointments)
                     {
                         //ContactsRequest = new Google.Contacts.ContactsRequest()
                         var CalendarRequest = new CalendarService(initializer);
-
-                        //CalendarRequest.setUserCredentials(username, password);
 
                         var list = CalendarRequest.CalendarList.List().Execute().Items;
                         foreach (var calendar in list)
@@ -646,57 +634,60 @@ namespace GoContactSyncMod
             Logger.Log("Google Notes Found: " + GoogleNotes.Count, EventType.Debug);
         }
 
-        internal Document LoadGoogleNotes(string folderUri, AtomId id)
+        internal Google.Apis.Drive.v2.Data.File LoadGoogleNotes(string folderId, AtomId id)
         {
             string message = "Error Loading Google Notes. Cannot connect to Google.\r\nPlease ensure you are connected to the internet. If you are behind a proxy, change your proxy configuration!";
 
-            Document ret = null;
+            Google.Apis.Drive.v2.Data.File ret = null;
             try
             {
-                if (folderUri == null && id == null)
+                if (folderId == null && id == null)
                 {
                     // Only log, if not specific Google Notes are searched
                     Logger.Log("Loading Google Notes...", EventType.Information);
-                    GoogleNotes = new Collection<Document>();
+                    GoogleNotes = new Collection<Google.Apis.Drive.v2.Data.File>();
                 }
 
                 if (googleNotesFolder == null)
                     googleNotesFolder = GetOrCreateGoogleFolder(null, "Notes");//ToDo: Make the folder name Notes configurable in SettingsForm, for now hardcode to "Notes");
 
 
-                if (folderUri == null)
+                if (folderId == null)
                 {
                     if (id == null)
-                        folderUri = googleNotesFolder.DocumentEntry.Content.AbsoluteUri;
+                        folderId = googleNotesFolder.Id;
                     else //if newly created
-                        folderUri = DocumentsRequest.BaseUri;
+                        folderId = "root";
                 }
 
-                DocumentQuery query = new DocumentQuery(folderUri);
-                query.Categories.Add(new QueryCategory(new AtomCategory("document")));
-                query.NumberToRetrieve = 256;
-                query.StartIndex = 0;
+                var query = DocumentsRequest.List();
+                query.Q = "mimeType != 'application/vnd.google-apps.folder' and '"+ folderId + "' in parents";
+                //query.Categories.Add(new QueryCategory(new AtomCategory("document")));
+                //query.MaxResults = 256;
+                //query.StartIndex = 0;
+                string pageToken = null;                
 
                 //query.ShowDeleted = false;
                 //query.OrderBy = "lastmodified";
-                Feed<Document> feed = DocumentsRequest.Get<Document>(query);
+                FileList feed;
 
-                while (feed != null)
+                do
                 {
-                    foreach (Document a in feed.Entries)
+                    query.PageToken = pageToken;
+                    feed = query.Execute();
+                    foreach (var a in feed.Items)
                     {
                         if (id == null)
                             GoogleNotes.Add(a);
-                        else if (id.Equals(a.DocumentEntry.Id))
+                        else if (id.Equals(a.Id))
                         {
                             ret = a;
                             return ret;
                         }
                     }
-                    query.StartIndex += query.NumberToRetrieve;
-                    feed = DocumentsRequest.Get<Document>(feed, FeedRequestType.Next);
-
+                    pageToken = feed.NextPageToken;
                 }
+                while (pageToken != null);
 
             }
             catch (System.Net.WebException ex)
@@ -848,9 +839,9 @@ namespace GoContactSyncMod
             }
         }
 
-        internal List<Document> GetGoogleGroups()
+        internal List<Google.Apis.Drive.v2.Data.File> GetGoogleGroups()
         {
-            List<Document> categoryFolders;
+            List<Google.Apis.Drive.v2.Data.File> categoryFolders;
 
             DocumentQuery query = new DocumentQuery(googleNotesFolder.DocumentEntry.Content.AbsoluteUri);
             query.Categories.Add(new QueryCategory(new AtomCategory("folder")));
@@ -876,9 +867,9 @@ namespace GoContactSyncMod
             return categoryFolders;
         }
 
-        private Document GetOrCreateGoogleFolder(Document parentFolder, string title)
+        private Google.Apis.Drive.v2.Data.File GetOrCreateGoogleFolder(Google.Apis.Drive.v2.Data.File parentFolder, string title)
         {
-            Document ret = null;
+            Google.Apis.Drive.v2.Data.File ret = null;
 
             lock (this) //Synchronize the threads
             {
@@ -886,8 +877,8 @@ namespace GoContactSyncMod
 
                 if (ret == null)
                 {
-                    ret = new Document();
-                    ret.Type = Document.DocumentType.Folder;
+                    ret = new Google.Apis.Drive.v2.Data.File();
+                    ret.Type = Document.Google.Apis.Drive.v2.Data.FileType.Folder;
                     //ret.Categories.Add(new AtomCategory("http://schemas.google.com/docs/2007#folder"));
                     ret.Title = title;
                     ret = SaveGoogleNote(parentFolder, ret, DocumentsRequest);
@@ -897,9 +888,9 @@ namespace GoContactSyncMod
             return ret;
         }
 
-        internal Document GetGoogleFolder(Document parentFolder, string title, string uri)
+        internal Google.Apis.Drive.v2.Data.File GetGoogleFolder(Google.Apis.Drive.v2.Data.File parentFolder, string title, string uri)
         {
-            Document ret = null;
+            Google.Apis.Drive.v2.Data.File ret = null;
 
             //First get the Notes folder or create it, if not yet existing            
             DocumentQuery query = new DocumentQuery(DocumentsRequest.BaseUri);
@@ -912,7 +903,7 @@ namespace GoContactSyncMod
 
             if (feed != null)
             {
-                foreach (Document a in feed.Entries)
+                foreach (Google.Apis.Drive.v2.Data.File a in feed.Entries)
                 {
                     if ((string.IsNullOrEmpty(uri) || a.Self == uri) &&
                         (parentFolder == null || IsInFolder(parentFolder, a)))
@@ -1590,7 +1581,7 @@ namespace GoContactSyncMod
             {
                 //bool googleChanged, outlookChanged;
                 //SaveNoteGroups(match, out googleChanged, out outlookChanged);
-                if (match.GoogleNote.DocumentEntry.Dirty || match.GoogleNote.DocumentEntry.IsDirty())
+                if (match.GoogleNote..DocumentEntry.Dirty || match.GoogleNote.DocumentEntry.IsDirty())
                 {
                     //google note was modified. save.
                     SyncedCount++;
@@ -2108,7 +2099,7 @@ namespace GoContactSyncMod
         /// <param name="parentFolder">the parent folder</param>
         /// <param name="childDocument">the document to be checked</param>
         /// <returns></returns>
-        private bool IsInFolder(Document parentFolder, Document childDocument)
+        private bool IsInFolder(Google.Apis.Drive.v2.Data.File parentFolder, Google.Apis.Drive.v2.Data.File childDocument)
         {
             foreach (string parent in childDocument.ParentFolders)
             {
@@ -2133,15 +2124,15 @@ namespace GoContactSyncMod
             return xml;
         }
 
-        private static string GetXml(Document note)
-        {
-            MemoryStream ms = new MemoryStream();
-            note.DocumentEntry.SaveToXml(ms);
-            StreamReader sr = new StreamReader(ms);
-            ms.Seek(0, SeekOrigin.Begin);
-            string xml = sr.ReadToEnd();
-            return xml;
-        }
+        //private static string GetXml(Google.Apis.Drive.v2.Data.File note)
+        //{
+        //    MemoryStream ms = new MemoryStream();
+        //    note.SaveToXml(ms);
+        //    StreamReader sr = new StreamReader(ms);
+        //    ms.Seek(0, SeekOrigin.Begin);
+        //    string xml = sr.ReadToEnd();
+        //    return xml;
+        //}
 
         //private static string GetXml(Google.Apis.Calendar.v3.Data.Event appointment)
         //{
@@ -2260,10 +2251,10 @@ namespace GoContactSyncMod
         /// save the google note
         /// </summary>
         /// <param name="googleNote"></param>
-        public static Document SaveGoogleNote(Document parentFolder, Document googleNote, DocumentsRequest documentsRequest)
+        public static Document SaveGoogleNote(Document parentFolder, Google.Apis.Drive.v2.Data.File googleNote, FilesResource documentsRequest)
         {
             //check if this contact was not yet inserted on google.
-            if (googleNote.DocumentEntry.Id.Uri == null)
+            if (googleNote.Id == null)
             {
                 //insert contact.
                 Uri feedUri = null;
@@ -2562,7 +2553,7 @@ namespace GoContactSyncMod
         /// <summary>
         /// Updates Google note from Outlook
         /// </summary>
-        public void UpdateNote(Outlook.NoteItem master, Document slave)
+        public void UpdateNote(Outlook.NoteItem master, Google.Apis.Drive.v2.Data.File slave)
         {
             if (!string.IsNullOrEmpty(master.Subject))
                 slave.Title = master.Subject.Replace(":", String.Empty);
@@ -2583,7 +2574,7 @@ namespace GoContactSyncMod
         /// <summary>
         /// Updates Outlook contact from Google
         /// </summary>
-        public void UpdateNote(Document master, Outlook.NoteItem slave)
+        public void UpdateNote(Google.Apis.Drive.v2.Data.File master, Outlook.NoteItem slave)
         {
             //slave.Subject = master.Title; //The Subject is readonly and set automatically by Outlook
             string body = NotePropertiesUtils.GetBody(this, master);
@@ -2609,7 +2600,7 @@ namespace GoContactSyncMod
             List<string> newCats = new List<string>();
             foreach (string category in master.ParentFolders)
             {
-                Document categoryFolder = GetGoogleFolder(googleNotesFolder, null, category);
+                Google.Apis.Drive.v2.Data.File categoryFolder = GetGoogleFolder(googleNotesFolder, null, category);
 
                 if (categoryFolder != null)
                     newCats.Add(categoryFolder.Title);
@@ -3233,12 +3224,11 @@ namespace GoContactSyncMod
             return null;
         }
 
-        public Document GetGoogleNoteById(string id)
+        public Google.Apis.Drive.v2.Data.File GetGoogleNoteById(string id)
         {
-            AtomId atomId = new AtomId(id);
-            foreach (Document note in GoogleNotes)
+            foreach (Google.Apis.Drive.v2.Data.File note in GoogleNotes)
             {
-                if (note.DocumentEntry.Id.Equals(atomId))
+                if (note.Id.Equals(id))
                     return note;
             }
             return null;
