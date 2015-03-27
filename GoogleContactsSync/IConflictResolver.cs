@@ -6,7 +6,7 @@ using Google.GData.Client;
 using Google.GData.Extensions;
 using Outlook = Microsoft.Office.Interop.Outlook;
 using Google.Contacts;
-using Google.Documents;
+using Google.Apis.Drive.v2.Data;
 
 namespace GoContactSyncMod
 {
@@ -20,7 +20,7 @@ namespace GoContactSyncMod
         /// <returns>Returns ConflictResolution (enum)</returns>
         ConflictResolution Resolve(ContactMatch match, bool isNewMatch);
 
-        ConflictResolution Resolve(Microsoft.Office.Interop.Outlook.NoteItem outlookNote, Document googleNote, Syncronizer sync, bool isNewMatch);
+        ConflictResolution Resolve(Microsoft.Office.Interop.Outlook.NoteItem outlookNote, File googleNote, Syncronizer sync, bool isNewMatch);
 
         ConflictResolution ResolveDuplicate(OutlookContactInfo outlookContact, List<Contact> googleContacts, out Contact googleContact);
 
@@ -28,7 +28,7 @@ namespace GoContactSyncMod
 
         DeleteResolution ResolveDelete(Contact googleContact);
 
-        DeleteResolution ResolveDelete(Document googleNote, Syncronizer sync);
+        DeleteResolution ResolveDelete(Google.Apis.Drive.v2.Data.File googleNote, Syncronizer sync);
 
         DeleteResolution ResolveDelete(Microsoft.Office.Interop.Outlook.NoteItem outlookNote);
 

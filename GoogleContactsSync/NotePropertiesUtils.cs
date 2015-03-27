@@ -4,9 +4,10 @@ using System.Text;
 using Outlook = Microsoft.Office.Interop.Outlook;
 using Google.GData.Extensions;
 using System.Collections;
-using Google.Documents;
 using System.Runtime.InteropServices;
 using System.IO;
+using Google.Apis.Drive.v2;
+using Google.Apis.Drive.v2.Data;
 
 namespace GoContactSyncMod
 {
@@ -16,7 +17,7 @@ namespace GoContactSyncMod
         {
             return outlookNote.EntryID;
         }
-        public static string GetGoogleId(Document googleNote)
+        public static string GetGoogleId(Google.Apis.Drive.v2.Data.File googleNote)
         {
             string id = googleNote.Id.ToString();
             if (id == null)
@@ -83,9 +84,9 @@ namespace GoContactSyncMod
         /// <param name="sync"></param>
         /// <param name="outlookNote"></param>
         /// <param name="googleNote"></param>
-        public static void SetOutlookGoogleNoteId(Syncronizer sync, Outlook.NoteItem outlookNote, Document googleNote)
+        public static void SetOutlookGoogleNoteId(Syncronizer sync, Outlook.NoteItem outlookNote, Google.Apis.Drive.v2.Data.File googleNote)
         {
-            if (googleNote.DocumentEntry.Id.Uri == null)
+            if (googleNote.Id == null)
                 throw new NullReferenceException("GoogleNote must have a valid Id");
 
             //check if outlook note aready has google id property.
@@ -97,7 +98,7 @@ namespace GoContactSyncMod
                     prop = userProperties.Add(sync.OutlookPropertyNameId, Outlook.OlUserPropertyType.olText, true);
                 try
                 {
-                    prop.Value = googleNote.DocumentEntry.Id.Uri.Content;
+                    prop.Value = googleNote.Id;
                 }
                 finally
                 {
@@ -293,7 +294,7 @@ namespace GoContactSyncMod
             }
         }
 
-        public static string GetBody(Syncronizer sync, Document entry)
+        public static string GetBody(Syncronizer sync, Google.Apis.Drive.v2.Data.File entry)
         {
             string body = null;
             System.IO.StreamReader reader = null;

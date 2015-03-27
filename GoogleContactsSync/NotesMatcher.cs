@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Outlook = Microsoft.Office.Interop.Outlook;
-using Google.Documents;
 using System.Runtime.InteropServices;
 
 namespace GoContactSyncMod
@@ -81,7 +80,7 @@ namespace GoContactSyncMod
                         if (idProp != null)
                         {
                             string googleNoteId = string.Copy((string)idProp.Value);
-                            Document foundNote = sync.GetGoogleNoteById(googleNoteId);
+                            Google.Apis.Drive.v2.Data.File foundNote = sync.GetGoogleNoteById(googleNoteId);
                             var match = new NoteMatch(oln, null);
 
                             //Check first, that this is not a duplicate 
@@ -174,7 +173,7 @@ namespace GoContactSyncMod
                 //foreach google contact try to match and create a match pair if found some match(es)
                 for (int j = sync.GoogleNotes.Count - 1; j >= 0; j--)
                 {
-                    Document entry = sync.GoogleNotes[j];
+                    Google.Apis.Drive.v2.Data.File entry = sync.GoogleNotes[j];
 
                     string body = NotePropertiesUtils.GetBody(sync, entry);
                     if (!string.IsNullOrEmpty(body))
@@ -385,7 +384,7 @@ namespace GoContactSyncMod
             //for each google note that's left (they will be nonmatched) create a new match pair without outlook note. 
             for (int i = 0; i < sync.GoogleNotes.Count; i++)
             {
-                Document entry = sync.GoogleNotes[i];               
+                Google.Apis.Drive.v2.Data.File entry = sync.GoogleNotes[i];               
                 if (NotificationReceived != null)
                     NotificationReceived(String.Format("Adding new Google note {0} of {1} by unique properties: {2} ...", i + 1, sync.GoogleNotes.Count, entry.Title));
 
@@ -447,7 +446,7 @@ namespace GoContactSyncMod
                     if (!string.IsNullOrEmpty(googleNotetId))
                     {                        
                         //Redundant check if exist, but in case an error occurred in MatchNotes
-                        Document matchingGoogleNote = sync.GetGoogleNoteById(googleNotetId);
+                        Google.Apis.Drive.v2.Data.File matchingGoogleNote = sync.GetGoogleNoteById(googleNotetId);
                         if (matchingGoogleNote == null)
                         {
                             if (!sync.PromptDelete)
@@ -483,7 +482,7 @@ namespace GoContactSyncMod
                     }
 
                     //create a Google note from Outlook note
-                    match.GoogleNote = new Document();
+                    match.GoogleNote = new Google.Apis.Drive.v2.Data.File();
                     match.GoogleNote.Type = Document.DocumentType.Document;
                     //match.GoogleNote.Categories.Add(new AtomCategory("http://schemas.google.com/docs/2007#document"));
                     //match.GoogleNote.Categories.Add(new AtomCategory("document"));
@@ -716,18 +715,18 @@ namespace GoContactSyncMod
     {
         //ToDo: OutlookNoteInfo
         public Outlook.NoteItem OutlookNote;
-        public Document GoogleNote;
-        public readonly List<Document> AllGoogleNoteMatches = new List<Document>(1);
-        public Document LastGoogleNote;
+        public Google.Apis.Drive.v2.Data.File GoogleNote;
+        public readonly List<Google.Apis.Drive.v2.Data.File> AllGoogleNoteMatches = new List<Google.Apis.Drive.v2.Data.File>(1);
+        public Google.Apis.Drive.v2.Data.File LastGoogleNote;
         public bool? AsyncUpdateCompleted = null; //false, if AsyncUpdate started, but not yet finished. true, if AsyncUpdate finished. Null if no AsyncUpdate started
 
-        public NoteMatch(Outlook.NoteItem outlookNote, Document googleNote)
+        public NoteMatch(Outlook.NoteItem outlookNote, Google.Apis.Drive.v2.Data.File googleNote)
         {
             OutlookNote = outlookNote;
             GoogleNote = googleNote;
         }
 
-        public void AddGoogleNote(Document googleNote)
+        public void AddGoogleNote(Google.Apis.Drive.v2.Data.File googleNote)
         {
             if (googleNote == null)
                 return;
