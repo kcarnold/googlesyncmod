@@ -326,10 +326,10 @@ namespace GoContactSyncMod
                         else
                             matchingGoogleAppointment = sync.LoadGoogleAppointments(googleAppointmentId, 0, 0, null, null);
                         if (matchingGoogleAppointment == null)
-                        {
-                            
-
-                            if (!sync.PromptDelete && match.OutlookAppointment.Recipients.Count == 0)
+                        {                            
+                            if (sync.SyncOption == SyncOption.OutlookToGoogleOnly)
+                                return;   
+                            else if (!sync.PromptDelete && match.OutlookAppointment.Recipients.Count == 0)
                                 sync.DeleteOutlookResolution = DeleteResolution.DeleteOutlookAlways;
                             else if (sync.DeleteOutlookResolution != DeleteResolution.DeleteOutlookAlways &&
                                      sync.DeleteOutlookResolution != DeleteResolution.KeepOutlookAlways)
@@ -391,7 +391,9 @@ namespace GoContactSyncMod
                 string outlookAppointmenttId = AppointmentPropertiesUtils.GetGoogleOutlookAppointmentId(sync.SyncProfile,match.GoogleAppointment);
                 if (!string.IsNullOrEmpty(outlookAppointmenttId))
                 {
-                    if (!sync.PromptDelete)
+                    if (sync.SyncOption == SyncOption.GoogleToOutlookOnly)
+                        return;
+                    else if (!sync.PromptDelete)
                         sync.DeleteGoogleResolution = DeleteResolution.DeleteGoogleAlways;
                     else if (sync.DeleteGoogleResolution != DeleteResolution.DeleteGoogleAlways &&
                              sync.DeleteGoogleResolution != DeleteResolution.KeepGoogleAlways)
