@@ -570,7 +570,9 @@ namespace GoContactSyncMod
                         Contact matchingGoogleContact = sync.GetGoogleContactById(googleContactId);
                         if (matchingGoogleContact == null)
                         {
-                            if (!sync.PromptDelete)
+                            if (sync.SyncOption == SyncOption.OutlookToGoogleOnly)
+                                return;                                   
+                            else if (!sync.PromptDelete)
                                  sync.DeleteOutlookResolution = DeleteResolution.DeleteOutlookAlways;
                             else if (sync.DeleteOutlookResolution != DeleteResolution.DeleteOutlookAlways &&
                                      sync.DeleteOutlookResolution != DeleteResolution.KeepOutlookAlways)
@@ -615,7 +617,9 @@ namespace GoContactSyncMod
                     string outlookId = ContactPropertiesUtils.GetGoogleOutlookContactId(sync.SyncProfile, match.GoogleContact);
                     if (outlookId != null)
                     {
-                        if (!sync.PromptDelete)
+                        if (sync.SyncOption == SyncOption.GoogleToOutlookOnly)
+                            return;
+                        else if (!sync.PromptDelete)
                             sync.DeleteGoogleResolution = DeleteResolution.DeleteGoogleAlways;
                         else if (sync.DeleteGoogleResolution != DeleteResolution.DeleteGoogleAlways &&
                                  sync.DeleteGoogleResolution != DeleteResolution.KeepGoogleAlways)

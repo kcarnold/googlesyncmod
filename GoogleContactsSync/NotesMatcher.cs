@@ -450,7 +450,9 @@ namespace GoContactSyncMod
                         Document matchingGoogleNote = sync.GetGoogleNoteById(googleNotetId);
                         if (matchingGoogleNote == null)
                         {
-                            if (!sync.PromptDelete)
+                            if (sync.SyncOption == SyncOption.OutlookToGoogleOnly)                            
+                                return;                            
+                            else if (!sync.PromptDelete)
                                 sync.DeleteOutlookResolution = DeleteResolution.DeleteOutlookAlways;
                             else if (sync.DeleteOutlookResolution != DeleteResolution.DeleteOutlookAlways &&
                                      sync.DeleteOutlookResolution != DeleteResolution.KeepOutlookAlways)
@@ -496,8 +498,10 @@ namespace GoContactSyncMod
 
                     // no outlook note
                     if (NotePropertiesUtils.NoteFileExists(match.GoogleNote.Id, sync.SyncProfile))
-                    {                                       
-                        if (!sync.PromptDelete)
+                    {
+                        if (sync.SyncOption == SyncOption.GoogleToOutlookOnly)
+                            return;
+                        else if (!sync.PromptDelete)
                             sync.DeleteGoogleResolution = DeleteResolution.DeleteGoogleAlways;
                         else if (sync.DeleteGoogleResolution != DeleteResolution.DeleteGoogleAlways &&
                                  sync.DeleteGoogleResolution != DeleteResolution.KeepGoogleAlways)
