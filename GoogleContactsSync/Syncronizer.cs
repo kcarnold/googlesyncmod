@@ -49,8 +49,7 @@ namespace GoContactSyncMod
 
         private OAuth2Authenticator authenticator;
         public DocumentsRequest DocumentsRequest { get; private set; }
-        public EventsResource EventRequest { get; private set; }
-        public CalendarListEntry PrimaryCalendar;
+        public EventsResource EventRequest { get; private set; }        
 
         private static Outlook.NameSpace _outlookNamespace;
         public static Outlook.NameSpace OutlookNameSpace
@@ -73,6 +72,7 @@ namespace GoContactSyncMod
         public Collection<Document> GoogleNotes { get; private set; }
         public Collection<Google.Apis.Calendar.v3.Data.Event> GoogleAppointments { get; private set; }
         public Collection<Google.Apis.Calendar.v3.Data.Event> AllGoogleAppointments { get; private set; }
+        public IList<CalendarListEntry> calendarList { get; private set; }
         public Collection<Group> GoogleGroups { get; set; }
         internal Document googleNotesFolder;
         public string OutlookPropertyPrefix { get; private set; }
@@ -103,6 +103,8 @@ namespace GoContactSyncMod
         public static string SyncContactsFolder { get; set; }
         public static string SyncNotesFolder { get; set; }
         public static string SyncAppointmentsFolder { get; set; }
+        public static string SyncAppointmentsGoogleFolder { get; set; }
+
         public static ushort MonthsInPast { get; set; }
         public static ushort MonthsInFuture { get; set; }
         public static string Timezone { get; set; }
@@ -234,21 +236,24 @@ namespace GoContactSyncMod
 
                         //CalendarRequest.setUserCredentials(username, password);
 
-                        var list = CalendarRequest.CalendarList.List().Execute().Items;
-                        foreach (var calendar in list)
-                        {
-                            if (calendar.Primary != null && calendar.Primary.Value)
-                            {
-                                PrimaryCalendar = calendar;
-                                break;
-                            }
-                        }
+                        calendarList = CalendarRequest.CalendarList.List().Execute().Items;
 
-                        if (PrimaryCalendar == null)
-                            throw new Exception("Primary Calendar not found");
+                        //Get Primary Calendar, if not set from outside
+                        if (string.IsNullOrEmpty(SyncAppointmentsGoogleFolder))
+                            foreach (var calendar in calendarList)
+                            {
+                                if (calendar.Primary != null && calendar.Primary.Value)
+                                {
+                                    SyncAppointmentsGoogleFolder = calendar.Id;
+                                    break;
+                                }
+                            }
+
+                        if (SyncAppointmentsGoogleFolder == null)
+                            throw new Exception("Google Calendar not defined (primary not found)");
 
                         //EventQuery query = new EventQuery("https://www.google.com/calendar/feeds/default/private/full");
-                        //ToDo: Upgrade to v3, EventQuery query = new EventQuery("https://www.googleapis.com/calendar/v3/calendars/default/events");
+                        //Old v2 approach: EventQuery query = new EventQuery("https://www.googleapis.com/calendar/v3/calendars/default/events");
                         EventRequest = CalendarRequest.Events;
                     }
                 }
@@ -731,7 +736,7 @@ namespace GoContactSyncMod
                 GoogleAppointments = new Collection<Google.Apis.Calendar.v3.Data.Event>();
 
 
-                var query = EventRequest.List(PrimaryCalendar.Id);
+                var query = EventRequest.List(SyncAppointmentsGoogleFolder);
 
                 string pageToken = null;
                 //query.MaxResults = 256; //ToDo: Find a way to retrieve all appointments
@@ -1411,7 +1416,7 @@ namespace GoContactSyncMod
                         //    Logger.Log("Error resetting match for Google appointment: \"" + name + "\".", EventType.Warning);
                         //}
 
-                        EventRequest.Delete(PrimaryCalendar.Id, item.Id).Execute();
+                        EventRequest.Delete(SyncAppointmentsGoogleFolder, item.Id).Execute();
 
                         DeletedCount++;
                         Logger.Log("Deleted Google appointment: \"" + name + "\".", EventType.Information);
@@ -2229,7 +2234,7 @@ namespace GoContactSyncMod
 
                 try
                 {
-                    Google.Apis.Calendar.v3.Data.Event createdEntry = EventRequest.Insert(googleAppointment, PrimaryCalendar.Id).Execute();
+                    Google.Apis.Calendar.v3.Data.Event createdEntry = EventRequest.Insert(googleAppointment, SyncAppointmentsGoogleFolder).Execute();
                     return createdEntry;
                 }
                 catch (Exception ex)
@@ -2244,7 +2249,7 @@ namespace GoContactSyncMod
                 {
                     //contact already present in google. just update
 
-                    Google.Apis.Calendar.v3.Data.Event updated = EventRequest.Update(googleAppointment, PrimaryCalendar.Id, googleAppointment.Id).Execute();
+                    Google.Apis.Calendar.v3.Data.Event updated = EventRequest.Update(googleAppointment, SyncAppointmentsGoogleFolder, googleAppointment.Id).Execute();
                     return updated;
                 }
                 catch (Exception ex)
@@ -2995,7 +3000,7 @@ namespace GoContactSyncMod
 
                     if (deleteGoogleAppointments && googleAppointment.Status != "cancelled")
                     {
-                        EventRequest.Delete(PrimaryCalendar.Id, googleAppointment.Id).Execute();
+                        EventRequest.Delete(SyncAppointmentsGoogleFolder, googleAppointment.Id).Execute();
                     }
                     else
                     {

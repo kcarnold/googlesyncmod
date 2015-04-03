@@ -878,7 +878,7 @@ namespace GoContactSyncMod
                                 //googleRecurrenceExceptions.Add(googleRecurrenceException);                                  
 
                                 //ToDo: check promptDeletion and syncDeletion options
-                                sync.EventRequest.Delete(sync.PrimaryCalendar.Id, googleRecurrenceException.Id).Execute();
+                                sync.EventRequest.Delete(Syncronizer.SyncAppointmentsGoogleFolder, googleRecurrenceException.Id).Execute();
                                 Logger.Log("Deleted obsolete recurrence exception from Google: " + master.Subject + " - " + exception.OriginalDate, EventType.Information);
                                 //sync.DeletedCount++;
 
