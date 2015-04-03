@@ -698,7 +698,7 @@ namespace GoContactSyncMod.UnitTests
         {
             if (googleAppointment != null && !googleAppointment.Status.Equals("cancelled"))
             {
-                sync.EventRequest.Delete(sync.PrimaryCalendar.Id, googleAppointment.Id);
+                sync.EventRequest.Delete(Syncronizer.SyncAppointmentsGoogleFolder, googleAppointment.Id);
                 Logger.Log("Deleted Google test appointment: " + googleAppointment.Summary, EventType.Information);
                 Thread.Sleep(2000);
             }

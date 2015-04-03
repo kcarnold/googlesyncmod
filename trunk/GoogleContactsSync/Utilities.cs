@@ -428,4 +428,64 @@ namespace GoContactSyncMod
                 throw new ArgumentException("Object is not a OutlookFolder");
         }
     }
+
+    public class GoogleCalendar : IComparable
+    {
+        private string _folderName;
+        private string _folderID;
+        private bool _isDefaultFolder;
+
+
+        public GoogleCalendar(string folderName, string folderID, bool isDefaultFolder)
+        {
+
+            this._folderName = folderName;
+            this._folderID = folderID;
+            this._isDefaultFolder = isDefaultFolder;
+        }
+
+        public string FolderName
+        {
+            get
+            {
+                return _folderName;
+            }
+        }
+
+        public string FolderID
+        {
+
+            get
+            {
+                return _folderID;
+            }
+        }
+
+        public bool IsDefaultFolder
+        {
+
+            get
+            {
+                return _isDefaultFolder;
+            }
+        }
+
+        public string DisplayName
+        {
+            get
+            {
+                return _folderName + (_isDefaultFolder ? " (Default)" : String.Empty);
+            }
+        }
+
+        public int CompareTo(object obj)
+        {
+            if (obj is GoogleCalendar)
+            {
+                return this._folderName.CompareTo((obj as GoogleCalendar)._folderName);
+            }
+            else
+                throw new ArgumentException("Object is not a GoogleCalendar");
+        }
+    }
 }

@@ -421,6 +421,7 @@ namespace GoContactSyncMod.UnitTests
             syncContactsFolder = "";
             syncNotesFolder = "";
             syncAppointmentsFolder = "";
+            Syncronizer.SyncAppointmentsGoogleFolder = "";
 
             //First, check if there is a folder called GCSMTestContacts and GCSMTestNotes available, if yes, use them
             ArrayList outlookContactFolders = new ArrayList();
@@ -476,7 +477,10 @@ namespace GoContactSyncMod.UnitTests
                     syncNotesFolder = regKeyAppRoot.GetValue("SyncNotesFolder") as string;
             if (string.IsNullOrEmpty(syncAppointmentsFolder))
                 if (regKeyAppRoot.GetValue("SyncAppointmentsFolder") != null)
-                    syncAppointmentsFolder = regKeyAppRoot.GetValue("SyncAppointmentsFolder") as string;           
+                    syncAppointmentsFolder = regKeyAppRoot.GetValue("SyncAppointmentsFolder") as string;
+            if (string.IsNullOrEmpty(Syncronizer.SyncAppointmentsGoogleFolder))
+                if (regKeyAppRoot.GetValue("SyncAppointmentsGoogleFolder") != null)
+                    Syncronizer.SyncAppointmentsGoogleFolder = regKeyAppRoot.GetValue("SyncAppointmentsGoogeFolder") as string;           
         }
 
         private static Microsoft.Win32.RegistryKey LoadSettings(out string gmailUsername, out string syncProfile)
