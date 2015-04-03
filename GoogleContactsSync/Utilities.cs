@@ -427,6 +427,15 @@ namespace GoContactSyncMod
             else
                 throw new ArgumentException("Object is not a OutlookFolder");
         }
+
+        public override string ToString()
+        {
+            if (this is OutlookFolder)
+                return FolderID;
+            else
+                return base.ToString();
+            
+        }
     }
 
     public class GoogleCalendar : IComparable
@@ -486,6 +495,15 @@ namespace GoContactSyncMod
             }
             else
                 throw new ArgumentException("Object is not a GoogleCalendar");
+        }
+
+        public override string ToString()
+        {
+            if (this is GoogleCalendar)
+                return FolderID;
+            else
+                return base.ToString();
+
         }
     }
 }
