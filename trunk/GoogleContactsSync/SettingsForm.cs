@@ -96,6 +96,21 @@ namespace GoContactSyncMod
 		delegate void TextHandler(string text);
 		delegate void SwitchHandler(bool value);
         delegate void IconHandler();
+        delegate DialogResult DialogHandler(string text);
+
+        public DialogResult ShowDialog(string text)
+        {
+            if (this.InvokeRequired)
+            {
+                return (DialogResult)Invoke(new DialogHandler(ShowDialog), new object[] { text });
+            }
+            else
+            {
+                return MessageBox.Show(this, text, Application.ProductName, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);            
+            }
+
+            
+        }
 
         private Icon IconError = GoContactSyncMod.Properties.Resources.sync_error;
         private Icon Icon0 = GoContactSyncMod.Properties.Resources.sync;
@@ -193,12 +208,10 @@ namespace GoContactSyncMod
 
                         this.contactFoldersComboBox.BeginUpdate();
                         this.noteFoldersComboBox.BeginUpdate();
-                        this.appointmentFoldersComboBox.BeginUpdate();
-                        this.appointmentGoogleFoldersComboBox.BeginUpdate();
+                        this.appointmentFoldersComboBox.BeginUpdate();                        
                         this.contactFoldersComboBox.DataSource = null;
                         this.noteFoldersComboBox.DataSource = null;
                         this.appointmentFoldersComboBox.DataSource = null;
-                        this.appointmentGoogleFoldersComboBox.DataSource = null;
                         //this.contactFoldersComboBox.Items.Clear();
 
                         Microsoft.Office.Interop.Outlook.Folders folders = Syncronizer.OutlookNameSpace.Folders;
@@ -276,43 +289,7 @@ namespace GoContactSyncMod
                                 break;
                             }
 
-                        Logger.Log("Loaded Outlook folders.", EventType.Information);
-
-                        if (btSyncAppointments.Checked)
-                        {
-                            Logger.Log("Loading Google Appointments folder...", EventType.Information);
-                            defaultText = "    --- Select a Google Appointment folder ---";                        
-
-                            if (sync == null)
-                                sync = new Syncronizer();                                
-
-                            sync.SyncAppointments = btSyncAppointments.Checked;
-                            sync.LoginToGoogle(UserName.Text);
-                            foreach (CalendarListEntry calendar in sync.calendarList)
-                            {
-                                googleAppointmentFolders.Add(new GoogleCalendar(calendar.Summary, calendar.Id, calendar.Primary.HasValue?calendar.Primary.Value:false));
-                            }
-
-                            if (googleAppointmentFolders != null) // && googleAppointmentFolders.Count > 0)
-                            {
-                                googleAppointmentFolders.Sort();
-                                googleAppointmentFolders.Insert(0, new GoogleCalendar(defaultText, defaultText, false));
-                                this.appointmentGoogleFoldersComboBox.DataSource = googleAppointmentFolders;
-                                this.appointmentGoogleFoldersComboBox.DisplayMember = "DisplayName";
-                                this.appointmentGoogleFoldersComboBox.ValueMember = "FolderID";
-                            }
-                            this.appointmentGoogleFoldersComboBox.EndUpdate();
-                            this.appointmentGoogleFoldersComboBox.SelectedValue = defaultText;
-
-                            //Select Default Folder per Default
-                            foreach (GoogleCalendar folder in appointmentGoogleFoldersComboBox.Items)
-                                if (folder.IsDefaultFolder)
-                                {
-                                    this.appointmentGoogleFoldersComboBox.SelectedItem = folder;
-                                    break;
-                                }
-                            Logger.Log("Loaded Google Appointments folder.", EventType.Information);
-                        }
+                        Logger.Log("Loaded Outlook folders.", EventType.Information);                        
 
                     }
                     catch (Exception e)
@@ -326,6 +303,17 @@ namespace GoContactSyncMod
                     }
 
                     LoadSettingsFolders(syncProfile);
+
+                    if (this.appointmentGoogleFoldersComboBox.DataSource == null)
+                    {
+                        //defaultText = "    --- Select a Google Appointment folder ---";
+                        //googleAppointmentFolders.Insert(0, new GoogleCalendar(defaultText, defaultText, false));
+                        googleAppointmentFolders.Add(new GoogleCalendar(syncAppointmentsGoogleFolder, syncAppointmentsGoogleFolder, true));
+                        this.appointmentGoogleFoldersComboBox.DataSource = googleAppointmentFolders;
+                        this.appointmentGoogleFoldersComboBox.DisplayMember = "DisplayName";
+                        this.appointmentGoogleFoldersComboBox.ValueMember = "FolderID";
+                        this.appointmentGoogleFoldersComboBox.SelectedIndex = this.appointmentGoogleFoldersComboBox.Items.Count - 1;
+                    }
                 }
             }
         }
@@ -494,13 +482,13 @@ namespace GoContactSyncMod
                 regKeyAppRoot = Registry.CurrentUser.CreateSubKey(@"Software\Webgear\GOContactSync" + (_profile != null ? ('\\' + _profile) : ""));
             }
 
-            if (regKeyAppRoot.GetValue("SyncContactsFolder") != null)
+            if (regKeyAppRoot.GetValue("SyncContactsFolder") != null && !string.IsNullOrEmpty(regKeyAppRoot.GetValue("SyncContactsFolder") as string) && contactFoldersComboBox.Items.Contains(regKeyAppRoot.GetValue("SyncContactsFolder") as string))
                 contactFoldersComboBox.SelectedValue = regKeyAppRoot.GetValue("SyncContactsFolder") as string;
-            if (regKeyAppRoot.GetValue("SyncNotesFolder") != null)
+            if (regKeyAppRoot.GetValue("SyncNotesFolder") != null && !string.IsNullOrEmpty(regKeyAppRoot.GetValue("SyncNotesFolder") as string) && contactFoldersComboBox.Items.Contains(regKeyAppRoot.GetValue("SyncNotesFolder") as string))
                 noteFoldersComboBox.SelectedValue = regKeyAppRoot.GetValue("SyncNotesFolder") as string;
-            if (regKeyAppRoot.GetValue("SyncAppointmentsFolder") != null)
+            if (regKeyAppRoot.GetValue("SyncAppointmentsFolder") != null && !string.IsNullOrEmpty(regKeyAppRoot.GetValue("SyncAppointmentsFolder") as string) && contactFoldersComboBox.Items.Contains(regKeyAppRoot.GetValue("SyncAppointmentsFolder") as string))
                 appointmentFoldersComboBox.SelectedValue = regKeyAppRoot.GetValue("SyncAppointmentsFolder") as string;
-            if (regKeyAppRoot.GetValue("SyncAppointmentsGoogleFolder") != null)
+            if (regKeyAppRoot.GetValue("SyncAppointmentsGoogleFolder") != null && !string.IsNullOrEmpty(regKeyAppRoot.GetValue("SyncAppointmentsGoogleFolder") as string) && contactFoldersComboBox.Items.Contains(regKeyAppRoot.GetValue("SyncAppointmentsGoogleFolder") as string))
                 appointmentGoogleFoldersComboBox.SelectedValue = regKeyAppRoot.GetValue("SyncAppointmentsGoogleFolder") as string;
         }
 
@@ -554,8 +542,8 @@ namespace GoContactSyncMod
                                                 || !btSyncContacts.Checked;
                 bool syncNoteFolderIsValid = (noteFoldersComboBox.SelectedIndex >= 1 && noteFoldersComboBox.SelectedIndex < noteFoldersComboBox.Items.Count)
                                                 || !btSyncNotes.Checked;
-                bool syncAppointmentFolderIsValid = (appointmentFoldersComboBox.SelectedIndex >= 1 && appointmentFoldersComboBox.SelectedIndex < appointmentFoldersComboBox.Items.Count &&
-                                                    appointmentGoogleFoldersComboBox.SelectedIndex >= 1 && appointmentGoogleFoldersComboBox.SelectedIndex < appointmentFoldersComboBox.Items.Count)
+                bool syncAppointmentFolderIsValid = (appointmentFoldersComboBox.SelectedIndex >= 1 && appointmentFoldersComboBox.SelectedIndex < appointmentFoldersComboBox.Items.Count)
+                        //&& appointmentGoogleFoldersComboBox.SelectedIndex >= 1 && appointmentGoogleFoldersComboBox.SelectedIndex < appointmentGoogleFoldersComboBox.Items.Count
                                                 || !btSyncAppointments.Checked;
 
                 //ToDo: Coloring doesn'T Work for these combos
@@ -686,13 +674,17 @@ namespace GoContactSyncMod
                     string oldSyncAppointmentsGoogleFolder = regKeyAppRoot.GetValue("SyncAppointmentsGoogleFolder") as string;
 
                     //only reset notes if NotesFolder changed and reset contacts if ContactsFolder changed
+                    //and only reset appointments, if OutlookAppointmentsFolder changed or GoogleAppointmentsFolder changed (or not chosen, i.e. use default primary)
                     bool syncContacts = !string.IsNullOrEmpty(oldSyncContactsFolder) && !oldSyncContactsFolder.Equals(this.syncContactsFolder) && btSyncContacts.Checked;
                     bool syncNotes = !string.IsNullOrEmpty(oldSyncNotesFolder) && !oldSyncNotesFolder.Equals(this.syncNotesFolder) && btSyncNotes.Checked;
-                    bool syncAppointments = (!string.IsNullOrEmpty(oldSyncAppointmentsFolder) && !oldSyncAppointmentsFolder.Equals(this.syncAppointmentsFolder) ||
-                        !string.IsNullOrEmpty(oldSyncAppointmentsGoogleFolder) && !oldSyncAppointmentsGoogleFolder.Equals(this.syncAppointmentsGoogleFolder))
+                    bool syncAppointments = (!string.IsNullOrEmpty(oldSyncAppointmentsFolder) && !oldSyncAppointmentsFolder.Equals(this.syncAppointmentsFolder) &&
+                        !string.IsNullOrEmpty(this.syncAppointmentsGoogleFolder) && !this.syncAppointmentsGoogleFolder.Equals(oldSyncAppointmentsGoogleFolder))
                         && btSyncAppointments.Checked;
                     if (syncContacts || syncNotes || syncAppointments)
-                        ResetMatches(syncContacts, syncNotes, syncAppointments);
+                    {
+                        if (!ResetMatches(syncContacts, syncNotes, syncAppointments))
+                            throw new Exception("Reset required but cancelled by user");
+                    }
 
                     //Then save the Contacts and Notes Folders used at last sync
                     if (btSyncContacts.Checked)
@@ -702,7 +694,8 @@ namespace GoContactSyncMod
                     if (btSyncAppointments.Checked)
                     {
                         regKeyAppRoot.SetValue("SyncAppointmentsFolder", this.syncAppointmentsFolder);
-                        regKeyAppRoot.SetValue("SyncAppointmentsGoogleFolder", this.syncAppointmentsGoogleFolder);
+                        if (!string.IsNullOrEmpty(this.syncAppointmentsGoogleFolder))
+                            regKeyAppRoot.SetValue("SyncAppointmentsGoogleFolder", this.syncAppointmentsGoogleFolder);
                     }
 
                     SetLastSyncText("Syncing...");
@@ -1100,6 +1093,7 @@ namespace GoContactSyncMod
 		{
 			try
 			{
+                Application.DoEvents();
 				int index = syncOptionBox.SelectedIndex;
 				if (index == -1)
 					return;
@@ -1200,7 +1194,7 @@ namespace GoContactSyncMod
 			}
 		}
 
-        private void ResetMatches(bool syncContacts, bool syncNotes, bool syncAppointments)
+        private bool ResetMatches(bool syncContacts, bool syncNotes, bool syncAppointments)
         {
             TimerSwitch(false);
 
@@ -1237,18 +1231,19 @@ namespace GoContactSyncMod
             if (sync.SyncAppointments)
             {
                 bool deleteOutlookAppointments = false;
-                bool deleteGoogleAppointments = false;                
-                switch (MessageBox.Show(this, "Do you want to delete all Outlook Calendar entries?", Application.ProductName, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2))
+                bool deleteGoogleAppointments = false;
+
+                switch (ShowDialog("Do you want to delete all Outlook Calendar entries?"))                
                 {
                     case DialogResult.Yes: deleteOutlookAppointments = true; break;
                     case DialogResult.No: deleteOutlookAppointments = false; break;
-                    default: return;
+                    default: return false;
                 }
-                switch (MessageBox.Show(this, "Do you want to delete all Google Calendar entries?", Application.ProductName, MessageBoxButtons.YesNoCancel,MessageBoxIcon.Question,MessageBoxDefaultButton.Button2 ))
+                switch (ShowDialog("Do you want to delete all Google Calendar entries?"))
                 {
                     case DialogResult.Yes: deleteGoogleAppointments = true; break;
                     case DialogResult.No: deleteGoogleAppointments = false; break;
-                    default: return;
+                    default: return false;
                 }
                 
                 sync.LoadAppointments();
@@ -1270,10 +1265,11 @@ namespace GoContactSyncMod
             lastSync = DateTime.Now;
             SetLastSyncText("Matches reset at " + lastSync.ToString());
             Logger.Log("Matches reset.", EventType.Information);
+
+            return true;
         }
 
-        private delegate void InvokeCallback();
-
+       
         public delegate DialogResult InvokeConflict(ConflictResolverForm conflictResolverForm); 
 
         public DialogResult ShowConflictDialog(ConflictResolverForm conflictResolverForm)
@@ -1292,6 +1288,7 @@ namespace GoContactSyncMod
 
             }
         }
+        private delegate void InvokeCallback();
 
         private void ShowForm()
         {
@@ -1563,10 +1560,10 @@ namespace GoContactSyncMod
         private void appointmentGoogleFoldersComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             string message = "Select the Google Calendar you want to sync";
-            if ((sender as ComboBox).SelectedIndex >= 0 && (sender as ComboBox).SelectedIndex < (sender as ComboBox).Items.Count && (sender as ComboBox).SelectedItem is CalendarListEntry)
+            if ((sender as ComboBox).SelectedIndex >= 0 && (sender as ComboBox).SelectedIndex < (sender as ComboBox).Items.Count && (sender as ComboBox).SelectedItem is GoogleCalendar)
             {
                 syncAppointmentsGoogleFolder = (sender as ComboBox).SelectedValue.ToString();
-                toolTip.SetToolTip((sender as ComboBox), message + ":\r\n" + ((CalendarListEntry)(sender as ComboBox).SelectedItem).Summary);
+                toolTip.SetToolTip((sender as ComboBox), message + ":\r\n" + ((GoogleCalendar)(sender as ComboBox).SelectedItem).DisplayName);
             }
             else
             {
@@ -1742,6 +1739,57 @@ namespace GoContactSyncMod
             catch (Exception ex)
             {
                 Logger.Log(ex.ToString(), EventType.Error);
+            }
+        }
+
+        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void appointmentGoogleFoldersComboBox_Enter(object sender, EventArgs e)
+        {
+            if (this.appointmentGoogleFoldersComboBox.DataSource == null ||
+                this.appointmentGoogleFoldersComboBox.Items.Count <=1)
+            {
+                Logger.Log("Loading Google Calendars...", EventType.Information);
+                ArrayList googleAppointmentFolders = new ArrayList();
+
+                this.appointmentGoogleFoldersComboBox.BeginUpdate();
+                //this.appointmentGoogleFoldersComboBox.DataSource = null;
+
+                Logger.Log("Loading Google Appointments folder...", EventType.Information);
+                string defaultText = "    --- Select a Google Appointment folder ---";
+
+                if (sync == null)
+                    sync = new Syncronizer();
+
+                sync.SyncAppointments = btSyncAppointments.Checked;
+                sync.LoginToGoogle(UserName.Text);
+                foreach (CalendarListEntry calendar in sync.calendarList)
+                {
+                    googleAppointmentFolders.Add(new GoogleCalendar(calendar.Summary, calendar.Id, calendar.Primary.HasValue ? calendar.Primary.Value : false));
+                }
+
+                if (googleAppointmentFolders != null) // && googleAppointmentFolders.Count > 0)
+                {
+                    googleAppointmentFolders.Sort();
+                    googleAppointmentFolders.Insert(0, new GoogleCalendar(defaultText, defaultText, false));
+                    this.appointmentGoogleFoldersComboBox.DataSource = googleAppointmentFolders;
+                    this.appointmentGoogleFoldersComboBox.DisplayMember = "DisplayName";
+                    this.appointmentGoogleFoldersComboBox.ValueMember = "FolderID";
+                }
+                this.appointmentGoogleFoldersComboBox.EndUpdate();
+                this.appointmentGoogleFoldersComboBox.SelectedValue = defaultText;
+
+                //Select Default Folder per Default
+                foreach (GoogleCalendar folder in appointmentGoogleFoldersComboBox.Items)
+                    if (folder.IsDefaultFolder)
+                    {
+                        this.appointmentGoogleFoldersComboBox.SelectedItem = folder;
+                        break;
+                    }
+                Logger.Log("Loaded Google Calendars.", EventType.Information);
             }
         }
 

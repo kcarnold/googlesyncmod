@@ -370,6 +370,7 @@ namespace GoContactSyncMod
             this.appointmentGoogleFoldersComboBox.TabIndex = 17;
             this.toolTip.SetToolTip(this.appointmentGoogleFoldersComboBox, "Select the Google Appointments folder you want to sync");
             this.appointmentGoogleFoldersComboBox.SelectedIndexChanged += new System.EventHandler(this.appointmentGoogleFoldersComboBox_SelectedIndexChanged);
+            this.appointmentGoogleFoldersComboBox.Enter += new System.EventHandler(this.appointmentGoogleFoldersComboBox_Enter);
             // 
             // labelMonthsFuture
             // 
