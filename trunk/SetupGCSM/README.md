@@ -1,5 +1,11 @@
 # +++ NEWS +++ NEWS +++ NEWS +++
 
+### Version [3.9.3] - 04.04.2015
+
+FIX: fixed Google Exception when syncing appointments accepted on Google side (sent by different Organizer on Google), see http://sourceforge.net/p/googlesyncmod/bugs/532/
+IMPROVEMENT: Added Google Calendar Selection for appointment sync
+FIX: not show delete conflict resoultion, if syncDelete is switched off or GoogleToOutlookOnly or OutlookToGoogleOnly
+
 ### Version [3.9.2] - 27.12.2014
 
 ###### SVN commits
