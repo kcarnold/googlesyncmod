@@ -1016,8 +1016,8 @@ namespace GoContactSyncMod
 
         internal static bool IsOrganizer(string email)
         {
-            string userName = Syncronizer.UserName.Trim().ToLower().Replace("@googlemail", "@gmail");
-            email = email.Trim().ToLower().Replace("@googlemail", "@gmail");
+            string userName = Syncronizer.UserName.Trim().ToLower().Replace("@googlemail.", "@gmail.");
+            email = email.Trim().ToLower().Replace("@googlemail.", "@gmail.");
 
             if (email == null || email.Equals(userName, StringComparison.InvariantCultureIgnoreCase))
                 return true;
