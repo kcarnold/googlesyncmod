@@ -1721,7 +1721,7 @@ namespace GoContactSyncMod
         {
 
             bool updated = false;
-            if (!AppointmentSync.IsOrganizer(slave.Organizer.Email)) // && AppointmentPropertiesUtils.GetGoogleOutlookAppointmentId(this.SyncProfile, slave) != null)
+            if (slave.Organizer != null && !AppointmentSync.IsOrganizer(slave.Organizer.Email)) // && AppointmentPropertiesUtils.GetGoogleOutlookAppointmentId(this.SyncProfile, slave) != null)
             {
                 //ToDo:Maybe find as better way, e.g. to ask the user, if he wants to overwrite the invalid appointment   
                 switch (this.SyncOption)
@@ -1784,7 +1784,7 @@ namespace GoContactSyncMod
             {
                 AppointmentSync.UpdateAppointment(master, slave);
 
-                if (AppointmentSync.IsOrganizer(slave.Organizer.Email))
+                if (slave.Organizer == null || AppointmentSync.IsOrganizer(slave.Organizer.Email))
                 {
                     AppointmentPropertiesUtils.SetGoogleOutlookAppointmentId(SyncProfile, slave, master);
                     slave = SaveGoogleAppointment(slave);
@@ -1818,7 +1818,7 @@ namespace GoContactSyncMod
                 master.Save();
 
                 //After saving Google Appointment => also sync recurrence exceptions and save again
-                if (AppointmentSync.IsOrganizer(slave.Organizer.Email) && master.IsRecurring && master.RecurrenceState == Outlook.OlRecurrenceState.olApptMaster && AppointmentSync.UpdateRecurrenceExceptions(master, slave, this))
+                if ((slave.Organizer == null || AppointmentSync.IsOrganizer(slave.Organizer.Email)) && master.IsRecurring && master.RecurrenceState == Outlook.OlRecurrenceState.olApptMaster && AppointmentSync.UpdateRecurrenceExceptions(master, slave, this))
                     slave = SaveGoogleAppointment(slave);
 
                 SyncedCount++;
@@ -1936,7 +1936,7 @@ namespace GoContactSyncMod
                 }
 
 
-                if (AppointmentSync.IsOrganizer(master.Organizer.Email))
+                if (master.Organizer == null || AppointmentSync.IsOrganizer(master.Organizer.Email))
                 {
                     //only update Google, if I am the organizer, otherwise an error will be thrown
                     AppointmentPropertiesUtils.SetGoogleOutlookAppointmentId(SyncProfile, master, slave);
