@@ -347,7 +347,7 @@ namespace GoContactSyncMod
             return Resolve();
         }
 
-        public ConflictResolution Resolve(string message, Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment, Event googleAppointment, Syncronizer sync)
+        public ConflictResolution Resolve(string message, Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment, Event googleAppointment, Syncronizer sync, bool keepOutlook, bool keepGoogle)
         {
             string name = string.Empty;
 
@@ -366,11 +366,22 @@ namespace GoContactSyncMod
             }
 
             //ToDo: Make it more flexible
-            _form.keepGoogle.Enabled = false;
+            _form.keepGoogle.Enabled = keepGoogle;
+            _form.keepOutlook.Enabled = keepOutlook;
             _form.AllCheckBox.Visible = true;
             _form.messageLabel.Text = message;
 
             return Resolve();
+        }
+
+        public ConflictResolution Resolve(string message, Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment, Event googleAppointment, Syncronizer sync)
+        {
+            return Resolve(message, outlookAppointment, googleAppointment, sync, true, false);        
+        }
+
+        public ConflictResolution Resolve(string message, Event googleAppointment, Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment, Syncronizer sync)
+        {
+            return Resolve(message, outlookAppointment, googleAppointment, sync, false, true);           
         }
 
         public DeleteResolution ResolveDelete(Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment)

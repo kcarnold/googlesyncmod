@@ -1014,6 +1014,14 @@ namespace GoContactSyncMod
         //        return false;
         //}
 
+        internal static bool IsOrganizer(string email)
+        {
+            if (email != null && email.Trim().Equals(Syncronizer.UserName.Trim(), StringComparison.InvariantCultureIgnoreCase))
+                return true;
+            else
+                return false;
+        }
+
         //internal static string GetOrganizer(Outlook.AppointmentItem outlookAppointment)
         //{
         //    Outlook.AddressEntry organizer = outlookAppointment.GetOrganizer();

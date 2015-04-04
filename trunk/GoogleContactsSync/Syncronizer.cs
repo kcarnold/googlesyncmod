@@ -1719,6 +1719,60 @@ namespace GoContactSyncMod
         /// </summary>
         public void UpdateAppointment(Outlook.AppointmentItem master, ref Google.Apis.Calendar.v3.Data.Event slave)
         {
+
+            bool updated = false;
+            if (!AppointmentSync.IsOrganizer(slave.Organizer.Email)) // && AppointmentPropertiesUtils.GetGoogleOutlookAppointmentId(this.SyncProfile, slave) != null)
+            {
+                //ToDo:Maybe find as better way, e.g. to ask the user, if he wants to overwrite the invalid appointment   
+                switch (this.SyncOption)
+                {
+                    case SyncOption.MergeGoogleWins:
+                    case SyncOption.GoogleToOutlookOnly:
+                        //overwrite Outlook appointment
+                        Logger.Log("Different Organizer found on Google, invitation maybe NOT sent by Outlook. Google appointment is overwriting Outlook because of SyncOption " + SyncOption + ": " + master.Subject + " - " + master.Start + ". ", EventType.Information);
+                        UpdateAppointment(ref slave, master, null);
+                        break;
+                    case SyncOption.MergeOutlookWins:
+                    case SyncOption.OutlookToGoogleOnly:
+                        //overwrite Google appointment
+                        Logger.Log("Different Organizer found on Google, invitation maybe NOT sent by Outlook, but Outlook appointment is overwriting Google because of SyncOption " + SyncOption + ": " + master.Subject + " - " + master.Start + ".", EventType.Information);
+                        updated = true;
+                        break;
+                    case SyncOption.MergePrompt:
+                        //promp for sync option
+                        if (
+                            //ConflictResolution != ConflictResolution.OutlookWinsAlways && //Shouldn't be used, because Google seems to be the master of the appointment
+                            ConflictResolution != ConflictResolution.GoogleWinsAlways &&
+                            ConflictResolution != ConflictResolution.SkipAlways)
+                        {
+                            var r = new ConflictResolver();
+                            ConflictResolution = r.Resolve("Cannot update appointment from Outlook to Google because different Organizer found on Google, invitation maybe NOT sent by Outlook: \"" + master.Subject + " - " + master.Start + "\". Do you want to update it back from Google to Outlook?", slave, master, this);
+                        }
+                        switch (ConflictResolution)
+                        {
+                            case ConflictResolution.Skip:
+                            case ConflictResolution.SkipAlways: //Skip
+                                SkippedCount++;
+                                Logger.Log("Skipped Updating appointment from Outlook to Google because different Organizer found on Google, invitation maybe NOT sent by Outlook: \"" + master.Subject + " - " + master.Start + "\".", EventType.Information);
+                                break;
+                            case ConflictResolution.GoogleWins:
+                            case ConflictResolution.GoogleWinsAlways: //Keep Google and overwrite Outlook                           
+                                UpdateAppointment(ref slave, master, null);
+                                break;
+                            case ConflictResolution.OutlookWins:
+                            case ConflictResolution.OutlookWinsAlways: //Keep Outlook and overwrite Google    
+                                updated = true;
+                                break;
+                            default:
+                                throw new ApplicationException("Cancelled");
+                        }
+
+                        break;
+                }
+            }
+            else //Only update, if invitation was not sent on Google side or freshly created during this sync  
+                updated = true;
+
             //if (master.Recipients.Count == 0 || 
             //    master.Organizer == null || 
             //    AppointmentSync.IsOrganizer(AppointmentSync.GetOrganizer(master), master)||
@@ -1726,54 +1780,59 @@ namespace GoContactSyncMod
             //    )
             //{//Only update, if this appointment was organized on Outlook side or freshly created during this sync
 
-            AppointmentSync.UpdateAppointment(master, slave);
+            if (updated)
+            {
+                AppointmentSync.UpdateAppointment(master, slave);
 
-            AppointmentPropertiesUtils.SetGoogleOutlookAppointmentId(SyncProfile, slave, master);
-            slave = SaveGoogleAppointment(slave);
+                if (AppointmentSync.IsOrganizer(slave.Organizer.Email))
+                {
+                    AppointmentPropertiesUtils.SetGoogleOutlookAppointmentId(SyncProfile, slave, master);
+                    slave = SaveGoogleAppointment(slave);
+                }
 
-            //ToDo: Doesn'T work for newly created recurrence appointments before save, because Event.Reminder is throwing NullPointerException and Reminders cannot be initialized, therefore moved to after saving
-            //if (slave.Recurrence != null && slave.Reminders != null)
-            //{
+                //ToDo: Doesn'T work for newly created recurrence appointments before save, because Event.Reminder is throwing NullPointerException and Reminders cannot be initialized, therefore moved to after saving
+                //if (slave.Recurrence != null && slave.Reminders != null)
+                //{
 
-            //    if (slave.Reminders.Overrides != null)
-            //    {
-            //        slave.Reminders.Overrides.Clear();
-            //        if (master.ReminderSet)
-            //        {
-            //            var reminder = new Google.Apis.Calendar.v3.Data.EventReminder();
-            //            reminder.Minutes = master.ReminderMinutesBeforeStart;
-            //            if (reminder.Minutes > 40300)
-            //            {
-            //                //ToDo: Check real limit, currently 40300
-            //                Logger.Log("Reminder Minutes to big (" + reminder.Minutes + "), set to maximum of 40300 minutes for appointment: " + master.Subject + " - " + master.Start, EventType.Warning);
-            //                reminder.Minutes = 40300;
-            //            }
-            //            reminder.Method = "popup";
-            //            slave.Reminders.Overrides.Add(reminder);
-            //        }
-            //    }
-            //    slave = SaveGoogleAppointment(slave);
-            //}
+                //    if (slave.Reminders.Overrides != null)
+                //    {
+                //        slave.Reminders.Overrides.Clear();
+                //        if (master.ReminderSet)
+                //        {
+                //            var reminder = new Google.Apis.Calendar.v3.Data.EventReminder();
+                //            reminder.Minutes = master.ReminderMinutesBeforeStart;
+                //            if (reminder.Minutes > 40300)
+                //            {
+                //                //ToDo: Check real limit, currently 40300
+                //                Logger.Log("Reminder Minutes to big (" + reminder.Minutes + "), set to maximum of 40300 minutes for appointment: " + master.Subject + " - " + master.Start, EventType.Warning);
+                //                reminder.Minutes = 40300;
+                //            }
+                //            reminder.Method = "popup";
+                //            slave.Reminders.Overrides.Add(reminder);
+                //        }
+                //    }
+                //    slave = SaveGoogleAppointment(slave);
+                //}
 
-            AppointmentPropertiesUtils.SetOutlookGoogleAppointmentId(this, master, slave);
-            master.Save();
+                AppointmentPropertiesUtils.SetOutlookGoogleAppointmentId(this, master, slave);
+                master.Save();
 
-            //After saving Google Appointment => also sync recurrence exceptions and save again
-            if (master.IsRecurring && master.RecurrenceState == Outlook.OlRecurrenceState.olApptMaster && AppointmentSync.UpdateRecurrenceExceptions(master, slave, this))
-                slave = SaveGoogleAppointment(slave);
+                //After saving Google Appointment => also sync recurrence exceptions and save again
+                if (AppointmentSync.IsOrganizer(slave.Organizer.Email) && master.IsRecurring && master.RecurrenceState == Outlook.OlRecurrenceState.olApptMaster && AppointmentSync.UpdateRecurrenceExceptions(master, slave, this))
+                    slave = SaveGoogleAppointment(slave);
 
-            SyncedCount++;
-            Logger.Log("Updated appointment from Outlook to Google: \"" + master.Subject + " - " + master.Start + "\".", EventType.Information);
+                SyncedCount++;
+                Logger.Log("Updated appointment from Outlook to Google: \"" + master.Subject + " - " + master.Start + "\".", EventType.Information);
 
-            //}
-            //else
-            //{
-            //    //ToDo:Maybe find as better way, e.g. to ask the user, if he wants to overwrite the invalid appointment
-            //    SkippedCount++;
-            //    //Logger.Log("Skipped Updating appointment from Outlook to Google because multiple recipients found and invitations NOT sent by Outlook: \"" + master.Subject + " - " + master.Start + "\".", EventType.Information);
-            //    Logger.Log("Skipped Updating appointment from Outlook to Google because meeting was received by Outlook: \"" + master.Subject + " - " + master.Start + "\".", EventType.Information);
-            //}
-
+                //}
+                //else
+                //{
+                //    //ToDo:Maybe find as better way, e.g. to ask the user, if he wants to overwrite the invalid appointment
+                //    SkippedCount++;
+                //    //Logger.Log("Skipped Updating appointment from Outlook to Google because multiple recipients found and invitations NOT sent by Outlook: \"" + master.Subject + " - " + master.Start + "\".", EventType.Information);
+                //    Logger.Log("Skipped Updating appointment from Outlook to Google because meeting was received by Outlook: \"" + master.Subject + " - " + master.Start + "\".", EventType.Information);
+                //}
+            }
 
         }
 
@@ -1784,8 +1843,7 @@ namespace GoContactSyncMod
         /// </summary>
         public void UpdateAppointment(ref Google.Apis.Calendar.v3.Data.Event master, Outlook.AppointmentItem slave, List<Google.Apis.Calendar.v3.Data.Event> googleAppointmentExceptions)
         {
-
-            bool updated = false;
+                        
             //if (master.Participants.Count > 1)
             //{
             //    bool organizerIsGoogle = AppointmentSync.IsOrganizer(AppointmentSync.GetOrganizer(master));
@@ -1804,6 +1862,7 @@ namespace GoContactSyncMod
             //else                            
             //    updated = true;
 
+            bool updated = false;
             if (slave.Recipients.Count > 1 && AppointmentPropertiesUtils.GetOutlookGoogleAppointmentId(this, slave) != null)
             {
                 //ToDo:Maybe find as better way, e.g. to ask the user, if he wants to overwrite the invalid appointment   
@@ -1877,8 +1936,12 @@ namespace GoContactSyncMod
                 }
 
 
-                AppointmentPropertiesUtils.SetGoogleOutlookAppointmentId(SyncProfile, master, slave);
-                master = SaveGoogleAppointment(master);
+                if (AppointmentSync.IsOrganizer(master.Organizer.Email))
+                {
+                    //only update Google, if I am the organizer, otherwise an error will be thrown
+                    AppointmentPropertiesUtils.SetGoogleOutlookAppointmentId(SyncProfile, master, slave);
+                    master = SaveGoogleAppointment(master);
+                }
 
                 SyncedCount++;
                 Logger.Log("Updated appointment from Google to Outlook: \"" + master.Summary + " - " + GetTime(master) + "\".", EventType.Information);
