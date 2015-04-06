@@ -39,14 +39,14 @@ namespace GoContactSyncMod
             // Not public - we are always constructed from an Outlook.ContactItem (constructor below)
         }
 
-        public OutlookContactInfo(ContactItem item, Syncronizer sync)
+        public OutlookContactInfo(ContactItem item, Synchronizer sync)
         {
             this.UserProperties = new UserPropertiesHolder();
             this.Update(item, sync);
         }
         #endregion
 
-        internal void Update(ContactItem outlookContactItem, Syncronizer sync)
+        internal void Update(ContactItem outlookContactItem, Synchronizer sync)
         {
             this.EntryID = outlookContactItem.EntryID;
             this.FileAs = outlookContactItem.FileAs;
@@ -77,7 +77,7 @@ namespace GoContactSyncMod
             if (this.EntryID == null)
                 throw new ApplicationException("OutlookContactInfo cannot re-create the ContactItem from Outlook because EntryID is null, suggesting that this OutlookContactInfo was not created from an existing Outook contact.");
 
-            ContactItem outlookContactItem = Syncronizer.OutlookNameSpace.GetItemFromID(this.EntryID) as ContactItem;
+            ContactItem outlookContactItem = Synchronizer.OutlookNameSpace.GetItemFromID(this.EntryID) as ContactItem;
             if (outlookContactItem == null)
                 throw new ApplicationException("OutlookContactInfo cannot re-create the ContactItem from Outlook because there is no Outlook entry with this EntryID, suggesting that the existing Outook contact may have been deleted.");
 

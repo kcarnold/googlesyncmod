@@ -46,7 +46,7 @@ namespace GoContactSyncMod
         }
         #endregion
 
-        internal Syncronizer sync;
+        internal Synchronizer sync;
 		private SyncOption syncOption;
 		private DateTime lastSync;
 		private bool requestClose = false;
@@ -214,7 +214,7 @@ namespace GoContactSyncMod
                         this.appointmentFoldersComboBox.DataSource = null;
                         //this.contactFoldersComboBox.Items.Clear();
 
-                        Microsoft.Office.Interop.Outlook.Folders folders = Syncronizer.OutlookNameSpace.Folders;
+                        Microsoft.Office.Interop.Outlook.Folders folders = Synchronizer.OutlookNameSpace.Folders;
                         foreach (Microsoft.Office.Interop.Outlook.Folder folder in folders)
                         {
                             try
@@ -324,17 +324,17 @@ namespace GoContactSyncMod
             {
                 if (mapi.DefaultItemType == Microsoft.Office.Interop.Outlook.OlItemType.olContactItem)
                 {
-                    bool isDefaultFolder = mapi.EntryID.Equals(Syncronizer.OutlookNameSpace.GetDefaultFolder(Microsoft.Office.Interop.Outlook.OlDefaultFolders.olFolderContacts).EntryID);
+                    bool isDefaultFolder = mapi.EntryID.Equals(Synchronizer.OutlookNameSpace.GetDefaultFolder(Microsoft.Office.Interop.Outlook.OlDefaultFolders.olFolderContacts).EntryID);
                     outlookContactFolders.Add(new OutlookFolder(folder.Name + " - " + mapi.Name, mapi.EntryID, isDefaultFolder));
                 }
                 if (mapi.DefaultItemType == Microsoft.Office.Interop.Outlook.OlItemType.olNoteItem)
                 {
-                    bool isDefaultFolder = mapi.EntryID.Equals(Syncronizer.OutlookNameSpace.GetDefaultFolder(Microsoft.Office.Interop.Outlook.OlDefaultFolders.olFolderNotes).EntryID);
+                    bool isDefaultFolder = mapi.EntryID.Equals(Synchronizer.OutlookNameSpace.GetDefaultFolder(Microsoft.Office.Interop.Outlook.OlDefaultFolders.olFolderNotes).EntryID);
                     outlookNoteFolders.Add(new OutlookFolder(folder.Name + " - " + mapi.Name, mapi.EntryID, isDefaultFolder));
                 }
                 if (mapi.DefaultItemType == Microsoft.Office.Interop.Outlook.OlItemType.olAppointmentItem)
                 {
-                    bool isDefaultFolder = mapi.EntryID.Equals(Syncronizer.OutlookNameSpace.GetDefaultFolder(Microsoft.Office.Interop.Outlook.OlDefaultFolders.olFolderCalendar).EntryID);
+                    bool isDefaultFolder = mapi.EntryID.Equals(Synchronizer.OutlookNameSpace.GetDefaultFolder(Microsoft.Office.Interop.Outlook.OlDefaultFolders.olFolderCalendar).EntryID);
                     outlookAppointmentFolders.Add(new OutlookFolder(folder.Name + " - " + mapi.Name, mapi.EntryID, isDefaultFolder));
                 }
 
@@ -708,9 +708,9 @@ namespace GoContactSyncMod
 
                     if (sync == null)
                     {
-                        sync = new Syncronizer();
-                        sync.DuplicatesFound += new Syncronizer.DuplicatesFoundHandler(OnDuplicatesFound);
-                        sync.ErrorEncountered += new Syncronizer.ErrorNotificationHandler(OnErrorEncountered);
+                        sync = new Synchronizer();
+                        sync.DuplicatesFound += new Synchronizer.DuplicatesFoundHandler(OnDuplicatesFound);
+                        sync.ErrorEncountered += new Synchronizer.ErrorNotificationHandler(OnErrorEncountered);
                     }
 
                     Logger.ClearLog();
@@ -718,13 +718,13 @@ namespace GoContactSyncMod
                     Logger.Log("Sync started (" + syncProfile + ").", EventType.Information);
                     //SetSyncConsoleText(Logger.GetText());
                     sync.SyncProfile = syncProfile;
-                    Syncronizer.SyncContactsFolder = this.syncContactsFolder;
-                    Syncronizer.SyncNotesFolder = this.syncNotesFolder;
-                    Syncronizer.SyncAppointmentsFolder = this.syncAppointmentsFolder;
-                    Syncronizer.SyncAppointmentsGoogleFolder = this.syncAppointmentsGoogleFolder;
-                    Syncronizer.MonthsInPast = Convert.ToUInt16(this.pastMonthTextBox.Text);
-                    Syncronizer.MonthsInFuture = Convert.ToUInt16(this.futureMonthTextBox.Text);
-                    Syncronizer.Timezone = this.Timezone;
+                    Synchronizer.SyncContactsFolder = this.syncContactsFolder;
+                    Synchronizer.SyncNotesFolder = this.syncNotesFolder;
+                    Synchronizer.SyncAppointmentsFolder = this.syncAppointmentsFolder;
+                    Synchronizer.SyncAppointmentsGoogleFolder = this.syncAppointmentsGoogleFolder;
+                    Synchronizer.MonthsInPast = Convert.ToUInt16(this.pastMonthTextBox.Text);
+                    Synchronizer.MonthsInFuture = Convert.ToUInt16(this.futureMonthTextBox.Text);
+                    Synchronizer.Timezone = this.Timezone;
 
                     sync.SyncOption = syncOption;
                     sync.SyncDelete = btSyncDelete.Checked;
@@ -1207,7 +1207,7 @@ namespace GoContactSyncMod
 
             if (sync == null)
             {
-                sync = new Syncronizer();
+                sync = new Synchronizer();
             }
 
             Logger.ClearLog();
@@ -1218,10 +1218,10 @@ namespace GoContactSyncMod
             sync.SyncContacts = syncContacts;
             sync.SyncAppointments = syncAppointments;
 
-            Syncronizer.SyncContactsFolder = syncContactsFolder;
-            Syncronizer.SyncNotesFolder = syncNotesFolder;
-            Syncronizer.SyncAppointmentsFolder = syncAppointmentsFolder;
-            Syncronizer.SyncAppointmentsGoogleFolder = syncAppointmentsGoogleFolder;
+            Synchronizer.SyncContactsFolder = syncContactsFolder;
+            Synchronizer.SyncNotesFolder = syncNotesFolder;
+            Synchronizer.SyncAppointmentsFolder = syncAppointmentsFolder;
+            Synchronizer.SyncAppointmentsGoogleFolder = syncAppointmentsGoogleFolder;
             sync.SyncProfile = syncProfile;
 
             sync.LoginToGoogle(UserName.Text);
@@ -1727,14 +1727,14 @@ namespace GoContactSyncMod
             this.Timezone = appointmentTimezonesComboBox.Text;
         }
 
-        private void linkLabelRevokeAuthentification_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        private void linkLabelRevokeAuthentication_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             try
             {
-                Logger.Log("Trying to remove Authentification...", EventType.Information);
+                Logger.Log("Trying to remove Authentication...", EventType.Information);
                 FileDataStore fDS = new FileDataStore(Logger.AuthFolder, true);
                 fDS.ClearAsync();
-                Logger.Log("Removed Authentification...", EventType.Information); 
+                Logger.Log("Removed Authentication...", EventType.Information); 
             }
             catch (Exception ex)
             {
@@ -1762,7 +1762,7 @@ namespace GoContactSyncMod
                 string defaultText = "    --- Select a Google Appointment folder ---";
 
                 if (sync == null)
-                    sync = new Syncronizer();
+                    sync = new Synchronizer();
 
                 sync.SyncAppointments = btSyncAppointments.Checked;
                 sync.LoginToGoogle(UserName.Text);

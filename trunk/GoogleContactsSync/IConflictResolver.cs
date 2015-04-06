@@ -20,7 +20,7 @@ namespace GoContactSyncMod
         /// <returns>Returns ConflictResolution (enum)</returns>
         ConflictResolution Resolve(ContactMatch match, bool isNewMatch);
 
-        ConflictResolution Resolve(Microsoft.Office.Interop.Outlook.NoteItem outlookNote, Document googleNote, Syncronizer sync, bool isNewMatch);
+        ConflictResolution Resolve(Microsoft.Office.Interop.Outlook.NoteItem outlookNote, Document googleNote, Synchronizer sync, bool isNewMatch);
 
         ConflictResolution ResolveDuplicate(OutlookContactInfo outlookContact, List<Contact> googleContacts, out Contact googleContact);
 
@@ -28,7 +28,7 @@ namespace GoContactSyncMod
 
         DeleteResolution ResolveDelete(Contact googleContact);
 
-        DeleteResolution ResolveDelete(Document googleNote, Syncronizer sync);
+        DeleteResolution ResolveDelete(Document googleNote, Synchronizer sync);
 
         DeleteResolution ResolveDelete(Microsoft.Office.Interop.Outlook.NoteItem outlookNote);
 

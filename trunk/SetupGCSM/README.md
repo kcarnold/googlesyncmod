@@ -48,7 +48,7 @@ FIX: not show delete conflict resoultion, if syncDelete is switched off or Googl
 
   - **IMPROVEMENT**: simplified code 
                      rename class file - small code cleanup 
-  - **IMPROVEMENT**: Authentification between GCSM and Google is done with OAuth2 - no password needed anymore 
+  - **IMPROVEMENT**: Authentication between GCSM and Google is done with OAuth2 - no password needed anymore 
   - **IMPROVEMENT**: changed layout and added labels for appointment fields 
                      set timezone before appointment sync! see [feature-requests:#112] 
   - **IMPROVEMENT**: setting culture for error messages to english

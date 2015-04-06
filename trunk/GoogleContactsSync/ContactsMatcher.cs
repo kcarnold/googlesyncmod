@@ -28,7 +28,7 @@ namespace GoContactSyncMod
 		/// <param name="sync">Syncronizer instance</param>
         /// <param name="duplicatesFound">Exception returned, if duplicates have been found (null else)</param>
 		/// <returns>Returns a list of match pairs (outlook contact + google contact) for all contact. Those that weren't matche will have it's peer set to null</returns>
-		public static List<ContactMatch> MatchContacts(Syncronizer sync, out DuplicateDataException duplicatesFound)
+		public static List<ContactMatch> MatchContacts(Synchronizer sync, out DuplicateDataException duplicatesFound)
 		{
             Logger.Log("Matching Outlook and Google contacts...", EventType.Information);
             var result = new List<ContactMatch>();
@@ -222,7 +222,7 @@ namespace GoContactSyncMod
                 //create a default match pair with just outlook contact.
                 var match = new ContactMatch(olci, null);
 
-                //foreach google contac try to match and create a match pair if found some match(es)
+                //foreach google contact try to match and create a match pair if found some match(es)
                 for (int j=sync.GoogleContacts.Count-1;j>=0;j--)
                 {
                     Contact entry = sync.GoogleContacts[j];
@@ -468,7 +468,7 @@ namespace GoContactSyncMod
                 string googleOutlookId = ContactPropertiesUtils.GetGoogleOutlookContactId(sync.SyncProfile, entry);
                 if (!String.IsNullOrEmpty(googleOutlookId) && skippedOutlookIds.Contains(googleOutlookId))
                 {
-                    Logger.Log("Skipped GoogleContact because Outlook contact couldn't be matched beacause of previous problem (see log): " + entry.Title, EventType.Warning);
+                    Logger.Log("Skipped GoogleContact because Outlook contact couldn't be matched because of previous problem (see log): " + entry.Title, EventType.Warning);
                 }
                 else if (entry.Emails.Count == 0 && !mobileExists && string.IsNullOrEmpty(entry.Title) && (entry.Organizations.Count == 0 || string.IsNullOrEmpty(entry.Organizations[0].Name)))
                 {
@@ -493,7 +493,7 @@ namespace GoContactSyncMod
                 }
                 else
                 {
-                    Logger.Log(string.Format("No match found for google contact ({0}) => {1}", entry.Title, (!string.IsNullOrEmpty(googleOutlookId) ? "Delete from Google" : "Add to Outlook")), EventType.Information);
+                    Logger.Log(string.Format("No match found for Google contact ({0}) => {1}", entry.Title, (!string.IsNullOrEmpty(googleOutlookId) ? "Delete from Google" : "Add to Outlook")), EventType.Information);
                     var match = new ContactMatch(null, entry);
                     result.Add(match);
                 }				
@@ -542,7 +542,7 @@ namespace GoContactSyncMod
 			return false;
 		}
 
-		public static void SyncContacts(Syncronizer sync)
+		public static void SyncContacts(Synchronizer sync)
 		{
             for (int i = 0; i < sync.Contacts.Count; i++ )
 			{
@@ -554,7 +554,7 @@ namespace GoContactSyncMod
 				SyncContact(match, sync);
 			}
 		}
-		public static void SyncContact(ContactMatch match, Syncronizer sync)
+		public static void SyncContact(ContactMatch match, Synchronizer sync)
 		{
             Outlook.ContactItem outlookContactItem = match.OutlookContact != null ? match.OutlookContact.GetOriginalItemFromOutlook() : null;
             
@@ -653,7 +653,7 @@ namespace GoContactSyncMod
                     }
 
                     //create a Outlook contact from Google contact                                                            
-                    outlookContactItem = Syncronizer.CreateOutlookContactItem(Syncronizer.SyncContactsFolder);
+                    outlookContactItem = Synchronizer.CreateOutlookContactItem(Synchronizer.SyncContactsFolder);
 
                     sync.UpdateContact(match.GoogleContact, outlookContactItem);
                     match.OutlookContact = new OutlookContactInfo(outlookContactItem, sync);
@@ -662,7 +662,7 @@ namespace GoContactSyncMod
                 {
                     //merge contact details                
 
-                    //determine if this contact pair were syncronized
+                    //determine if this contact pair were synchronized
                     //DateTime? lastUpdated = GetOutlookPropertyValueDateTime(match.OutlookContact, sync.OutlookPropertyNameUpdated);
                     DateTime? lastSynced = match.OutlookContact.UserProperties.LastSync;
                     if (lastSynced.HasValue)
@@ -880,7 +880,7 @@ namespace GoContactSyncMod
 		/// Adds new Google Groups to the Google account.
 		/// </summary>
 		/// <param name="sync"></param>
-        public static void SyncGroups(Syncronizer sync)
+        public static void SyncGroups(Synchronizer sync)
         {
             foreach (ContactMatch match in sync.Contacts)
             {

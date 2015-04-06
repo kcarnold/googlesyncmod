@@ -27,7 +27,7 @@ namespace GoContactSyncMod
         /// </summary>
         /// <param name="sync">Syncronizer instance</param>
         /// <returns>Returns a list of match pairs (outlook appointment + Google appointment) for all appointment. Those that weren't matche will have it's peer set to null</returns>
-        public static List<AppointmentMatch> MatchAppointments(Syncronizer sync)
+        public static List<AppointmentMatch> MatchAppointments(Synchronizer sync)
         {
             Logger.Log("Matching Outlook and Google appointments...", EventType.Information);
             var result = new List<AppointmentMatch>();
@@ -66,12 +66,12 @@ namespace GoContactSyncMod
                         //sync.SkippedCountNotMatches++;
                         continue;
                     }
-                    else if (Syncronizer.MonthsInPast > 0 && 
-                             (ola.IsRecurring && ola.GetRecurrencePattern().PatternEndDate < DateTime.Now.AddMonths(-Syncronizer.MonthsInPast) ||
-                             !ola.IsRecurring && ola.End < DateTime.Now.AddMonths(-Syncronizer.MonthsInPast)) ||
-                        Syncronizer.MonthsInFuture > 0 && 
-                             (ola.IsRecurring && ola.GetRecurrencePattern().PatternStartDate > DateTime.Now.AddMonths(Syncronizer.MonthsInFuture) ||
-                             !ola.IsRecurring && ola.Start > DateTime.Now.AddMonths(Syncronizer.MonthsInFuture)))
+                    else if (Synchronizer.MonthsInPast > 0 && 
+                             (ola.IsRecurring && ola.GetRecurrencePattern().PatternEndDate < DateTime.Now.AddMonths(-Synchronizer.MonthsInPast) ||
+                             !ola.IsRecurring && ola.End < DateTime.Now.AddMonths(-Synchronizer.MonthsInPast)) ||
+                        Synchronizer.MonthsInFuture > 0 && 
+                             (ola.IsRecurring && ola.GetRecurrencePattern().PatternStartDate > DateTime.Now.AddMonths(Synchronizer.MonthsInFuture) ||
+                             !ola.IsRecurring && ola.Start > DateTime.Now.AddMonths(Synchronizer.MonthsInFuture)))
                     {
                         Logger.Log("Skipping Outlook appointment because it is out of months range to sync:" + ola.Subject + " - " + ola.Start, EventType.Debug);                       
                         continue;
@@ -228,7 +228,7 @@ namespace GoContactSyncMod
                 }
                 else if (googleAppointment.Status.Equals("cancelled"))
                 {
-                    Logger.Log("Skipping Google appointment found because it is cancelled: " + googleAppointment.Summary + " - " + Syncronizer.GetTime(googleAppointment), EventType.Debug);
+                    Logger.Log("Skipping Google appointment found because it is cancelled: " + googleAppointment.Summary + " - " + Synchronizer.GetTime(googleAppointment), EventType.Debug);
                     //sync.SkippedCount++;
                     //sync.SkippedCountNotMatches++;
                 }
@@ -237,7 +237,7 @@ namespace GoContactSyncMod
                     // no title or time
                     sync.SkippedCount++;
                     sync.SkippedCountNotMatches++;
-                    Logger.Log("Skipped GoogleAppointment because no unique property found (Subject or StartDate):" + googleAppointment.Summary + " - " + Syncronizer.GetTime(googleAppointment), EventType.Warning);
+                    Logger.Log("Skipped GoogleAppointment because no unique property found (Subject or StartDate):" + googleAppointment.Summary + " - " + Synchronizer.GetTime(googleAppointment), EventType.Warning);
                 }
                 //else if (googleAppointment.Summary != "Business Trip")
                 //{//Only for debugging purposes, please comment if not needed
@@ -246,7 +246,7 @@ namespace GoContactSyncMod
                 //}
                 else
                 {
-                    Logger.Log(string.Format("No match found for Google appointment ({0}) => {1}", googleAppointment.Summary + " - " + Syncronizer.GetTime(googleAppointment), (!string.IsNullOrEmpty(AppointmentPropertiesUtils.GetGoogleOutlookAppointmentId(sync.SyncProfile, googleAppointment)) ? "Delete from Google" : "Add to Outlook")), EventType.Information);
+                    Logger.Log(string.Format("No match found for Google appointment ({0}) => {1}", googleAppointment.Summary + " - " + Synchronizer.GetTime(googleAppointment), (!string.IsNullOrEmpty(AppointmentPropertiesUtils.GetGoogleOutlookAppointmentId(sync.SyncProfile, googleAppointment)) ? "Delete from Google" : "Add to Outlook")), EventType.Information);
                     var match = new AppointmentMatch(null, googleAppointment);
                     result.Add(match);
                 }
@@ -257,7 +257,7 @@ namespace GoContactSyncMod
             {
                 var googleAppointment = googleAppointmentExceptions[i];
                 if (NotificationReceived != null)
-                    NotificationReceived(String.Format("Adding Google appointment exception {0} of {1} ...", i + 1, googleAppointmentExceptions.Count, googleAppointment.Summary + " - " + Syncronizer.GetTime(googleAppointment)));
+                    NotificationReceived(String.Format("Adding Google appointment exception {0} of {1} ...", i + 1, googleAppointmentExceptions.Count, googleAppointment.Summary + " - " + Synchronizer.GetTime(googleAppointment)));
 
                 //Search for original recurrent event in matches
                 //AtomId atomId = new AtomId(googleAppointment.Id.AbsoluteUri.Substring(0, googleAppointment.Id.AbsoluteUri.LastIndexOf("/") + 1) + googleAppointment.RecurringEventId);
@@ -273,7 +273,7 @@ namespace GoContactSyncMod
                 }
 
                 if (!found)
-                    Logger.Log(string.Format("No match found for Google appointment exception: {0}", googleAppointment.Summary + " - " + Syncronizer.GetTime(googleAppointment)), EventType.Debug);
+                    Logger.Log(string.Format("No match found for Google appointment exception: {0}", googleAppointment.Summary + " - " + Synchronizer.GetTime(googleAppointment)), EventType.Debug);
             }
 
             return result;
@@ -283,7 +283,7 @@ namespace GoContactSyncMod
 
 
 
-        public static void SyncAppointments(Syncronizer sync)
+        public static void SyncAppointments(Synchronizer sync)
         {
             for (int i = 0; i < sync.Appointments.Count; i++)
             {
@@ -294,14 +294,14 @@ namespace GoContactSyncMod
                     if (match.OutlookAppointment != null)
                         name = match.OutlookAppointment.Subject + " - " + match.OutlookAppointment.Start;
                     else if (match.GoogleAppointment != null)
-                        name = match.GoogleAppointment.Summary + " - " + Syncronizer.GetTime(match.GoogleAppointment);
+                        name = match.GoogleAppointment.Summary + " - " + Synchronizer.GetTime(match.GoogleAppointment);
                     NotificationReceived(String.Format("Syncing appointment {0} of {1}: {2} ...", i + 1, sync.Appointments.Count, name));
                 }
 
                 SyncAppointment(match, sync);
             }
         }
-        public static void SyncAppointment(AppointmentMatch match, Syncronizer sync)
+        public static void SyncAppointment(AppointmentMatch match, Synchronizer sync)
         {
 
             if (match.GoogleAppointment == null && match.OutlookAppointment != null)
@@ -426,7 +426,7 @@ namespace GoContactSyncMod
                 }
 
                 //create a Outlook appointment from Google appointment
-                match.OutlookAppointment = Syncronizer.CreateOutlookAppointmentItem(Syncronizer.SyncAppointmentsFolder);
+                match.OutlookAppointment = Synchronizer.CreateOutlookAppointmentItem(Synchronizer.SyncAppointmentsFolder);
 
                 sync.UpdateAppointment(ref match.GoogleAppointment, match.OutlookAppointment, match.GoogleAppointmentExceptions);
             }
@@ -437,7 +437,7 @@ namespace GoContactSyncMod
 
                 //merge appointment details                
 
-                //determine if this appointment pair were syncronized
+                //determine if this appointment pair were synchronized
                 //DateTime? lastUpdated = GetOutlookPropertyValueDateTime(match.OutlookAppointment, sync.OutlookPropertyNameUpdated);
                 DateTime? lastSynced = AppointmentPropertiesUtils.GetOutlookLastSync(sync, match.OutlookAppointment);
                 if (lastSynced.HasValue)

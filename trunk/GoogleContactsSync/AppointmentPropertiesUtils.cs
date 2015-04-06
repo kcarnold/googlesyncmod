@@ -97,7 +97,7 @@ namespace GoContactSyncMod
         /// <param name="sync"></param>
         /// <param name="outlookAppointment"></param>
         /// <param name="googleAppointment"></param>
-        public static void SetOutlookGoogleAppointmentId(Syncronizer sync, Outlook.AppointmentItem outlookAppointment, Event googleAppointment)
+        public static void SetOutlookGoogleAppointmentId(Synchronizer sync, Outlook.AppointmentItem outlookAppointment, Event googleAppointment)
         {
             if (googleAppointment.Id == null)
                 throw new NullReferenceException("GoogleAppointment must have a valid Id");
@@ -133,7 +133,7 @@ namespace GoContactSyncMod
             SetOutlookLastSync(sync, outlookAppointment);
         }
 
-        public static void SetOutlookLastSync(Syncronizer sync, Outlook.AppointmentItem outlookAppointment)
+        public static void SetOutlookLastSync(Synchronizer sync, Outlook.AppointmentItem outlookAppointment)
         {
             //save sync datetime
             Outlook.UserProperties userProperties = outlookAppointment.UserProperties;
@@ -157,7 +157,7 @@ namespace GoContactSyncMod
             }
         }
 
-        public static DateTime? GetOutlookLastSync(Syncronizer sync, Outlook.AppointmentItem outlookAppointment)
+        public static DateTime? GetOutlookLastSync(Synchronizer sync, Outlook.AppointmentItem outlookAppointment)
         {
             DateTime? result = null;
             Outlook.UserProperties userProperties = outlookAppointment.UserProperties;
@@ -182,7 +182,7 @@ namespace GoContactSyncMod
             }
             return result;
         }
-        public static string GetOutlookGoogleAppointmentId(Syncronizer sync, Outlook.AppointmentItem outlookAppointment)
+        public static string GetOutlookGoogleAppointmentId(Synchronizer sync, Outlook.AppointmentItem outlookAppointment)
         {
             string id = null;
             Outlook.UserProperties userProperties = outlookAppointment.UserProperties;
@@ -209,7 +209,7 @@ namespace GoContactSyncMod
             }
             return id;
         }
-        public static void ResetOutlookGoogleAppointmentId(Syncronizer sync, Outlook.AppointmentItem outlookAppointment)
+        public static void ResetOutlookGoogleAppointmentId(Synchronizer sync, Outlook.AppointmentItem outlookAppointment)
         {
             Outlook.UserProperties userProperties = outlookAppointment.UserProperties;
             try

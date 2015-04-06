@@ -83,7 +83,7 @@ namespace GoContactSyncMod
         /// <param name="sync"></param>
         /// <param name="outlookNote"></param>
         /// <param name="googleNote"></param>
-        public static void SetOutlookGoogleNoteId(Syncronizer sync, Outlook.NoteItem outlookNote, Document googleNote)
+        public static void SetOutlookGoogleNoteId(Synchronizer sync, Outlook.NoteItem outlookNote, Document googleNote)
         {
             if (googleNote.DocumentEntry.Id.Uri == null)
                 throw new NullReferenceException("GoogleNote must have a valid Id");
@@ -119,7 +119,7 @@ namespace GoContactSyncMod
             SetOutlookLastSync(sync, outlookNote);
         }
 
-        public static void SetOutlookLastSync(Syncronizer sync, Outlook.NoteItem outlookNote)
+        public static void SetOutlookLastSync(Synchronizer sync, Outlook.NoteItem outlookNote)
         {
             //save sync datetime
             Outlook.ItemProperties userProperties = outlookNote.ItemProperties;
@@ -143,7 +143,7 @@ namespace GoContactSyncMod
             }
         }
 
-        public static DateTime? GetOutlookLastSync(Syncronizer sync, Outlook.NoteItem outlookNote)
+        public static DateTime? GetOutlookLastSync(Synchronizer sync, Outlook.NoteItem outlookNote)
         {
             DateTime? result = null;
             Outlook.ItemProperties userProperties = outlookNote.ItemProperties;
@@ -168,7 +168,7 @@ namespace GoContactSyncMod
             }
             return result;
         }
-        public static string GetOutlookGoogleNoteId(Syncronizer sync, Outlook.NoteItem outlookNote)
+        public static string GetOutlookGoogleNoteId(Synchronizer sync, Outlook.NoteItem outlookNote)
         {
             string id = null;
             Outlook.ItemProperties userProperties = outlookNote.ItemProperties;
@@ -195,7 +195,7 @@ namespace GoContactSyncMod
             }
             return id;
         }
-        public static void ResetOutlookGoogleNoteId(Syncronizer sync, Outlook.NoteItem outlookNote)
+        public static void ResetOutlookGoogleNoteId(Synchronizer sync, Outlook.NoteItem outlookNote)
         {
             Outlook.ItemProperties userProperties = outlookNote.ItemProperties;
             try
@@ -293,7 +293,7 @@ namespace GoContactSyncMod
             }
         }
 
-        public static string GetBody(Syncronizer sync, Document entry)
+        public static string GetBody(Synchronizer sync, Document entry)
         {
             string body = null;
             System.IO.StreamReader reader = null;

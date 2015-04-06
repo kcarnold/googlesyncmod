@@ -82,7 +82,7 @@ namespace GoContactSyncMod
         /// <param name="sync"></param>
         /// <param name="outlookContact"></param>
         /// <param name="googleContact"></param>
-        public static void SetOutlookGoogleContactId(Syncronizer sync, Outlook.ContactItem outlookContact, Contact googleContact)
+        public static void SetOutlookGoogleContactId(Synchronizer sync, Outlook.ContactItem outlookContact, Contact googleContact)
         {
             if (googleContact.ContactEntry.Id.Uri == null)
                 throw new NullReferenceException("GoogleContact must have a valid Id");
@@ -118,7 +118,7 @@ namespace GoContactSyncMod
             SetOutlookLastSync(sync, outlookContact);
         }
 
-        public static void SetOutlookLastSync(Syncronizer sync, Outlook.ContactItem outlookContact)
+        public static void SetOutlookLastSync(Synchronizer sync, Outlook.ContactItem outlookContact)
         {
             //save sync datetime
             Outlook.UserProperties userProperties = outlookContact.UserProperties;
@@ -142,7 +142,7 @@ namespace GoContactSyncMod
             }
         }
 
-        public static DateTime? GetOutlookLastSync(Syncronizer sync, Outlook.ContactItem outlookContact)
+        public static DateTime? GetOutlookLastSync(Synchronizer sync, Outlook.ContactItem outlookContact)
         {
             DateTime? result = null;
             Outlook.UserProperties userProperties = outlookContact.UserProperties;
@@ -167,7 +167,7 @@ namespace GoContactSyncMod
             }
             return result;
         }
-        public static string GetOutlookGoogleContactId(Syncronizer sync, Outlook.ContactItem outlookContact)
+        public static string GetOutlookGoogleContactId(Synchronizer sync, Outlook.ContactItem outlookContact)
         {
             string id = null;
             Outlook.UserProperties userProperties = outlookContact.UserProperties;
@@ -194,7 +194,7 @@ namespace GoContactSyncMod
             }
             return id;
         }
-        public static void ResetOutlookGoogleContactId(Syncronizer sync, Outlook.ContactItem outlookContact)
+        public static void ResetOutlookGoogleContactId(Synchronizer sync, Outlook.ContactItem outlookContact)
         {
             Outlook.UserProperties userProperties = outlookContact.UserProperties;
             try
