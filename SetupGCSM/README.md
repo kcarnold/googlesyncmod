@@ -1,10 +1,17 @@
 # +++ NEWS +++ NEWS +++ NEWS +++
 
 ### Version [3.9.3] - 04.04.2015
+**r514 - r528**
 
-FIX: fixed Google Exception when syncing appointments accepted on Google side (sent by different Organizer on Google), see http://sourceforge.net/p/googlesyncmod/bugs/532/
-IMPROVEMENT: Added Google Calendar Selection for appointment sync
-FIX: not show delete conflict resoultion, if syncDelete is switched off or GoogleToOutlookOnly or OutlookToGoogleOnly
+  - **FIX**: fixed Google Exception when syncing appointments accepted on Google side (sent by different Organizer on Google), see http://sourceforge.net/p/googlesyncmod/bugs/532/
+  - **FIX**: not show delete conflict resoultion, if syncDelete is switched off or GoogleToOutlookOnly or OutlookToGoogleOnly
+  - **FIX**: fixed some issues with GoogleCalendar choice
+  - **FIX**: fixed some NullPointerExceptions
+
+  - **IMPROVEMENT**: Added Google Calendar Selection for appointment sync
+  - **IMPROVEMENT**: set culture for main-thread and SyncThread to English for english-style exception messages which are not handled by Errorhandler.cs
+
+[3.9.3] http://sourceforge.net/projects/googlesyncmod/files/Releases/3.9.3/SetupGCSM-3.9.3.msi/download
 
 ### Version [3.9.2] - 27.12.2014
 
