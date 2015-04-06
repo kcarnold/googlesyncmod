@@ -421,12 +421,12 @@ namespace GoContactSyncMod
             //{
             //    if (slave.Emails.Count > 0)
             //    {
-            //        Logger.Log("Outlook Contact '" + master.FullNameAndCompany + "' has neither E-Mail address nor phone number. Setting E-Mail address of Google contact: " + slave.Emails[0].Address, EventType.Warning);
+            //        Logger.Log("Outlook Contact '" + master.FullNameAndCompany + "' has neither email address nor phone number. Setting email address of Google contact: " + slave.Emails[0].Address, EventType.Warning);
             //        master.Email1Address = slave.Emails[0].Address;
             //    }
             //    else
             //    {
-            //        Logger.Log("Outlook Contact '" + master.FullNameAndCompany + "' has neither E-Mail address nor phone number. Cannot merge with Google contact: " + slave.Summary, EventType.Error);
+            //        Logger.Log("Outlook Contact '" + master.FullNameAndCompany + "' has neither email address nor phone number. Cannot merge with Google contact: " + slave.Summary, EventType.Error);
             //        return;
             //    }					
             //}
@@ -646,13 +646,13 @@ namespace GoContactSyncMod
                 if (!String.IsNullOrEmpty(slave.Email1Address))
                 {
                     string emailAddress = ContactPropertiesUtils.GetOutlookEmailAddress1(slave);
-                    Logger.Log("Google Contact '" + master.Summary + "' has neither name nor E-Mail address. Setting E-Mail address of Outlook contact: " + emailAddress, EventType.Warning);
+                    Logger.Log("Google Contact '" + master.Summary + "' has neither name nor email address. Setting email address of Outlook contact: " + emailAddress, EventType.Warning);
                     master.Emails.Add(new EMail(emailAddress));
                     slave.FileAs = master.Emails[0].Address;
                 }
                 else
                 {
-                    Logger.Log("Google Contact '" + master.Summary + "' has neither name nor E-Mail address. Cannot merge with Outlook contact: " + slave.FileAs, EventType.Error);
+                    Logger.Log("Google Contact '" + master.Summary + "' has neither name nor email address. Cannot merge with Outlook contact: " + slave.FileAs, EventType.Error);
                     return;
                 }
             }

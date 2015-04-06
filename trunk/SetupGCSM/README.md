@@ -306,7 +306,7 @@ Improvement: Support large Exchange contact lists, get SMTP email when Exchange 
 
 CHANGE 1: Support a large number of contacts on Exchange server without hitting the policy limitation of max number of contacts that can be processed simultaneously.
 
-CHANGE 2: Enhancement request 3156687: Properly get the SMTP e-mail address of Exchange contacts when Exchange returns X500 addresses.
+CHANGE 2: Enhancement request 3156687: Properly get the SMTP email address of Exchange contacts when Exchange returns X500 addresses.
 
 CHANGE 3: Try to contact a running Outlook application before trying to launch a new one. Should make the program work in any situation, whether Outlook is running or not.
 
