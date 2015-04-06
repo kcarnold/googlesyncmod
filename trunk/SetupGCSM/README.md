@@ -1,6 +1,8 @@
 # +++ NEWS +++ NEWS +++ NEWS +++
 
 ### Version [3.9.3] - 04.04.2015
+
+###### SVN commits
 **r514 - r528**
 
   - **FIX**: fixed Google Exception when syncing appointments accepted on Google side (sent by different Organizer on Google), see http://sourceforge.net/p/googlesyncmod/bugs/532/
@@ -10,6 +12,8 @@
 
   - **IMPROVEMENT**: Added Google Calendar Selection for appointment sync
   - **IMPROVEMENT**: set culture for main-thread and SyncThread to English for english-style exception messages which are not handled by Errorhandler.cs
+
+**Free Open Source Software, Hell Yeah!**
 
 [3.9.3] http://sourceforge.net/projects/googlesyncmod/files/Releases/3.9.3/SetupGCSM-3.9.3.msi/download
 
