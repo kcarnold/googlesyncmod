@@ -75,7 +75,7 @@ namespace GoContactSyncMod
             this.logGroupBox = new System.Windows.Forms.GroupBox();
             this.syncConsole = new System.Windows.Forms.TextBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.linkLabelRevokeAuthentification = new System.Windows.Forms.LinkLabel();
+            this.linkLabelRevokeAuthentication = new System.Windows.Forms.LinkLabel();
             this.chkUseFileAs = new System.Windows.Forms.CheckBox();
             this.proxySettingsLinkLabel = new System.Windows.Forms.LinkLabel();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
@@ -913,7 +913,7 @@ namespace GoContactSyncMod
             // 
             this.groupBox4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox4.Controls.Add(this.linkLabelRevokeAuthentification);
+            this.groupBox4.Controls.Add(this.linkLabelRevokeAuthentication);
             this.groupBox4.Controls.Add(this.chkUseFileAs);
             this.groupBox4.Controls.Add(this.proxySettingsLinkLabel);
             this.groupBox4.Controls.Add(this.label2);
@@ -925,18 +925,18 @@ namespace GoContactSyncMod
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Google Account";
             // 
-            // linkLabelRevokeAuthentification
+            // linkLabelRevokeAuthentication
             // 
-            this.linkLabelRevokeAuthentification.AutoSize = true;
-            this.linkLabelRevokeAuthentification.Location = new System.Drawing.Point(7, 42);
-            this.linkLabelRevokeAuthentification.Name = "linkLabelRevokeAuthentification";
-            this.linkLabelRevokeAuthentification.Size = new System.Drawing.Size(142, 13);
-            this.linkLabelRevokeAuthentification.TabIndex = 8;
-            this.linkLabelRevokeAuthentification.TabStop = true;
-            this.linkLabelRevokeAuthentification.Text = "Revoke Authentification";
-            this.toolTip.SetToolTip(this.linkLabelRevokeAuthentification, "If you want to authentificate GoogleContactsSyncMod again, or if something didn\'t" +
+            this.linkLabelRevokeAuthentication.AutoSize = true;
+            this.linkLabelRevokeAuthentication.Location = new System.Drawing.Point(7, 42);
+            this.linkLabelRevokeAuthentication.Name = "linkLabelRevokeAuthentication";
+            this.linkLabelRevokeAuthentication.Size = new System.Drawing.Size(142, 13);
+            this.linkLabelRevokeAuthentication.TabIndex = 8;
+            this.linkLabelRevokeAuthentication.TabStop = true;
+            this.linkLabelRevokeAuthentication.Text = "Revoke Authentication";
+            this.toolTip.SetToolTip(this.linkLabelRevokeAuthentication, "If you want to authentificate GoogleContactsSyncMod again, or if something didn\'t" +
         " work corecctly with autehtification.");
-            this.linkLabelRevokeAuthentification.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelRevokeAuthentification_LinkClicked);
+            this.linkLabelRevokeAuthentication.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelRevokeAuthentication_LinkClicked);
             // 
             // chkUseFileAs
             // 
@@ -1197,7 +1197,7 @@ namespace GoContactSyncMod
         private System.Windows.Forms.Label labelMonthsFuture;
         private System.Windows.Forms.Label labelMonthsPast;
         private System.Windows.Forms.Label labelTimezone;
-        private System.Windows.Forms.LinkLabel linkLabelRevokeAuthentification;
+        private System.Windows.Forms.LinkLabel linkLabelRevokeAuthentication;
         private System.Windows.Forms.ComboBox appointmentGoogleFoldersComboBox;
 
     }

@@ -25,7 +25,7 @@ namespace GoContactSyncMod
         /// </summary>
         /// <param name="sync">Syncronizer instance</param>
         /// <returns>Returns a list of match pairs (outlook note + google note) for all note. Those that weren't matche will have it's peer set to null</returns>
-        public static List<NoteMatch> MatchNotes(Syncronizer sync)
+        public static List<NoteMatch> MatchNotes(Synchronizer sync)
         {
             Logger.Log("Matching Outlook and Google notes...", EventType.Information);
             var result = new List<NoteMatch>();
@@ -304,7 +304,7 @@ namespace GoContactSyncMod
             //        foreach (NoteMatch duplicate in sync.GoogleNoteDuplicates)
             //        {
             //            if (duplicate.AllGoogleNoteMatches.Count > 0 &&
-            //                (!string.IsNullOrEmpty(olci.FileAs) && !string.IsNullOrEmpty(duplicate.AllGoogleNoteMatches[0].Title) && olci.FileAs.Equals(duplicate.AllGoogleNoteMatches[0].Title.Replace("\r\n", "\n").Replace("\n", "\r\n"), StringComparison.InvariantCultureIgnoreCase) ||  //Replace twice to not replace a \r\n by \r\r\n. This is necessary because \r\n are saved as \n only to google
+            //                (!string.IsNullOrEmpty(olci.FileAs) && !string.IsNullOrEmpty(duplicate.AllGoogleNoteMatches[0].Title) && olci.FileAs.Equals(duplicate.AllGoogleNoteMatches[0].Title.Replace("\r\n", "\n").Replace("\n", "\r\n"), StringComparison.InvariantCultureIgnoreCase) ||  //Replace twice to not replace a \r\n by \r\r\n. This is necessary because \r\n are saved as \n only to Google
             //                 !string.IsNullOrEmpty(olci.FileAs) && !string.IsNullOrEmpty(duplicate.AllGoogleNoteMatches[0].Name.FullName) && olci.FileAs.Equals(duplicate.AllGoogleNoteMatches[0].Name.FullName.Replace("\r\n", "\n").Replace("\n", "\r\n"), StringComparison.InvariantCultureIgnoreCase) ||
             //                 !string.IsNullOrEmpty(olci.FullName) && !string.IsNullOrEmpty(duplicate.AllGoogleNoteMatches[0].Name.FullName) && olci.FullName.Equals(duplicate.AllGoogleNoteMatches[0].Name.FullName.Replace("\r\n", "\n").Replace("\n", "\r\n"), StringComparison.InvariantCultureIgnoreCase) ||
             //                 !string.IsNullOrEmpty(olci.Email1Address) && duplicate.AllGoogleNoteMatches[0].Emails.Count > 0 && olci.Email1Address.Equals(duplicate.AllGoogleNoteMatches[0].Emails[0].Address, StringComparison.InvariantCultureIgnoreCase) ||
@@ -392,7 +392,7 @@ namespace GoContactSyncMod
                 //string googleOutlookId = NotePropertiesUtils.GetGoogleOutlookNoteId(sync.SyncProfile, entry);
                 //if (!String.IsNullOrEmpty(googleOutlookId) && skippedOutlookIds.Contains(googleOutlookId))
                 //{
-                //    Logger.Log("Skipped GoogleNote because Outlook note couldn't be matched beacause of previous problem (see log): " + entry.Title, EventType.Warning);
+                //    Logger.Log("Skipped GoogleNote because Outlook note couldn't be matched because of previous problem (see log): " + entry.Title, EventType.Warning);
                 //}
                 //else 
                 if (string.IsNullOrEmpty(entry.Title) && string.IsNullOrEmpty(entry.Content))
@@ -404,7 +404,7 @@ namespace GoContactSyncMod
                 }
                 else
                 {
-                    Logger.Log(string.Format("No match found for google note ({0}) => {1}", entry.Title, (NotePropertiesUtils.NoteFileExists(entry.Id, sync.SyncProfile) ? "Delete from Google" : "Add to Outlook")), EventType.Information);
+                    Logger.Log(string.Format("No match found for Google note ({0}) => {1}", entry.Title, (NotePropertiesUtils.NoteFileExists(entry.Id, sync.SyncProfile) ? "Delete from Google" : "Add to Outlook")), EventType.Information);
                     var match = new NoteMatch(null, entry);
                     result.Add(match);
                 }
@@ -416,7 +416,7 @@ namespace GoContactSyncMod
 
 
 
-        public static void SyncNotes(Syncronizer sync)
+        public static void SyncNotes(Synchronizer sync)
         {
             for (int i = 0; i < sync.Notes.Count; i++)
             {
@@ -434,7 +434,7 @@ namespace GoContactSyncMod
                 SyncNote(match, sync);
             }
         }
-        public static void SyncNote(NoteMatch match, Syncronizer sync)
+        public static void SyncNote(NoteMatch match, Synchronizer sync)
         {
             Outlook.NoteItem outlookNoteItem = match.OutlookNote;
            
@@ -442,7 +442,7 @@ namespace GoContactSyncMod
             //{
                 if (match.GoogleNote == null && match.OutlookNote != null)
                 {
-                    //no google note                               
+                    //no Google note                               
                     string googleNotetId = NotePropertiesUtils.GetOutlookGoogleNoteId(sync, outlookNoteItem);
                     if (!string.IsNullOrEmpty(googleNotetId))
                     {                        
@@ -534,7 +534,7 @@ namespace GoContactSyncMod
                     }
 
                     //create a Outlook note from Google note
-                    outlookNoteItem = Syncronizer.CreateOutlookNoteItem(Syncronizer.SyncNotesFolder);
+                    outlookNoteItem = Synchronizer.CreateOutlookNoteItem(Synchronizer.SyncNotesFolder);
 
                     sync.UpdateNote(match.GoogleNote, outlookNoteItem);
                     match.OutlookNote = outlookNoteItem;
@@ -543,7 +543,7 @@ namespace GoContactSyncMod
                 {
                     //merge note details                
 
-                    //determine if this note pair were syncronized
+                    //determine if this note pair were synchronized
                     //DateTime? lastUpdated = GetOutlookPropertyValueDateTime(match.OutlookNote, sync.OutlookPropertyNameUpdated);
                     DateTime? lastSynced = NotePropertiesUtils.GetOutlookLastSync(sync,outlookNoteItem);
                     if (lastSynced.HasValue)

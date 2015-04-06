@@ -18,7 +18,7 @@ namespace GoContactSyncMod.UnitTests
     [TestFixture]
     public class SyncAppointmentsTests
     {
-        Syncronizer sync;
+        Synchronizer sync;
 
         static Logger.LogUpdatedHandler _logUpdateHandler = null;
 
@@ -48,15 +48,15 @@ namespace GoContactSyncMod.UnitTests
 
             GoogleAPITests.LoadSettings(out gmailUsername, out syncProfile, out syncContactsFolder, out syncNotesFolder, out syncAppointmentsFolder);
 
-            sync = new Syncronizer();
+            sync = new Synchronizer();
             sync.SyncAppointments = true;
             sync.SyncNotes = false;
             sync.SyncContacts = false;
             sync.SyncProfile = syncProfile;
             Assert.IsNotNull(syncAppointmentsFolder);
-            Syncronizer.SyncAppointmentsFolder = syncAppointmentsFolder;
-            Syncronizer.MonthsInPast = 1;
-            Syncronizer.MonthsInFuture = 1;
+            Synchronizer.SyncAppointmentsFolder = syncAppointmentsFolder;
+            Synchronizer.MonthsInPast = 1;
+            Synchronizer.MonthsInFuture = 1;
 
             sync.LoginToGoogle(gmailUsername);
             sync.LoginToOutlook();
@@ -112,7 +112,7 @@ namespace GoContactSyncMod.UnitTests
             sync.SyncOption = SyncOption.MergeOutlookWins;
 
             // create new appointment to sync
-            Outlook.AppointmentItem outlookAppointment = Syncronizer.CreateOutlookAppointmentItem(Syncronizer.SyncAppointmentsFolder);
+            Outlook.AppointmentItem outlookAppointment = Synchronizer.CreateOutlookAppointmentItem(Synchronizer.SyncAppointmentsFolder);
             outlookAppointment.Subject = name;
             outlookAppointment.Start = DateTime.Now;
             outlookAppointment.End = DateTime.Now.AddHours(1);
@@ -137,7 +137,7 @@ namespace GoContactSyncMod.UnitTests
             Assert.IsNotNull(match.GoogleAppointment);
             Assert.IsNotNull(match.OutlookAppointment);
 
-            Outlook.AppointmentItem recreatedOutlookAppointment = Syncronizer.CreateOutlookAppointmentItem(Syncronizer.SyncAppointmentsFolder);
+            Outlook.AppointmentItem recreatedOutlookAppointment = Synchronizer.CreateOutlookAppointmentItem(Synchronizer.SyncAppointmentsFolder);
             sync.UpdateAppointment(ref match.GoogleAppointment, recreatedOutlookAppointment, match.GoogleAppointmentExceptions);
             Assert.IsNotNull(outlookAppointment);
             Assert.IsNotNull(recreatedOutlookAppointment);
@@ -160,7 +160,7 @@ namespace GoContactSyncMod.UnitTests
             sync.SyncOption = SyncOption.MergeOutlookWins;
 
             // create new appointment to sync
-            Outlook.AppointmentItem outlookAppointment = Syncronizer.CreateOutlookAppointmentItem(Syncronizer.SyncAppointmentsFolder);
+            Outlook.AppointmentItem outlookAppointment = Synchronizer.CreateOutlookAppointmentItem(Synchronizer.SyncAppointmentsFolder);
             outlookAppointment.Subject = name;
             outlookAppointment.Start = DateTime.Now;
             outlookAppointment.End = DateTime.Now;
@@ -185,7 +185,7 @@ namespace GoContactSyncMod.UnitTests
             Assert.IsNotNull(match.GoogleAppointment);
             Assert.IsNotNull(match.OutlookAppointment);
 
-            Outlook.AppointmentItem recreatedOutlookAppointment = Syncronizer.CreateOutlookAppointmentItem(Syncronizer.SyncAppointmentsFolder);
+            Outlook.AppointmentItem recreatedOutlookAppointment = Synchronizer.CreateOutlookAppointmentItem(Synchronizer.SyncAppointmentsFolder);
             sync.UpdateAppointment(ref match.GoogleAppointment, recreatedOutlookAppointment, match.GoogleAppointmentExceptions);            
             Assert.IsNotNull(outlookAppointment);
             Assert.IsNotNull(recreatedOutlookAppointment);
@@ -208,7 +208,7 @@ namespace GoContactSyncMod.UnitTests
         
 
             // create new appointment to sync
-            Outlook.AppointmentItem outlookAppointment = Syncronizer.CreateOutlookAppointmentItem(Syncronizer.SyncAppointmentsFolder);
+            Outlook.AppointmentItem outlookAppointment = Synchronizer.CreateOutlookAppointmentItem(Synchronizer.SyncAppointmentsFolder);
             outlookAppointment.Subject = name;
             outlookAppointment.Start = DateTime.Now;
             outlookAppointment.Start = DateTime.Now;
@@ -698,7 +698,7 @@ namespace GoContactSyncMod.UnitTests
         {
             if (googleAppointment != null && !googleAppointment.Status.Equals("cancelled"))
             {
-                sync.EventRequest.Delete(Syncronizer.SyncAppointmentsGoogleFolder, googleAppointment.Id);
+                sync.EventRequest.Delete(Synchronizer.SyncAppointmentsGoogleFolder, googleAppointment.Id);
                 Logger.Log("Deleted Google test appointment: " + googleAppointment.Summary, EventType.Information);
                 Thread.Sleep(2000);
             }
@@ -715,7 +715,7 @@ namespace GoContactSyncMod.UnitTests
             return null;
         }
 
-        private void MatchAppointments(Syncronizer sync)
+        private void MatchAppointments(Synchronizer sync)
         {
             Thread.Sleep(5000); //Wait, until Appointment is really saved and available to retrieve again
             sync.MatchAppointments();

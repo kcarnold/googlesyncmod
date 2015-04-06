@@ -21,7 +21,7 @@ using Outlook = Microsoft.Office.Interop.Outlook;
 
 namespace GoContactSyncMod
 {
-    internal class Syncronizer
+    internal class Synchronizer
     {
         public const int OutlookUserPropertyMaxLength = 32;
         public const string OutlookUserPropertyTemplate = "g/con/{0}/";
@@ -259,16 +259,16 @@ namespace GoContactSyncMod
                 }
             }
 
-            Syncronizer.UserName = username;
+            Synchronizer.UserName = username;
 
-            int maxUserIdLength = Syncronizer.OutlookUserPropertyMaxLength - (Syncronizer.OutlookUserPropertyTemplate.Length - 3 + 2);//-3 = to remove {0}, +2 = to add length for "id" or "up"
+            int maxUserIdLength = Synchronizer.OutlookUserPropertyMaxLength - (Synchronizer.OutlookUserPropertyTemplate.Length - 3 + 2);//-3 = to remove {0}, +2 = to add length for "id" or "up"
             string userId = username;
             if (userId.Length > maxUserIdLength)
                 userId = userId.GetHashCode().ToString("X"); //if a user id would overflow UserProperty name, then use that user id hash code as id.
             //Remove characters not allowed for Outlook user property names: []_#
             userId = userId.Replace("#", "").Replace("[", "").Replace("]", "").Replace("_", "");
 
-            OutlookPropertyPrefix = string.Format(Syncronizer.OutlookUserPropertyTemplate, userId);
+            OutlookPropertyPrefix = string.Format(Synchronizer.OutlookUserPropertyTemplate, userId);
         }
 
 
@@ -1871,13 +1871,13 @@ namespace GoContactSyncMod
                     case SyncOption.MergeOutlookWins:
                     case SyncOption.OutlookToGoogleOnly:
                         //overwrite Google appointment
-                        Logger.Log("Multiple participants found, invitation maybe NOT sent by Google. Outlook appointment is overwriting Google because of SyncOption " + SyncOption + ": " + master.Summary + " - " + Syncronizer.GetTime(master) + ". ", EventType.Information);
+                        Logger.Log("Multiple participants found, invitation maybe NOT sent by Google. Outlook appointment is overwriting Google because of SyncOption " + SyncOption + ": " + master.Summary + " - " + Synchronizer.GetTime(master) + ". ", EventType.Information);
                         UpdateAppointment(slave, ref master);
                         break;
                     case SyncOption.MergeGoogleWins:
                     case SyncOption.GoogleToOutlookOnly:
                         //overwrite outlook appointment
-                        Logger.Log("Multiple participants found, invitation maybe NOT sent by Google, but Google appointment is overwriting Outlook because of SyncOption " + SyncOption + ": " + master.Summary + " - " + Syncronizer.GetTime(master) + ".", EventType.Information);
+                        Logger.Log("Multiple participants found, invitation maybe NOT sent by Google, but Google appointment is overwriting Outlook because of SyncOption " + SyncOption + ": " + master.Summary + " - " + Synchronizer.GetTime(master) + ".", EventType.Information);
                         updated = true;
                         break;
                     case SyncOption.MergePrompt:
@@ -1888,14 +1888,14 @@ namespace GoContactSyncMod
                             ConflictResolution != ConflictResolution.SkipAlways)
                         {
                             var r = new ConflictResolver();
-                            ConflictResolution = r.Resolve("Cannot update appointment from Google to Outlook because multiple participants found, invitation maybe NOT sent by Google: \"" + master.Summary + " - " + Syncronizer.GetTime(master) + "\". Do you want to update it back from Outlook to Google?", slave, master, this);
+                            ConflictResolution = r.Resolve("Cannot update appointment from Google to Outlook because multiple participants found, invitation maybe NOT sent by Google: \"" + master.Summary + " - " + Synchronizer.GetTime(master) + "\". Do you want to update it back from Outlook to Google?", slave, master, this);
                         }
                         switch (ConflictResolution)
                         {
                             case ConflictResolution.Skip:
                             case ConflictResolution.SkipAlways: //Skip
                                 SkippedCount++;
-                                Logger.Log("Skipped Updating appointment from Google to Outlook because multiple participants found, invitation maybe NOT sent by Google: \"" + master.Summary + " - " + Syncronizer.GetTime(master) + "\".", EventType.Information);
+                                Logger.Log("Skipped Updating appointment from Google to Outlook because multiple participants found, invitation maybe NOT sent by Google: \"" + master.Summary + " - " + Synchronizer.GetTime(master) + "\".", EventType.Information);
                                 break;
                             case ConflictResolution.OutlookWins:
                             case ConflictResolution.OutlookWinsAlways: //Keep Outlook and overwrite Google    
@@ -2658,16 +2658,16 @@ namespace GoContactSyncMod
 
             if (string.IsNullOrEmpty(body) && slave.Body != null)
             {
-                //DialogResult result = MessageBox.Show("The body of Google note '" + master.Title + "' is empty. Do you really want to syncronize an empty Google note to a not yet empty Outlook note?", "Empty Google Note", MessageBoxButtons.YesNo);
+                //DialogResult result = MessageBox.Show("The body of Google note '" + master.Title + "' is empty. Do you really want to synchronize an empty Google note to a not yet empty Outlook note?", "Empty Google Note", MessageBoxButtons.YesNo);
 
                 //if (result != DialogResult.Yes)
                 //{
-                //    Logger.Log("The body of Google note '" + master.Title + "' is empty. The user decided to skip this note and not to syncronize an empty Google note to a not yet empty Outlook note.", EventType.Information);
+                //    Logger.Log("The body of Google note '" + master.Title + "' is empty. The user decided to skip this note and not to synchronize an empty Google note to a not yet empty Outlook note.", EventType.Information);
                 Logger.Log("The body of Google note '" + master.Title + "' is empty. It is skipped from syncing, because Outlook note is not empty.", EventType.Warning);
                 SkippedCount++;
                 return;
                 //}
-                //Logger.Log("The body of Google note '" + master.Title + "' is empty. The user decided to syncronize an empty Google note to a not yet empty Outlook note (" + slave.Body + ").", EventType.Warning);                
+                //Logger.Log("The body of Google note '" + master.Title + "' is empty. The user decided to synchronize an empty Google note to a not yet empty Outlook note (" + slave.Body + ").", EventType.Warning);                
 
             }
 

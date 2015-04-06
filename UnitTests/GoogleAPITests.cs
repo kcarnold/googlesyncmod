@@ -326,7 +326,7 @@ namespace GoContactSyncMod.UnitTests
 
             #region normal flow, only working to create documents without content (metadata only), e.g. for Notes folder
 
-            Document createdEntry = Syncronizer.SaveGoogleNote(null, newEntry, service);
+            Document createdEntry = Synchronizer.SaveGoogleNote(null, newEntry, service);
 
             Assert.IsNotNull(createdEntry.DocumentEntry.Id.Uri);
 
@@ -352,7 +352,7 @@ namespace GoContactSyncMod.UnitTests
             //Instantiate the ResumableUploader component.      
             ResumableUploader uploader = new ResumableUploader();            
             uploader.AsyncOperationCompleted += new AsyncOperationCompletedEventHandler(OnGoogleNoteCreated);
-            Syncronizer.CreateGoogleNote(newEntry, file, service, uploader, _authenticator);            
+            Synchronizer.CreateGoogleNote(newEntry, file, service, uploader, _authenticator);            
             #endregion            
 
             //Wait 5 seconds to give the testcase the chance to finish the Async events
@@ -421,13 +421,13 @@ namespace GoContactSyncMod.UnitTests
             syncContactsFolder = "";
             syncNotesFolder = "";
             syncAppointmentsFolder = "";
-            Syncronizer.SyncAppointmentsGoogleFolder = "";
+            Synchronizer.SyncAppointmentsGoogleFolder = "";
 
             //First, check if there is a folder called GCSMTestContacts and GCSMTestNotes available, if yes, use them
             ArrayList outlookContactFolders = new ArrayList();
             ArrayList outlookNoteFolders = new ArrayList();
             ArrayList outlookAppointmentFolders = new ArrayList();
-            Microsoft.Office.Interop.Outlook.Folders folders = Syncronizer.OutlookNameSpace.Folders;
+            Microsoft.Office.Interop.Outlook.Folders folders = Synchronizer.OutlookNameSpace.Folders;
             foreach (Microsoft.Office.Interop.Outlook.Folder folder in folders)
             {
                 try
@@ -478,9 +478,9 @@ namespace GoContactSyncMod.UnitTests
             if (string.IsNullOrEmpty(syncAppointmentsFolder))
                 if (regKeyAppRoot.GetValue("SyncAppointmentsFolder") != null)
                     syncAppointmentsFolder = regKeyAppRoot.GetValue("SyncAppointmentsFolder") as string;
-            if (string.IsNullOrEmpty(Syncronizer.SyncAppointmentsGoogleFolder))
+            if (string.IsNullOrEmpty(Synchronizer.SyncAppointmentsGoogleFolder))
                 if (regKeyAppRoot.GetValue("SyncAppointmentsGoogleFolder") != null)
-                    Syncronizer.SyncAppointmentsGoogleFolder = regKeyAppRoot.GetValue("SyncAppointmentsGoogeFolder") as string;           
+                    Synchronizer.SyncAppointmentsGoogleFolder = regKeyAppRoot.GetValue("SyncAppointmentsGoogeFolder") as string;           
         }
 
         private static Microsoft.Win32.RegistryKey LoadSettings(out string gmailUsername, out string syncProfile)

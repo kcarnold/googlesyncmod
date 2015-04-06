@@ -22,7 +22,7 @@ namespace GoContactSyncMod
         {
             get
             {
-                return VersionInformation.GetOutlookVersion(Syncronizer.OutlookApplication).ToString();
+                return VersionInformation.GetOutlookVersion(Synchronizer.OutlookApplication).ToString();
             }
         }
 

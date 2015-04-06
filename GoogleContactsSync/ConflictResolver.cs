@@ -235,7 +235,7 @@ namespace GoContactSyncMod
         //    return ret;
         //}
 
-        public ConflictResolution Resolve(Microsoft.Office.Interop.Outlook.NoteItem outlookNote, Document googleNote, Syncronizer sync, bool isNewMatch)
+        public ConflictResolution Resolve(Microsoft.Office.Interop.Outlook.NoteItem outlookNote, Document googleNote, Synchronizer sync, bool isNewMatch)
         {
             string name = string.Empty;
 
@@ -291,7 +291,7 @@ namespace GoContactSyncMod
             return ResolveDeletedGoogle();
         }
 
-        public DeleteResolution ResolveDelete(Document googleNote, Syncronizer sync)
+        public DeleteResolution ResolveDelete(Document googleNote, Synchronizer sync)
         {
 
             _form.Text = "Outlook note deleted";
@@ -309,7 +309,7 @@ namespace GoContactSyncMod
             return ResolveDeletedOutlook();
         }
 
-        public ConflictResolution Resolve(Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment, Event googleAppointment, Syncronizer sync, bool isNewMatch)
+        public ConflictResolution Resolve(Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment, Event googleAppointment, Synchronizer sync, bool isNewMatch)
         {
             string name = string.Empty;
 
@@ -323,7 +323,7 @@ namespace GoContactSyncMod
 
             if (googleAppointment != null)
             {
-                name = googleAppointment.Summary + " - " + Syncronizer.GetTime(googleAppointment);                
+                name = googleAppointment.Summary + " - " + Synchronizer.GetTime(googleAppointment);                
                 _form.GoogleItemTextBox.Text += googleAppointment.Description;
             }
 
@@ -347,7 +347,7 @@ namespace GoContactSyncMod
             return Resolve();
         }
 
-        public ConflictResolution Resolve(string message, Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment, Event googleAppointment, Syncronizer sync, bool keepOutlook, bool keepGoogle)
+        public ConflictResolution Resolve(string message, Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment, Event googleAppointment, Synchronizer sync, bool keepOutlook, bool keepGoogle)
         {
             string name = string.Empty;
 
@@ -361,7 +361,7 @@ namespace GoContactSyncMod
 
             if (googleAppointment != null)
             {
-                name = googleAppointment.Summary + " - " + Syncronizer.GetTime(googleAppointment);
+                name = googleAppointment.Summary + " - " + Synchronizer.GetTime(googleAppointment);
                 _form.GoogleItemTextBox.Text += googleAppointment.Description;
             }
 
@@ -374,12 +374,12 @@ namespace GoContactSyncMod
             return Resolve();
         }
 
-        public ConflictResolution Resolve(string message, Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment, Event googleAppointment, Syncronizer sync)
+        public ConflictResolution Resolve(string message, Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment, Event googleAppointment, Synchronizer sync)
         {
             return Resolve(message, outlookAppointment, googleAppointment, sync, true, false);        
         }
 
-        public ConflictResolution Resolve(string message, Event googleAppointment, Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment, Syncronizer sync)
+        public ConflictResolution Resolve(string message, Event googleAppointment, Microsoft.Office.Interop.Outlook.AppointmentItem outlookAppointment, Synchronizer sync)
         {
             return Resolve(message, outlookAppointment, googleAppointment, sync, false, true);           
         }
@@ -409,7 +409,7 @@ namespace GoContactSyncMod
 
             _form.Text = "Outlook appointment deleted";
             _form.messageLabel.Text =
-                "Outlook appointment \"" + googleAppointment.Summary + " - " + Syncronizer.GetTime(googleAppointment) +
+                "Outlook appointment \"" + googleAppointment.Summary + " - " + Synchronizer.GetTime(googleAppointment) +
                 "\" doesn't exist aynmore. Do you want to delete it also on Google side?";
 
             _form.OutlookItemTextBox.Text = String.Empty;            

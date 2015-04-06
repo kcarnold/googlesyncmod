@@ -426,7 +426,7 @@ namespace GoContactSyncMod
             //    }
             //    else
             //    {
-            //        Logger.Log("Outlook Contact '" + master.FullNameAndCompany + "' has neither E-Mail address nor phone number. Cannot merge with Google contac: " + slave.Summary, EventType.Error);
+            //        Logger.Log("Outlook Contact '" + master.FullNameAndCompany + "' has neither E-Mail address nor phone number. Cannot merge with Google contact: " + slave.Summary, EventType.Error);
             //        return;
             //    }					
             //}

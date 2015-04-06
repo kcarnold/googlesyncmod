@@ -38,7 +38,7 @@ namespace GoContactSyncMod
             return outlookContact.HasPicture;
         }
 
-        public static bool SaveGooglePhoto(Syncronizer sync, Contact googleContact, Image image)
+        public static bool SaveGooglePhoto(Synchronizer sync, Contact googleContact, Image image)
         {
             if (googleContact.ContactEntry.PhotoUri == null)
                 throw new Exception("Must reload contact from google.");
@@ -66,7 +66,7 @@ namespace GoContactSyncMod
             }
             return true;
         }
-        public static Image GetGooglePhoto(Syncronizer sync, Contact googleContact)
+        public static Image GetGooglePhoto(Synchronizer sync, Contact googleContact)
         {
             if (!HasPhoto(googleContact))
                 return null;
@@ -202,7 +202,7 @@ namespace GoContactSyncMod
             catch { }
         }
 
-        public static bool ContainsGroup(Syncronizer sync, Contact googleContact, string groupName)
+        public static bool ContainsGroup(Synchronizer sync, Contact googleContact, string groupName)
         {
             Group group = sync.GetGoogleGroupByName(groupName);
             if (group == null)
@@ -226,7 +226,7 @@ namespace GoContactSyncMod
             return outlookContact.Categories.Contains(group);
         }
 
-        public static Collection<Group> GetGoogleGroups(Syncronizer sync, Contact googleContact)
+        public static Collection<Group> GetGoogleGroups(Synchronizer sync, Contact googleContact)
         {
             int c = googleContact.GroupMembership.Count;
             Collection<Group> groups = new Collection<Group>();

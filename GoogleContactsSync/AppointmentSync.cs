@@ -88,10 +88,10 @@ namespace GoContactSyncMod
                 if (master.RecurrenceState == Outlook.OlRecurrenceState.olApptMaster)
                 {   //As Timezone is only mandatory for recurrence events
                     //If user has selected a timezone in settings form, use this as timezone, otherwise assign the Outlook timezoen (not working always and sometimes not compatible
-                    if (!string.IsNullOrEmpty(Syncronizer.Timezone))
+                    if (!string.IsNullOrEmpty(Synchronizer.Timezone))
                     {
-                        slave.Start.TimeZone = Syncronizer.Timezone;
-                        slave.End.TimeZone = Syncronizer.Timezone;
+                        slave.Start.TimeZone = Synchronizer.Timezone;
+                        slave.End.TimeZone = Synchronizer.Timezone;
                     }
                     else
                     {
@@ -252,7 +252,7 @@ namespace GoContactSyncMod
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log("Error updating event's AllDay/Start/End: " + master.Summary + " - " + Syncronizer.GetTime(master) + ": " + ex.Message, slave.IsRecurring?EventType.Debug:EventType.Warning);
+                    Logger.Log("Error updating event's AllDay/Start/End: " + master.Summary + " - " + Synchronizer.GetTime(master) + ": " + ex.Message, slave.IsRecurring?EventType.Debug:EventType.Warning);
                 }
             }
             
@@ -769,7 +769,7 @@ namespace GoContactSyncMod
 
         }
 
-        public static bool UpdateRecurrenceExceptions(Outlook.AppointmentItem master, Event slave, Syncronizer sync)
+        public static bool UpdateRecurrenceExceptions(Outlook.AppointmentItem master, Event slave, Synchronizer sync)
         {
             
             bool ret = false;
@@ -783,8 +783,8 @@ namespace GoContactSyncMod
                     if (!exception.Deleted) 
                     {
                         //Add exception time (but only if in given time range
-                        if ((Syncronizer.MonthsInPast == 0 || exception.AppointmentItem.End >= DateTime.Now.AddMonths(-Syncronizer.MonthsInPast)) &&
-                             (Syncronizer.MonthsInFuture == 0 || exception.AppointmentItem.Start <= DateTime.Now.AddMonths(Syncronizer.MonthsInFuture)))
+                        if ((Synchronizer.MonthsInPast == 0 || exception.AppointmentItem.End >= DateTime.Now.AddMonths(-Synchronizer.MonthsInPast)) &&
+                             (Synchronizer.MonthsInFuture == 0 || exception.AppointmentItem.Start <= DateTime.Now.AddMonths(Synchronizer.MonthsInFuture)))
                         {
                             //slave.Times.Add(new Google.GData.Extensions.When(exception.AppointmentItem.Start, exception.AppointmentItem.Start, exception.AppointmentItem.AllDayEvent));
                             var googleRecurrenceException = Factory.NewEvent();
@@ -845,8 +845,8 @@ namespace GoContactSyncMod
                     //    if (googleRecurrenceException != null)
                     //        googleRecurrenceException.Delete();
                         
-                        if ((Syncronizer.MonthsInPast == 0 || exception.OriginalDate >= DateTime.Now.AddMonths(-Syncronizer.MonthsInPast)) &&
-                             (Syncronizer.MonthsInFuture == 0 || exception.OriginalDate <= DateTime.Now.AddMonths(Syncronizer.MonthsInFuture)))
+                        if ((Synchronizer.MonthsInPast == 0 || exception.OriginalDate >= DateTime.Now.AddMonths(-Synchronizer.MonthsInPast)) &&
+                             (Synchronizer.MonthsInFuture == 0 || exception.OriginalDate <= DateTime.Now.AddMonths(Synchronizer.MonthsInFuture)))
                         {
                             //First create deleted occurrences, to delete it later again
                             var googleRecurrenceException = Factory.NewEvent();
@@ -878,7 +878,7 @@ namespace GoContactSyncMod
                                 //googleRecurrenceExceptions.Add(googleRecurrenceException);                                  
 
                                 //ToDo: check promptDeletion and syncDeletion options
-                                sync.EventRequest.Delete(Syncronizer.SyncAppointmentsGoogleFolder, googleRecurrenceException.Id).Execute();
+                                sync.EventRequest.Delete(Synchronizer.SyncAppointmentsGoogleFolder, googleRecurrenceException.Id).Execute();
                                 Logger.Log("Deleted obsolete recurrence exception from Google: " + master.Subject + " - " + exception.OriginalDate, EventType.Information);
                                 //sync.DeletedCount++;
 
@@ -901,7 +901,7 @@ namespace GoContactSyncMod
             return ret;
         }
 
-        public static bool UpdateRecurrenceExceptions(List<Event> googleRecurrenceExceptions, Outlook.AppointmentItem slave, Syncronizer sync)
+        public static bool UpdateRecurrenceExceptions(List<Event> googleRecurrenceExceptions, Outlook.AppointmentItem slave, Synchronizer sync)
         {
             bool ret = false;
 
@@ -964,7 +964,7 @@ namespace GoContactSyncMod
                         {
                             sync.UpdateAppointment(ref googleRecurrenceException, outlookRecurrenceException, null);
                             outlookRecurrenceException.Save();
-                            Logger.Log("Updated recurrence exception from Google to Outlook: " + googleRecurrenceException.Summary + " - " + Syncronizer.GetTime(googleRecurrenceException), EventType.Information);
+                            Logger.Log("Updated recurrence exception from Google to Outlook: " + googleRecurrenceException.Summary + " - " + Synchronizer.GetTime(googleRecurrenceException), EventType.Information);
                         }
                         ret = true;
 
@@ -1016,7 +1016,7 @@ namespace GoContactSyncMod
 
         internal static bool IsOrganizer(string email)
         {
-            string userName = Syncronizer.UserName.Trim().ToLower().Replace("@googlemail.", "@gmail.");
+            string userName = Synchronizer.UserName.Trim().ToLower().Replace("@googlemail.", "@gmail.");
             email = email.Trim().ToLower().Replace("@googlemail.", "@gmail.");
 
             if (email == null || email.Equals(userName, StringComparison.InvariantCultureIgnoreCase))
