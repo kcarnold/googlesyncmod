@@ -26,7 +26,7 @@ namespace GoContactSyncMod
             }
         }
 
-        // TODO: Write a nice error dialog, that maybe supports directly E-Mail sending as bugreport
+        // TODO: Write a nice error dialog, that maybe supports directly email sending as bugreport
         public static void Handle(Exception ex)
         {
             //save user culture
