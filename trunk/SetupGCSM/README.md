@@ -1,5 +1,17 @@
 # +++ NEWS +++ NEWS +++ NEWS +++
 
+### Version [3.9.4] - 07.04.2015
+
+###### SVN commits
+**r529 - r534**
+  - **FIX**: persist GoogleCalendar setting into Registry, see
+	https://sourceforge.net/p/googlesyncmod/bugs/685/
+	https://sourceforge.net/p/googlesyncmod/bugs/684/
+  - **FIX**: FIX: more spelling corrections 
+  - **FIX**: spelling/typos corrections [bugs:#662] - UPD: nuget packages 
+
+**Free Open Source Software, Hell Yeah!**
+
 ### Version [3.9.3] - 04.04.2015
 
 ###### SVN commits
