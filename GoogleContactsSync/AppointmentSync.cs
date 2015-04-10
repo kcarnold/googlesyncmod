@@ -707,7 +707,13 @@ namespace GoContactSyncMod
                         {
                             if (part.StartsWith(INTERVAL))
                             {
-                                slaveRecurrence.Interval = int.Parse(part.Substring(part.IndexOf('=') + 1));
+                                int interval = int.Parse(part.Substring(part.IndexOf('=') + 1));
+                                if (slaveRecurrence.RecurrenceType == Outlook.OlRecurrenceType.olRecursYearly ||
+                                    slaveRecurrence.RecurrenceType == Outlook.OlRecurrenceType.olRecursYearNth)
+                                {
+                                    interval = interval * 12; // must be expressed in months
+                                }
+                                slaveRecurrence.Interval = interval;
                                 break;
                             }
 

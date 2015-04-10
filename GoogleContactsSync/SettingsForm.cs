@@ -53,6 +53,27 @@ namespace GoContactSyncMod
         private bool boolShowBalloonTip = true;
 
         public const string AppRootKey = @"Software\GoContactSyncMOD";
+        public const string RegistrySyncOption                      = "SyncOption";
+        public const string RegistryUsername                        = "Username";
+        public const string RegistryAutoSync                        =  "AutoSync";
+        public const string RegistryAutoSyncInterval                =  "AutoSyncInterval";
+        public const string RegistryAutoStart                       =  "AutoStart";
+        public const string RegistryReportSyncResult                =  "ReportSyncResult";
+        public const string RegistrySyncDeletion                    =  "SyncDeletion";
+        public const string RegistryPromptDeletion                  =  "PromptDeletion";
+        public const string RegistrySyncAppointmentsMonthsInPast    =  "SyncAppointmentsMonthsInPast";
+        public const string RegistrySyncAppointmentsMonthsInFuture  =  "SyncAppointmentsMonthsInFuture";
+        public const string RegistrySyncAppointmentsTimezone        =  "SyncAppointmentsTimezone";
+        public const string RegistrySyncAppointments                =  "SyncAppointments";
+        public const string RegistrySyncNotes                       =  "SyncNotes";
+        public const string RegistrySyncContacts                    =  "SyncContacts";
+        public const string RegistryUseFileAs                       =  "UseFileAs";
+        public const string RegistryLastSync                        =  "LastSync";
+        public const string RegistrySyncContactsFolder              = "SyncContactsFolder";
+        public const string RegistrySyncNotesFolder                 = "SyncNotesFolder";
+        public const string RegistrySyncAppointmentsFolder          = "SyncAppointmentsFolder";
+        public const string RegistrySyncAppointmentsGoogleFolder    = "SyncAppointmentsGoogleFolder";
+        public const string RegistrySyncProfile                     = "SyncProfile";
 
         private ProxySettingsForm _proxy = new ProxySettingsForm();
 
@@ -73,14 +94,14 @@ namespace GoContactSyncMod
                 {
                     regKeyAppRoot = Registry.CurrentUser.CreateSubKey(@"Software\Webgear\GOContactSync");
                 }
-                return (regKeyAppRoot.GetValue("SyncProfile") != null) ?
-                       (string)regKeyAppRoot.GetValue("SyncProfile") : null;
+                return (regKeyAppRoot.GetValue(RegistrySyncProfile) != null) ?
+                       (string)regKeyAppRoot.GetValue(RegistrySyncProfile) : null;
             }
             set
             {
                 RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey);
                 if (!string.IsNullOrEmpty(value))
-                    regKeyAppRoot.SetValue("SyncProfile", value);
+                    regKeyAppRoot.SetValue(RegistrySyncProfile, value);
             }
         }
 
@@ -192,7 +213,7 @@ namespace GoContactSyncMod
                     this.contactFoldersComboBox.Visible = btSyncContacts.Checked;
                     this.noteFoldersComboBox.Visible = btSyncNotes.Checked;
                     this.labelTimezone.Visible = this.labelMonthsPast.Visible = this.labelMonthsFuture.Visible = btSyncAppointments.Checked;
-                    this.appointmentFoldersComboBox.Visible = this.appointmentGoogleFoldersComboBox.Visible = this.futureMonthTextBox.Visible = this.pastMonthTextBox.Visible = this.appointmentTimezonesComboBox.Visible = btSyncAppointments.Checked;
+                    this.appointmentFoldersComboBox.Visible = this.appointmentGoogleFoldersComboBox.Visible = this.futureMonthInterval.Visible = this.pastMonthInterval.Visible = this.appointmentTimezonesComboBox.Visible = btSyncAppointments.Checked;
                     this.cmbSyncProfile.Visible = true;
 
                     string defaultText = "    --- Select an Outlook folder ---";
@@ -391,15 +412,15 @@ namespace GoContactSyncMod
                 regKeyAppRoot = Registry.CurrentUser.CreateSubKey(@"Software\Webgear\GOContactSync" + (_profile != null ? ('\\' + _profile) : ""));
             }
 
-            if (regKeyAppRoot.GetValue("SyncOption") != null)
+            if (regKeyAppRoot.GetValue(RegistrySyncOption) != null)
             {
-                syncOption = (SyncOption)regKeyAppRoot.GetValue("SyncOption");
+                syncOption = (SyncOption)regKeyAppRoot.GetValue(RegistrySyncOption);
                 SetSyncOption((int)syncOption);
             }
 
-            if (regKeyAppRoot.GetValue("Username") != null)
+            if (regKeyAppRoot.GetValue(RegistryUsername) != null)
             {
-                UserName.Text = regKeyAppRoot.GetValue("Username") as string;
+                UserName.Text = regKeyAppRoot.GetValue(RegistryUsername) as string;
                 //if (regKeyAppRoot.GetValue("Password") != null)
                 //    Password.Text = Encryption.DecryptPassword(UserName.Text, regKeyAppRoot.GetValue("Password") as string);
             }
@@ -410,36 +431,33 @@ namespace GoContactSyncMod
 
             //temporary remove listener
             this.autoSyncCheckBox.CheckedChanged -= new System.EventHandler(this.autoSyncCheckBox_CheckedChanged);
-            if (regKeyAppRoot.GetValue("AutoSync") != null)
-                autoSyncCheckBox.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("AutoSync"));
-            if (regKeyAppRoot.GetValue("AutoSyncInterval") != null)
-                autoSyncInterval.Value = Convert.ToDecimal(regKeyAppRoot.GetValue("AutoSyncInterval"));
-            if (regKeyAppRoot.GetValue("AutoStart") != null)
-                runAtStartupCheckBox.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("AutoStart"));
-            if (regKeyAppRoot.GetValue("ReportSyncResult") != null)
-                reportSyncResultCheckBox.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("ReportSyncResult"));            
-            if (regKeyAppRoot.GetValue("SyncDeletion") != null)
-                btSyncDelete.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("SyncDeletion"));
-            if (regKeyAppRoot.GetValue("PromptDeletion") != null)
-                btPromptDelete.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("PromptDeletion"));
-            if (regKeyAppRoot.GetValue("SyncAppointmentsMonthsInPast") != null)
-                pastMonthTextBox.Text = regKeyAppRoot.GetValue("SyncAppointmentsMonthsInPast") as string;
-            if (regKeyAppRoot.GetValue("SyncAppointmentsMonthsInFuture") != null)
-                futureMonthTextBox.Text = regKeyAppRoot.GetValue("SyncAppointmentsMonthsInFuture") as string;
-            if (regKeyAppRoot.GetValue("SyncAppointmentsTimezone") != null)
-                appointmentTimezonesComboBox.Text = regKeyAppRoot.GetValue("SyncAppointmentsTimezone") as string;
-            if (regKeyAppRoot.GetValue("SyncAppointments") != null) //ToDo: Google Calendar Api v2 deprecated
-                btSyncAppointments.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("SyncAppointments"));
-            if (regKeyAppRoot.GetValue("SyncNotes") != null)
-                btSyncNotes.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("SyncNotes"));
-            if (regKeyAppRoot.GetValue("SyncContacts") != null)
-                btSyncContacts.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("SyncContacts"));
-            if (regKeyAppRoot.GetValue("UseFileAs") != null)
-                chkUseFileAs.Checked = Convert.ToBoolean(regKeyAppRoot.GetValue("UseFileAs"));
-            if (regKeyAppRoot.GetValue("LastSync") != null)
+            
+            ReadRegistryIntoCheckBox(autoSyncCheckBox, regKeyAppRoot.GetValue(RegistryAutoSync));
+            ReadRegistryIntoNumber(autoSyncInterval, regKeyAppRoot.GetValue(RegistryAutoSyncInterval));            
+            ReadRegistryIntoCheckBox(runAtStartupCheckBox, regKeyAppRoot.GetValue(RegistryAutoStart));
+            ReadRegistryIntoCheckBox(reportSyncResultCheckBox, regKeyAppRoot.GetValue(RegistryReportSyncResult));
+            ReadRegistryIntoCheckBox(btSyncDelete, regKeyAppRoot.GetValue(RegistrySyncDeletion));
+            ReadRegistryIntoCheckBox(btPromptDelete, regKeyAppRoot.GetValue(RegistryPromptDeletion));
+            ReadRegistryIntoNumber(pastMonthInterval, regKeyAppRoot.GetValue(RegistrySyncAppointmentsMonthsInPast));
+            ReadRegistryIntoNumber(futureMonthInterval, regKeyAppRoot.GetValue(RegistrySyncAppointmentsMonthsInFuture));                                  
+            if (regKeyAppRoot.GetValue(RegistrySyncAppointmentsTimezone) != null)
+                appointmentTimezonesComboBox.Text = regKeyAppRoot.GetValue(RegistrySyncAppointmentsTimezone) as string;
+            ReadRegistryIntoCheckBox(btSyncAppointments, regKeyAppRoot.GetValue(RegistrySyncAppointments));
+            ReadRegistryIntoCheckBox(btSyncNotes, regKeyAppRoot.GetValue(RegistrySyncNotes));
+            ReadRegistryIntoCheckBox(btSyncContacts, regKeyAppRoot.GetValue(RegistrySyncContacts));
+            ReadRegistryIntoCheckBox(chkUseFileAs, regKeyAppRoot.GetValue(RegistryUseFileAs));
+            
+            if (regKeyAppRoot.GetValue(RegistryLastSync) != null)
             {
-                lastSync = new DateTime(Convert.ToInt64(regKeyAppRoot.GetValue("LastSync")));
-                SetLastSyncText(lastSync.ToString());
+                try
+                {
+                    lastSync = new DateTime(Convert.ToInt64(regKeyAppRoot.GetValue(RegistryLastSync)));
+                    SetLastSyncText(lastSync.ToString());
+                }
+                catch (System.FormatException ex)
+                {
+                    Logger.Log("LastSyncDate couldn't be read from registry (" + regKeyAppRoot.GetValue(RegistryLastSync) + "): " + ex, EventType.Warning);
+                }
             }
             LoadSettingsFolders(_profile);
 
@@ -460,6 +478,43 @@ namespace GoContactSyncMod
             this.autoSyncCheckBox.CheckedChanged += new System.EventHandler(this.autoSyncCheckBox_CheckedChanged);
         }
 
+        private void ReadRegistryIntoCheckBox(CheckBox checkbox, object registryEntry)
+        {
+            if (registryEntry != null)
+            {
+                try
+                {
+                    checkbox.Checked = Convert.ToBoolean(registryEntry);
+                }
+                catch (System.FormatException ex)
+                {
+                    Logger.Log(checkbox.Name + " couldn't be read from registry (" + registryEntry + "), was kept at default (" + checkbox.Checked + "): " + ex, EventType.Warning);
+
+                }
+            }
+
+        }
+
+        private void ReadRegistryIntoNumber(NumericUpDown numericUpDown, object registryEntry)
+        {
+            if (registryEntry != null)
+            {
+                decimal interval = Convert.ToDecimal(registryEntry);
+                if (interval < numericUpDown.Minimum)
+                {                    
+                    numericUpDown.Value = numericUpDown.Minimum;
+                    Logger.Log(numericUpDown.Name + " read from registry was below range (" + interval + "), was set to minimum ("+ numericUpDown.Minimum +")", EventType.Warning);
+                }
+                else if (interval > numericUpDown.Maximum)
+                {
+                    numericUpDown.Value = numericUpDown.Maximum;
+                    Logger.Log(numericUpDown.Name + " read from registry was above range (" + interval + "), was set to maximum (" + numericUpDown.Maximum + ")", EventType.Warning);
+                }
+                else
+                    numericUpDown.Value = interval;
+            }
+        }
+
         private void LoadSettingsFolders(string _profile)
         {
 
@@ -471,16 +526,16 @@ namespace GoContactSyncMod
                 regKeyAppRoot = Registry.CurrentUser.CreateSubKey(@"Software\Webgear\GOContactSync" + (_profile != null ? ('\\' + _profile) : ""));
             }
 
-            object regKeyValue = regKeyAppRoot.GetValue("SyncContactsFolder");
+            object regKeyValue = regKeyAppRoot.GetValue(RegistrySyncContactsFolder);
             if (regKeyValue != null && !string.IsNullOrEmpty(regKeyValue as string))
-                contactFoldersComboBox.SelectedValue = regKeyAppRoot.GetValue("SyncContactsFolder") as string;
-            regKeyValue = regKeyAppRoot.GetValue("SyncNotesFolder");
+                contactFoldersComboBox.SelectedValue = regKeyValue as string;
+            regKeyValue = regKeyAppRoot.GetValue(RegistrySyncNotesFolder);
             if (regKeyValue != null && !string.IsNullOrEmpty(regKeyValue as string))
-                noteFoldersComboBox.SelectedValue = regKeyAppRoot.GetValue("SyncNotesFolder") as string;
-            regKeyValue = regKeyAppRoot.GetValue("SyncAppointmentsFolder");
+                noteFoldersComboBox.SelectedValue = regKeyValue as string;
+            regKeyValue = regKeyAppRoot.GetValue(RegistrySyncAppointmentsFolder);
             if (regKeyValue != null && !string.IsNullOrEmpty(regKeyValue as string))
-                appointmentFoldersComboBox.SelectedValue = regKeyAppRoot.GetValue("SyncAppointmentsFolder") as string;
-            regKeyValue = regKeyAppRoot.GetValue("SyncAppointmentsGoogleFolder");
+                appointmentFoldersComboBox.SelectedValue = regKeyValue as string;
+            regKeyValue = regKeyAppRoot.GetValue(RegistrySyncAppointmentsGoogleFolder);
             if (regKeyValue != null && !string.IsNullOrEmpty(regKeyValue as string))
             {
                 if (appointmentGoogleFoldersComboBox.DataSource == null)
@@ -510,26 +565,26 @@ namespace GoContactSyncMod
             {
                 syncProfile = cmbSyncProfile.Text;
                 RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey + "\\" + profile);
-                regKeyAppRoot.SetValue("SyncOption", (int)syncOption);
+                regKeyAppRoot.SetValue(RegistrySyncOption, (int)syncOption);
  
                 if (!string.IsNullOrEmpty(UserName.Text))
                 {
-                    regKeyAppRoot.SetValue("Username", UserName.Text);
+                    regKeyAppRoot.SetValue(RegistryUsername, UserName.Text);
                 }
-                regKeyAppRoot.SetValue("AutoSync", autoSyncCheckBox.Checked.ToString());
-                regKeyAppRoot.SetValue("AutoSyncInterval", autoSyncInterval.Value.ToString());
-                regKeyAppRoot.SetValue("AutoStart", runAtStartupCheckBox.Checked);
-                regKeyAppRoot.SetValue("ReportSyncResult", reportSyncResultCheckBox.Checked);
-                regKeyAppRoot.SetValue("SyncDeletion", btSyncDelete.Checked);
-                regKeyAppRoot.SetValue("PromptDeletion", btPromptDelete.Checked);
-                regKeyAppRoot.SetValue("SyncAppointmentsMonthsInPast", pastMonthTextBox.Text);
-                regKeyAppRoot.SetValue("SyncAppointmentsMonthsInFuture", futureMonthTextBox.Text);
-                regKeyAppRoot.SetValue("SyncAppointmentsTimeZone", appointmentTimezonesComboBox.Text);
-                regKeyAppRoot.SetValue("SyncAppointments", btSyncAppointments.Checked);
-                regKeyAppRoot.SetValue("SyncNotes", btSyncNotes.Checked);
-                regKeyAppRoot.SetValue("SyncContacts", btSyncContacts.Checked);
-                regKeyAppRoot.SetValue("UseFileAs", chkUseFileAs.Checked);
-                regKeyAppRoot.SetValue("LastSync", lastSync.Ticks);
+                regKeyAppRoot.SetValue(RegistryAutoSync, autoSyncCheckBox.Checked.ToString());
+                regKeyAppRoot.SetValue(RegistryAutoSyncInterval, autoSyncInterval.Value.ToString());
+                regKeyAppRoot.SetValue(RegistryAutoStart, runAtStartupCheckBox.Checked);
+                regKeyAppRoot.SetValue(RegistryReportSyncResult, reportSyncResultCheckBox.Checked);
+                regKeyAppRoot.SetValue(RegistrySyncDeletion, btSyncDelete.Checked);
+                regKeyAppRoot.SetValue(RegistryPromptDeletion, btPromptDelete.Checked);
+                regKeyAppRoot.SetValue(RegistrySyncAppointmentsMonthsInPast, pastMonthInterval.Value.ToString());
+                regKeyAppRoot.SetValue(RegistrySyncAppointmentsMonthsInFuture, futureMonthInterval.Value.ToString());
+                regKeyAppRoot.SetValue(RegistrySyncAppointmentsTimezone, appointmentTimezonesComboBox.Text);
+                regKeyAppRoot.SetValue(RegistrySyncAppointments, btSyncAppointments.Checked);
+                regKeyAppRoot.SetValue(RegistrySyncNotes, btSyncNotes.Checked);
+                regKeyAppRoot.SetValue(RegistrySyncContacts, btSyncContacts.Checked);
+                regKeyAppRoot.SetValue(RegistryUseFileAs, chkUseFileAs.Checked);
+                regKeyAppRoot.SetValue(RegistryLastSync, lastSync.Ticks);
 
                 //if (btSyncContacts.Checked && contactFoldersComboBox.SelectedValue != null)
                 //    regKeyAppRoot.SetValue("SyncContactsFolder", contactFoldersComboBox.SelectedValue.ToString());
@@ -675,10 +730,10 @@ namespace GoContactSyncMod
 
                     //if the contacts or notes folder has changed ==> Reset matches (to not delete contacts or notes on the one or other side)                
                     RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey + "\\" + syncProfile);
-                    string oldSyncContactsFolder = regKeyAppRoot.GetValue("SyncContactsFolder") as string;
-                    string oldSyncNotesFolder = regKeyAppRoot.GetValue("SyncNotesFolder") as string;
-                    string oldSyncAppointmentsFolder = regKeyAppRoot.GetValue("SyncAppointmentsFolder") as string;
-                    string oldSyncAppointmentsGoogleFolder = regKeyAppRoot.GetValue("SyncAppointmentsGoogleFolder") as string;
+                    string oldSyncContactsFolder = regKeyAppRoot.GetValue(RegistrySyncContactsFolder) as string;
+                    string oldSyncNotesFolder = regKeyAppRoot.GetValue(RegistrySyncNotesFolder) as string;
+                    string oldSyncAppointmentsFolder = regKeyAppRoot.GetValue(RegistrySyncAppointmentsFolder) as string;
+                    string oldSyncAppointmentsGoogleFolder = regKeyAppRoot.GetValue(RegistrySyncAppointmentsGoogleFolder) as string;
 
                     //only reset notes if NotesFolder changed and reset contacts if ContactsFolder changed
                     //and only reset appointments, if either OutlookAppointmentsFolder changed (without changing Google at the same time) or GoogleAppointmentsFolder changed (without changing Outlook at the same time) (not chosen before means not changed)
@@ -694,16 +749,16 @@ namespace GoContactSyncMod
 
                     //Then save the Contacts and Notes Folders used at last sync
                     if (btSyncContacts.Checked)
-                        regKeyAppRoot.SetValue("SyncContactsFolder", this.syncContactsFolder);
+                        regKeyAppRoot.SetValue(RegistrySyncContactsFolder, this.syncContactsFolder);
                     if (btSyncNotes.Checked)
-                        regKeyAppRoot.SetValue("SyncNotesFolder", this.syncNotesFolder);
+                        regKeyAppRoot.SetValue(RegistrySyncNotesFolder, this.syncNotesFolder);
                     if (btSyncAppointments.Checked)
                     {
-                        regKeyAppRoot.SetValue("SyncAppointmentsFolder", this.syncAppointmentsFolder);
+                        regKeyAppRoot.SetValue(RegistrySyncAppointmentsFolder, this.syncAppointmentsFolder);
                         if (string.IsNullOrEmpty(this.syncAppointmentsGoogleFolder) && !string.IsNullOrEmpty(oldSyncAppointmentsGoogleFolder))
                             this.syncAppointmentsGoogleFolder = oldSyncAppointmentsGoogleFolder;
                         if (!string.IsNullOrEmpty(this.syncAppointmentsGoogleFolder))   
-                            regKeyAppRoot.SetValue("SyncAppointmentsGoogleFolder", this.syncAppointmentsGoogleFolder);
+                            regKeyAppRoot.SetValue(RegistrySyncAppointmentsGoogleFolder, this.syncAppointmentsGoogleFolder);
                     }
 
                     SetLastSyncText("Syncing...");
@@ -730,8 +785,8 @@ namespace GoContactSyncMod
                     Synchronizer.SyncNotesFolder = this.syncNotesFolder;
                     Synchronizer.SyncAppointmentsFolder = this.syncAppointmentsFolder;
                     Synchronizer.SyncAppointmentsGoogleFolder = this.syncAppointmentsGoogleFolder;
-                    Synchronizer.MonthsInPast = Convert.ToUInt16(this.pastMonthTextBox.Text);
-                    Synchronizer.MonthsInFuture = Convert.ToUInt16(this.futureMonthTextBox.Text);
+                    Synchronizer.MonthsInPast = Convert.ToUInt16(this.pastMonthInterval.Value);
+                    Synchronizer.MonthsInFuture = Convert.ToUInt16(this.futureMonthInterval.Value);
                     Synchronizer.Timezone = this.Timezone;
 
                     sync.SyncOption = syncOption;
@@ -1473,7 +1528,7 @@ namespace GoContactSyncMod
             }
             appointmentFoldersComboBox.Visible = appointmentGoogleFoldersComboBox.Visible = btSyncAppointments.Checked;
             this.labelTimezone.Visible = this.labelMonthsPast.Visible = this.labelMonthsFuture.Visible = this.btSyncAppointments.Checked;
-            this.pastMonthTextBox.Visible = this.futureMonthTextBox.Visible = this.appointmentTimezonesComboBox.Visible = btSyncAppointments.Checked;
+            this.pastMonthInterval.Visible = this.futureMonthInterval.Visible = this.appointmentTimezonesComboBox.Visible = btSyncAppointments.Checked;
         }
     	
         private void cmbSyncProfile_SelectedIndexChanged(object sender, EventArgs e)
@@ -1707,28 +1762,28 @@ namespace GoContactSyncMod
         }
         #endregion
 
-        private void futureMonthTextBox_Validating(object sender, CancelEventArgs e)
-        {
-            ushort value;
-            if (!ushort.TryParse(futureMonthTextBox.Text, out value))
-            {
-                MessageBox.Show("only positive integer numbers or 0 (i.e. all) allowed");
-                futureMonthTextBox.Text = "0";
-                e.Cancel = true;
-            }
+        //private void futureMonthTextBox_Validating(object sender, CancelEventArgs e)
+        //{
+        //    ushort value;
+        //    if (!ushort.TryParse(futureMonthTextBoxOld.Text, out value))
+        //    {
+        //        MessageBox.Show("only positive integer numbers or 0 (i.e. all) allowed");
+        //        futureMonthTextBoxOld.Text = "0";
+        //        e.Cancel = true;
+        //    }
 
-        }
+        //}
 
-        private void pastMonthTextBox_Validating(object sender, CancelEventArgs e)
-        {
-            ushort value;
-            if (!ushort.TryParse(pastMonthTextBox.Text, out value))
-            {
-                MessageBox.Show("only positive integer numbers or 0 (i.e. all) allowed");
-                pastMonthTextBox.Text = "1";
-                e.Cancel = true;
-            }
-        }
+        //private void pastMonthTextBox_Validating(object sender, CancelEventArgs e)
+        //{
+        //    ushort value;
+        //    if (!ushort.TryParse(pastMonthTextBoxOld.Text, out value))
+        //    {
+        //        MessageBox.Show("only positive integer numbers or 0 (i.e. all) allowed");
+        //        pastMonthTextBoxOld.Text = "1";
+        //        e.Cancel = true;
+        //    }
+        //}
 
         private void appointmentTimezonesComboBox_TextChanged(object sender, EventArgs e)
         {
@@ -1800,6 +1855,21 @@ namespace GoContactSyncMod
                 Logger.Log("Loaded Google Calendars.", EventType.Information);
             }
         }
+
+        private void autoSyncInterval_Enter(object sender, EventArgs e)
+        {
+            syncTimer.Enabled = false;
+        }
+
+        private void autoSyncInterval_Leave(object sender, EventArgs e)
+        {
+            //if (autoSyncInterval.Value == null)
+            //{  //ToDo: Doesn'T work, if user deleted it, the Value is kept
+            //    MessageBox.Show("No empty value allowed, set to minimum value: " + autoSyncInterval.Minimum);
+            //    autoSyncInterval.Value = autoSyncInterval.Minimum;
+            //}
+            syncTimer.Enabled = true;
+        }        
 
 
     }

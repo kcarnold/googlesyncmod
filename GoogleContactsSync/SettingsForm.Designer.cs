@@ -53,13 +53,13 @@ namespace GoContactSyncMod
             this.nextSyncLabel = new System.Windows.Forms.Label();
             this.syncTimer = new System.Windows.Forms.Timer(this.components);
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.futureMonthInterval = new System.Windows.Forms.NumericUpDown();
+            this.pastMonthInterval = new System.Windows.Forms.NumericUpDown();
             this.appointmentGoogleFoldersComboBox = new System.Windows.Forms.ComboBox();
             this.labelMonthsFuture = new System.Windows.Forms.Label();
             this.labelMonthsPast = new System.Windows.Forms.Label();
             this.labelTimezone = new System.Windows.Forms.Label();
             this.appointmentTimezonesComboBox = new System.Windows.Forms.ComboBox();
-            this.futureMonthTextBox = new System.Windows.Forms.TextBox();
-            this.pastMonthTextBox = new System.Windows.Forms.TextBox();
             this.btSyncAppointments = new System.Windows.Forms.CheckBox();
             this.appointmentFoldersComboBox = new System.Windows.Forms.ComboBox();
             this.btSyncNotes = new System.Windows.Forms.CheckBox();
@@ -93,6 +93,8 @@ namespace GoContactSyncMod
             ((System.ComponentModel.ISupportInitialize)(this.autoSyncInterval)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.futureMonthInterval)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pastMonthInterval)).BeginInit();
             this.logGroupBox.SuspendLayout();
             this.groupBox4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Donate)).BeginInit();
@@ -244,6 +246,8 @@ namespace GoContactSyncMod
             0,
             0});
             this.autoSyncInterval.ValueChanged += new System.EventHandler(this.autoSyncInterval_ValueChanged);
+            this.autoSyncInterval.Enter += new System.EventHandler(this.autoSyncInterval_Enter);
+            this.autoSyncInterval.Leave += new System.EventHandler(this.autoSyncInterval_Leave);
             // 
             // autoSyncCheckBox
             // 
@@ -332,13 +336,13 @@ namespace GoContactSyncMod
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.futureMonthInterval);
+            this.groupBox2.Controls.Add(this.pastMonthInterval);
             this.groupBox2.Controls.Add(this.appointmentGoogleFoldersComboBox);
             this.groupBox2.Controls.Add(this.labelMonthsFuture);
             this.groupBox2.Controls.Add(this.labelMonthsPast);
             this.groupBox2.Controls.Add(this.labelTimezone);
             this.groupBox2.Controls.Add(this.appointmentTimezonesComboBox);
-            this.groupBox2.Controls.Add(this.futureMonthTextBox);
-            this.groupBox2.Controls.Add(this.pastMonthTextBox);
             this.groupBox2.Controls.Add(this.btSyncAppointments);
             this.groupBox2.Controls.Add(this.appointmentFoldersComboBox);
             this.groupBox2.Controls.Add(this.btSyncNotes);
@@ -357,6 +361,37 @@ namespace GoContactSyncMod
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Sync Options";
+            // 
+            // futureMonthInterval
+            // 
+            this.futureMonthInterval.Location = new System.Drawing.Point(351, 233);
+            this.futureMonthInterval.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.futureMonthInterval.Name = "futureMonthInterval";
+            this.futureMonthInterval.Size = new System.Drawing.Size(49, 21);
+            this.futureMonthInterval.TabIndex = 18;
+            this.futureMonthInterval.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // pastMonthInterval
+            // 
+            this.pastMonthInterval.Location = new System.Drawing.Point(351, 209);
+            this.pastMonthInterval.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.pastMonthInterval.Name = "pastMonthInterval";
+            this.pastMonthInterval.Size = new System.Drawing.Size(49, 21);
+            this.pastMonthInterval.TabIndex = 7;
+            this.pastMonthInterval.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.pastMonthInterval.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
             // appointmentGoogleFoldersComboBox
             // 
@@ -403,6 +438,8 @@ namespace GoContactSyncMod
             // 
             // appointmentTimezonesComboBox
             // 
+            this.appointmentTimezonesComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.appointmentTimezonesComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.appointmentTimezonesComboBox.FormattingEnabled = true;
             this.appointmentTimezonesComboBox.Items.AddRange(new object[] {
@@ -708,31 +745,11 @@ namespace GoContactSyncMod
             "Pacific/Wallis"});
             this.appointmentTimezonesComboBox.Location = new System.Drawing.Point(351, 184);
             this.appointmentTimezonesComboBox.Name = "appointmentTimezonesComboBox";
-            this.appointmentTimezonesComboBox.Size = new System.Drawing.Size(121, 21);
+            this.appointmentTimezonesComboBox.Size = new System.Drawing.Size(235, 21);
             this.appointmentTimezonesComboBox.Sorted = true;
             this.appointmentTimezonesComboBox.TabIndex = 13;
             this.toolTip.SetToolTip(this.appointmentTimezonesComboBox, "Select or enter Timezone (default is UTC), only for Recurrences!!!");
             this.appointmentTimezonesComboBox.TextChanged += new System.EventHandler(this.appointmentTimezonesComboBox_TextChanged);
-            // 
-            // futureMonthTextBox
-            // 
-            this.futureMonthTextBox.Location = new System.Drawing.Point(351, 232);
-            this.futureMonthTextBox.Name = "futureMonthTextBox";
-            this.futureMonthTextBox.Size = new System.Drawing.Size(33, 21);
-            this.futureMonthTextBox.TabIndex = 12;
-            this.futureMonthTextBox.Text = "0";
-            this.toolTip.SetToolTip(this.futureMonthTextBox, "How many months into the future (0 if all)");
-            this.futureMonthTextBox.Validating += new System.ComponentModel.CancelEventHandler(this.futureMonthTextBox_Validating);
-            // 
-            // pastMonthTextBox
-            // 
-            this.pastMonthTextBox.Location = new System.Drawing.Point(351, 208);
-            this.pastMonthTextBox.Name = "pastMonthTextBox";
-            this.pastMonthTextBox.Size = new System.Drawing.Size(33, 21);
-            this.pastMonthTextBox.TabIndex = 11;
-            this.pastMonthTextBox.Text = "1";
-            this.toolTip.SetToolTip(this.pastMonthTextBox, "How many months into the past (0 if all)");
-            this.pastMonthTextBox.Validating += new System.ComponentModel.CancelEventHandler(this.pastMonthTextBox_Validating);
             // 
             // btSyncAppointments
             // 
@@ -930,7 +947,7 @@ namespace GoContactSyncMod
             this.linkLabelRevokeAuthentication.AutoSize = true;
             this.linkLabelRevokeAuthentication.Location = new System.Drawing.Point(7, 42);
             this.linkLabelRevokeAuthentication.Name = "linkLabelRevokeAuthentication";
-            this.linkLabelRevokeAuthentication.Size = new System.Drawing.Size(142, 13);
+            this.linkLabelRevokeAuthentication.Size = new System.Drawing.Size(135, 13);
             this.linkLabelRevokeAuthentication.TabIndex = 8;
             this.linkLabelRevokeAuthentication.TabStop = true;
             this.linkLabelRevokeAuthentication.Text = "Revoke Authentication";
@@ -1124,6 +1141,8 @@ namespace GoContactSyncMod
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.futureMonthInterval)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pastMonthInterval)).EndInit();
             this.logGroupBox.ResumeLayout(false);
             this.logGroupBox.PerformLayout();
             this.groupBox4.ResumeLayout(false);
@@ -1191,14 +1210,14 @@ namespace GoContactSyncMod
         private System.Windows.Forms.Timer iconTimer;
         private System.Windows.Forms.ComboBox appointmentFoldersComboBox;
         private System.Windows.Forms.CheckBox btSyncAppointments;
-        private System.Windows.Forms.TextBox futureMonthTextBox;
-        private System.Windows.Forms.TextBox pastMonthTextBox;
         private System.Windows.Forms.ComboBox appointmentTimezonesComboBox;
         private System.Windows.Forms.Label labelMonthsFuture;
         private System.Windows.Forms.Label labelMonthsPast;
         private System.Windows.Forms.Label labelTimezone;
         private System.Windows.Forms.LinkLabel linkLabelRevokeAuthentication;
         private System.Windows.Forms.ComboBox appointmentGoogleFoldersComboBox;
+        private System.Windows.Forms.NumericUpDown futureMonthInterval;
+        private System.Windows.Forms.NumericUpDown pastMonthInterval;
 
     }
 }

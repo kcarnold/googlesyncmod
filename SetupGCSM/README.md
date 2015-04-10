@@ -1,5 +1,18 @@
 # +++ NEWS +++ NEWS +++ NEWS +++
 
+### Version [3.9.5] - 10.04.2015
+
+###### SVN commits
+  - **FIX**: Fix errors when reading registry into checkbox or number textbox, see
+  https://sourceforge.net/p/googlesyncmod/bugs/667/
+  https://sourceforge.net/p/googlesyncmod/bugs/695/
+  https://sourceforge.net/p/googlesyncmod/support-requests/354/, and others
+  - **FIX**: Invalid recurrence pattern for yearly events, see
+  https://sourceforge.net/p/googlesyncmod/support-requests/324/
+  https://sourceforge.net/p/googlesyncmod/support-requests/363/
+  https://sourceforge.net/p/googlesyncmod/support-requests/344/
+  - **IMPROVEMENT**: Swtiched to number textboxes for the months range
+
 ### Version [3.9.4] - 07.04.2015
 
 ###### SVN commits
