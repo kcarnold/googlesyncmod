@@ -16,12 +16,14 @@ using System.Collections;
 using System.Globalization;
 using Google.Apis.Util.Store;
 using Google.Apis.Calendar.v3.Data;
+using System.Net;
+using System.Net.Mime;
 
 
 namespace GoContactSyncMod
 {
-	internal partial class SettingsForm : Form
-	{
+    internal partial class SettingsForm : Form
+    {
         //Singleton-Object
         #region Singleton Definition
 
@@ -40,40 +42,39 @@ namespace GoContactSyncMod
                             instance = new SettingsForm();
                     }
                 }
-
                 return instance;
             }
         }
         #endregion
 
         internal Synchronizer sync;
-		private SyncOption syncOption;
-		private DateTime lastSync;
-		private bool requestClose = false;
+        private SyncOption syncOption;
+        private DateTime lastSync;
+        private bool requestClose = false;
         private bool boolShowBalloonTip = true;
 
         public const string AppRootKey = @"Software\GoContactSyncMOD";
-        public const string RegistrySyncOption                      = "SyncOption";
-        public const string RegistryUsername                        = "Username";
-        public const string RegistryAutoSync                        =  "AutoSync";
-        public const string RegistryAutoSyncInterval                =  "AutoSyncInterval";
-        public const string RegistryAutoStart                       =  "AutoStart";
-        public const string RegistryReportSyncResult                =  "ReportSyncResult";
-        public const string RegistrySyncDeletion                    =  "SyncDeletion";
-        public const string RegistryPromptDeletion                  =  "PromptDeletion";
-        public const string RegistrySyncAppointmentsMonthsInPast    =  "SyncAppointmentsMonthsInPast";
-        public const string RegistrySyncAppointmentsMonthsInFuture  =  "SyncAppointmentsMonthsInFuture";
-        public const string RegistrySyncAppointmentsTimezone        =  "SyncAppointmentsTimezone";
-        public const string RegistrySyncAppointments                =  "SyncAppointments";
-        public const string RegistrySyncNotes                       =  "SyncNotes";
-        public const string RegistrySyncContacts                    =  "SyncContacts";
-        public const string RegistryUseFileAs                       =  "UseFileAs";
-        public const string RegistryLastSync                        =  "LastSync";
-        public const string RegistrySyncContactsFolder              = "SyncContactsFolder";
-        public const string RegistrySyncNotesFolder                 = "SyncNotesFolder";
-        public const string RegistrySyncAppointmentsFolder          = "SyncAppointmentsFolder";
-        public const string RegistrySyncAppointmentsGoogleFolder    = "SyncAppointmentsGoogleFolder";
-        public const string RegistrySyncProfile                     = "SyncProfile";
+        public const string RegistrySyncOption = "SyncOption";
+        public const string RegistryUsername = "Username";
+        public const string RegistryAutoSync = "AutoSync";
+        public const string RegistryAutoSyncInterval = "AutoSyncInterval";
+        public const string RegistryAutoStart = "AutoStart";
+        public const string RegistryReportSyncResult = "ReportSyncResult";
+        public const string RegistrySyncDeletion = "SyncDeletion";
+        public const string RegistryPromptDeletion = "PromptDeletion";
+        public const string RegistrySyncAppointmentsMonthsInPast = "SyncAppointmentsMonthsInPast";
+        public const string RegistrySyncAppointmentsMonthsInFuture = "SyncAppointmentsMonthsInFuture";
+        public const string RegistrySyncAppointmentsTimezone = "SyncAppointmentsTimezone";
+        public const string RegistrySyncAppointments = "SyncAppointments";
+        public const string RegistrySyncNotes = "SyncNotes";
+        public const string RegistrySyncContacts = "SyncContacts";
+        public const string RegistryUseFileAs = "UseFileAs";
+        public const string RegistryLastSync = "LastSync";
+        public const string RegistrySyncContactsFolder = "SyncContactsFolder";
+        public const string RegistrySyncNotesFolder = "SyncNotesFolder";
+        public const string RegistrySyncAppointmentsFolder = "SyncAppointmentsFolder";
+        public const string RegistrySyncAppointmentsGoogleFolder = "SyncAppointmentsGoogleFolder";
+        public const string RegistrySyncProfile = "SyncProfile";
 
         private ProxySettingsForm _proxy = new ProxySettingsForm();
 
@@ -114,8 +115,8 @@ namespace GoContactSyncMod
         //register window for lock/unlock messages of workstation
         //private bool registered = false;
 
-		delegate void TextHandler(string text);
-		delegate void SwitchHandler(bool value);
+        delegate void TextHandler(string text);
+        delegate void SwitchHandler(bool value);
         delegate void IconHandler();
         delegate DialogResult DialogHandler(string text);
 
@@ -127,10 +128,10 @@ namespace GoContactSyncMod
             }
             else
             {
-                return MessageBox.Show(this, text, Application.ProductName, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);            
+                return MessageBox.Show(this, text, Application.ProductName, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
             }
 
-            
+
         }
 
         private Icon IconError = GoContactSyncMod.Properties.Resources.sync_error;
@@ -147,7 +148,7 @@ namespace GoContactSyncMod
         private Icon Icon300 = GoContactSyncMod.Properties.Resources.sync_300;
         private Icon Icon330 = GoContactSyncMod.Properties.Resources.sync_330;
 
-		private SettingsForm()
+        private SettingsForm()
 		{
 			InitializeComponent();
             Text = Text + " - " + Application.ProductVersion;
@@ -176,35 +177,36 @@ namespace GoContactSyncMod
             SystemEvents.SessionSwitch += new SessionSwitchEventHandler(SystemEvents_SessionSwitch);
             //Register Power Mode Event
             SystemEvents.PowerModeChanged += new PowerModeChangedEventHandler(SystemEvents_PowerModeSwitch);
+            VersionInformation.isNewVersionAvailable();
 		}
 
-		private void PopulateSyncOptionBox()
-		{
-			string str;
-			for (int i = 0; i < 20; i++)
-			{
-				str = ((SyncOption)i).ToString();
-				if (str == i.ToString())
-					break;
+        private void PopulateSyncOptionBox()
+        {
+            string str;
+            for (int i = 0; i < 20; i++)
+            {
+                str = ((SyncOption)i).ToString();
+                if (str == i.ToString())
+                    break;
 
-				// format (to add space before capital)
-				MatchCollection matches = Regex.Matches(str, "[A-Z]");
-				for (int k = 0; k < matches.Count; k++)
-				{
-					str = str.Replace(str[matches[k].Index].ToString(), " " + str[matches[k].Index]);
-					matches = Regex.Matches(str, "[A-Z]");
-				}
-				str = str.Replace("  ", " ");
-				// fix start
-				str = str.Substring(1);
+                // format (to add space before capital)
+                MatchCollection matches = Regex.Matches(str, "[A-Z]");
+                for (int k = 0; k < matches.Count; k++)
+                {
+                    str = str.Replace(str[matches[k].Index].ToString(), " " + str[matches[k].Index]);
+                    matches = Regex.Matches(str, "[A-Z]");
+                }
+                str = str.Replace("  ", " ");
+                // fix start
+                str = str.Substring(1);
 
-				syncOptionBox.Items.Add(str);
-			}
-		}
+                syncOptionBox.Items.Add(str);
+            }
+        }
         private void fillSyncFolderItems()
         {
             lock (syncRoot)
-            {                
+            {
                 if (this.contactFoldersComboBox.DataSource == null || this.noteFoldersComboBox.DataSource == null || this.appointmentFoldersComboBox.DataSource == null || this.appointmentGoogleFoldersComboBox.DataSource == null && btSyncAppointments.Checked ||
                     this.contactFoldersComboBox.Items.Count == 0 || this.noteFoldersComboBox.Items.Count == 0 || this.appointmentFoldersComboBox.Items.Count == 0 || this.appointmentGoogleFoldersComboBox.Items.Count == 0 && btSyncAppointments.Checked)
                 {
@@ -217,9 +219,9 @@ namespace GoContactSyncMod
                     this.cmbSyncProfile.Visible = true;
 
                     string defaultText = "    --- Select an Outlook folder ---";
-                    ArrayList outlookContactFolders = new ArrayList();                    
-                    ArrayList outlookNoteFolders = new ArrayList();                    
-                    ArrayList outlookAppointmentFolders = new ArrayList();                   
+                    ArrayList outlookContactFolders = new ArrayList();
+                    ArrayList outlookNoteFolders = new ArrayList();
+                    ArrayList outlookAppointmentFolders = new ArrayList();
 
                     try
                     {
@@ -228,7 +230,7 @@ namespace GoContactSyncMod
 
                         this.contactFoldersComboBox.BeginUpdate();
                         this.noteFoldersComboBox.BeginUpdate();
-                        this.appointmentFoldersComboBox.BeginUpdate();                        
+                        this.appointmentFoldersComboBox.BeginUpdate();
                         this.contactFoldersComboBox.DataSource = null;
                         this.noteFoldersComboBox.DataSource = null;
                         this.appointmentFoldersComboBox.DataSource = null;
@@ -246,7 +248,7 @@ namespace GoContactSyncMod
                                 Logger.Log("Error getting available Outlook folders: " + e.Message, EventType.Warning);
                             }
                         }
-                                                                        
+
                         if (outlookContactFolders != null) // && outlookContactFolders.Count > 0)
                         {
                             outlookContactFolders.Sort();
@@ -272,7 +274,7 @@ namespace GoContactSyncMod
                             this.appointmentFoldersComboBox.DataSource = outlookAppointmentFolders;
                             this.appointmentFoldersComboBox.DisplayMember = "DisplayName";
                             this.appointmentFoldersComboBox.ValueMember = "FolderID";
-                        }                                                                        
+                        }
 
                         this.contactFoldersComboBox.EndUpdate();
                         this.noteFoldersComboBox.EndUpdate();
@@ -310,7 +312,7 @@ namespace GoContactSyncMod
                                 break;
                             }
 
-                        Logger.Log("Loaded Outlook folders.", EventType.Information);                        
+                        Logger.Log("Loaded Outlook folders.", EventType.Information);
 
                     }
                     catch (Exception e)
@@ -323,7 +325,7 @@ namespace GoContactSyncMod
                         ResumeLayout();
                     }
 
-                    LoadSettingsFolders(syncProfile);                    
+                    LoadSettingsFolders(syncProfile);
                 }
             }
         }
@@ -369,7 +371,7 @@ namespace GoContactSyncMod
             RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey);
             //only for downside compliance reasons: load old registry settings first and save them later on in new structure
             if (Registry.CurrentUser.OpenSubKey(@"Software\Webgear\GOContactSync") != null)
-            {                
+            {
                 regKeyAppRoot = Registry.CurrentUser.CreateSubKey(@"Software\Webgear\GOContactSync");
             }
 
@@ -397,12 +399,12 @@ namespace GoContactSyncMod
 
             return vReturn;
         }
-                
+
 
         private void LoadSettings(string _profile)
         {
-            Logger.Log("Loading settings from registry...",EventType.Information);
-            RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey  + (_profile != null ? ('\\' + _profile) : "")  );
+            Logger.Log("Loading settings from registry...", EventType.Information);
+            RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey + (_profile != null ? ('\\' + _profile) : ""));
 
             //only for downside compliance reasons: load old registry settings first and save them later on in new structure
             if (Registry.CurrentUser.OpenSubKey(@"Software\Webgear\GOContactSync") != null)
@@ -431,22 +433,22 @@ namespace GoContactSyncMod
 
             //temporary remove listener
             this.autoSyncCheckBox.CheckedChanged -= new System.EventHandler(this.autoSyncCheckBox_CheckedChanged);
-            
+
             ReadRegistryIntoCheckBox(autoSyncCheckBox, regKeyAppRoot.GetValue(RegistryAutoSync));
-            ReadRegistryIntoNumber(autoSyncInterval, regKeyAppRoot.GetValue(RegistryAutoSyncInterval));            
+            ReadRegistryIntoNumber(autoSyncInterval, regKeyAppRoot.GetValue(RegistryAutoSyncInterval));
             ReadRegistryIntoCheckBox(runAtStartupCheckBox, regKeyAppRoot.GetValue(RegistryAutoStart));
             ReadRegistryIntoCheckBox(reportSyncResultCheckBox, regKeyAppRoot.GetValue(RegistryReportSyncResult));
             ReadRegistryIntoCheckBox(btSyncDelete, regKeyAppRoot.GetValue(RegistrySyncDeletion));
             ReadRegistryIntoCheckBox(btPromptDelete, regKeyAppRoot.GetValue(RegistryPromptDeletion));
             ReadRegistryIntoNumber(pastMonthInterval, regKeyAppRoot.GetValue(RegistrySyncAppointmentsMonthsInPast));
-            ReadRegistryIntoNumber(futureMonthInterval, regKeyAppRoot.GetValue(RegistrySyncAppointmentsMonthsInFuture));                                  
+            ReadRegistryIntoNumber(futureMonthInterval, regKeyAppRoot.GetValue(RegistrySyncAppointmentsMonthsInFuture));
             if (regKeyAppRoot.GetValue(RegistrySyncAppointmentsTimezone) != null)
                 appointmentTimezonesComboBox.Text = regKeyAppRoot.GetValue(RegistrySyncAppointmentsTimezone) as string;
             ReadRegistryIntoCheckBox(btSyncAppointments, regKeyAppRoot.GetValue(RegistrySyncAppointments));
             ReadRegistryIntoCheckBox(btSyncNotes, regKeyAppRoot.GetValue(RegistrySyncNotes));
             ReadRegistryIntoCheckBox(btSyncContacts, regKeyAppRoot.GetValue(RegistrySyncContacts));
             ReadRegistryIntoCheckBox(chkUseFileAs, regKeyAppRoot.GetValue(RegistryUseFileAs));
-            
+
             if (regKeyAppRoot.GetValue(RegistryLastSync) != null)
             {
                 try
@@ -471,7 +473,7 @@ namespace GoContactSyncMod
             if (Registry.CurrentUser.OpenSubKey(@"Software\Webgear\GOContactSync") != null)
             {
                 SaveSettings(_profile);
-                Registry.CurrentUser.DeleteSubKeyTree(@"Software\Webgear\GOContactSync");                
+                Registry.CurrentUser.DeleteSubKeyTree(@"Software\Webgear\GOContactSync");
             }
 
             //enable temporary disabled listener
@@ -501,9 +503,9 @@ namespace GoContactSyncMod
             {
                 decimal interval = Convert.ToDecimal(registryEntry);
                 if (interval < numericUpDown.Minimum)
-                {                    
+                {
                     numericUpDown.Value = numericUpDown.Minimum;
-                    Logger.Log(numericUpDown.Name + " read from registry was below range (" + interval + "), was set to minimum ("+ numericUpDown.Minimum +")", EventType.Warning);
+                    Logger.Log(numericUpDown.Name + " read from registry was below range (" + interval + "), was set to minimum (" + numericUpDown.Minimum + ")", EventType.Warning);
                 }
                 else if (interval > numericUpDown.Maximum)
                 {
@@ -549,15 +551,15 @@ namespace GoContactSyncMod
                     //this.appointmentGoogleFoldersComboBox.SelectedIndex = 0;
                     appointmentFoldersComboBox.EndUpdate();
                 }
-                
+
                 appointmentGoogleFoldersComboBox.SelectedValue = (regKeyValue as string);
             }
         }
 
-		private void SaveSettings()
-		{
+        private void SaveSettings()
+        {
             SaveSettings(cmbSyncProfile.Text);
-		}
+        }
 
         private void SaveSettings(string profile)
         {
@@ -566,7 +568,7 @@ namespace GoContactSyncMod
                 syncProfile = cmbSyncProfile.Text;
                 RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey + "\\" + profile);
                 regKeyAppRoot.SetValue(RegistrySyncOption, (int)syncOption);
- 
+
                 if (!string.IsNullOrEmpty(UserName.Text))
                 {
                     regKeyAppRoot.SetValue(RegistryUsername, UserName.Text);
@@ -596,16 +598,16 @@ namespace GoContactSyncMod
         }
 
 
-	    private bool ValidSyncFolders
-	    {
+        private bool ValidSyncFolders
+        {
             get
             {
-                bool syncContactFolderIsValid = (contactFoldersComboBox.SelectedIndex >= 1 && contactFoldersComboBox.SelectedIndex < contactFoldersComboBox.Items.Count) 
+                bool syncContactFolderIsValid = (contactFoldersComboBox.SelectedIndex >= 1 && contactFoldersComboBox.SelectedIndex < contactFoldersComboBox.Items.Count)
                                                 || !btSyncContacts.Checked;
                 bool syncNoteFolderIsValid = (noteFoldersComboBox.SelectedIndex >= 1 && noteFoldersComboBox.SelectedIndex < noteFoldersComboBox.Items.Count)
                                                 || !btSyncNotes.Checked;
                 bool syncAppointmentFolderIsValid = (appointmentFoldersComboBox.SelectedIndex >= 1 && appointmentFoldersComboBox.SelectedIndex < appointmentFoldersComboBox.Items.Count)
-                        && (appointmentGoogleFoldersComboBox.SelectedIndex == appointmentGoogleFoldersComboBox.Items.Count-1 || appointmentGoogleFoldersComboBox.SelectedIndex >= 1 && appointmentGoogleFoldersComboBox.SelectedIndex < appointmentGoogleFoldersComboBox.Items.Count)
+                        && (appointmentGoogleFoldersComboBox.SelectedIndex == appointmentGoogleFoldersComboBox.Items.Count - 1 || appointmentGoogleFoldersComboBox.SelectedIndex >= 1 && appointmentGoogleFoldersComboBox.SelectedIndex < appointmentGoogleFoldersComboBox.Items.Count)
                                                 || !btSyncAppointments.Checked;
 
                 //ToDo: Coloring doesn'T Work for these combos
@@ -617,21 +619,21 @@ namespace GoContactSyncMod
             }
 
 
-	    }
+        }
 
-	    private bool ValidCredentials
-		{
-			get
-			{
-				bool userNameIsValid = Regex.IsMatch(UserName.Text, @"^(?'id'[a-z0-9\'\%\._\+\-]+)@(?'domain'[a-z0-9\'\%\._\+\-]+)\.(?'ext'[a-z]{2,6})$", RegexOptions.IgnoreCase);
-				//bool passwordIsValid = !string.IsNullOrEmpty(Password.Text.Trim());
-                bool syncProfileIsValid = (cmbSyncProfile.SelectedIndex > 0 && cmbSyncProfile.SelectedIndex < cmbSyncProfile.Items.Count-1);
-               
+        private bool ValidCredentials
+        {
+            get
+            {
+                bool userNameIsValid = Regex.IsMatch(UserName.Text, @"^(?'id'[a-z0-9\'\%\._\+\-]+)@(?'domain'[a-z0-9\'\%\._\+\-]+)\.(?'ext'[a-z]{2,6})$", RegexOptions.IgnoreCase);
+                //bool passwordIsValid = !string.IsNullOrEmpty(Password.Text.Trim());
+                bool syncProfileIsValid = (cmbSyncProfile.SelectedIndex > 0 && cmbSyncProfile.SelectedIndex < cmbSyncProfile.Items.Count - 1);
 
-				setBgColor(UserName, userNameIsValid);
-				//setBgColor(Password, passwordIsValid);
+
+                setBgColor(UserName, userNameIsValid);
+                //setBgColor(Password, passwordIsValid);
                 setBgColor(cmbSyncProfile, syncProfileIsValid);
-               
+
 
 
                 if (!userNameIsValid)
@@ -642,47 +644,47 @@ namespace GoContactSyncMod
                 //    toolTip.SetToolTip(Password, "Password is empty, please provide your Google Mail password");
                 //else
                 //    toolTip.SetToolTip(Password, String.Empty);               
-                                             
 
-                return userNameIsValid && 
-                       //passwordIsValid && 
+
+                return userNameIsValid &&
+                    //passwordIsValid && 
                        syncProfileIsValid;
-			}
-		}
+            }
+        }
 
-		private void setBgColor(Control box, bool isValid)
-		{
-			if (!isValid)
-				box.BackColor = Color.LightPink;
-			else
-				box.BackColor = Color.LightGreen;
-		}
+        private void setBgColor(Control box, bool isValid)
+        {
+            if (!isValid)
+                box.BackColor = Color.LightPink;
+            else
+                box.BackColor = Color.LightGreen;
+        }
 
-		private void syncButton_Click(object sender, EventArgs e)
-		{
-//            TimeSpan syncTime = DateTime.Now - lastSync;
-//            TimeSpan fiveMinLimit = new TimeSpan(0, 5, 0);
-//#if debug
-//            Logger.Log("Debug build, skipping time tolerance...", EventType.Debug);
-//            Sync();
-//#else
-//            if ((syncTime > fiveMinLimit))
-//            {
-                Sync();
-//            }
-//            else
-//            {
-//                TimeSpan tolerance = ((lastSync + fiveMinLimit) - DateTime.Now);
-//                Logger.Log("There is a 5 minutes time tolerance between 2 syncs! You have to wait for another " +
-//                tolerance.Minutes.ToString()+":"+ tolerance.Seconds.ToString() + " minutes!", EventType.Information);
-//            }
-//#endif		    
-		}
+        private void syncButton_Click(object sender, EventArgs e)
+        {
+            //            TimeSpan syncTime = DateTime.Now - lastSync;
+            //            TimeSpan fiveMinLimit = new TimeSpan(0, 5, 0);
+            //#if debug
+            //            Logger.Log("Debug build, skipping time tolerance...", EventType.Debug);
+            //            Sync();
+            //#else
+            //            if ((syncTime > fiveMinLimit))
+            //            {
+            Sync();
+            //            }
+            //            else
+            //            {
+            //                TimeSpan tolerance = ((lastSync + fiveMinLimit) - DateTime.Now);
+            //                Logger.Log("There is a 5 minutes time tolerance between 2 syncs! You have to wait for another " +
+            //                tolerance.Minutes.ToString()+":"+ tolerance.Seconds.ToString() + " minutes!", EventType.Information);
+            //            }
+            //#endif		    
+        }
 
-		private void Sync()
-		{
-			try
-			{
+        private void Sync()
+        {
+            try
+            {
                 if (!ValidCredentials)
                     //return;
                     throw new Exception("Gmail Credentials are incomplete or incorrect! Maybe a typo, or you have to allow less secure apps to access your account, see https://www.google.com/settings/security/lesssecureapps");
@@ -694,28 +696,31 @@ namespace GoContactSyncMod
 
 
                 //IconTimerSwitch(true);
-				ThreadStart starter = new ThreadStart(Sync_ThreadStarter);
-				syncThread = new Thread(starter);
-                syncThread.CurrentCulture = CultureInfo.CreateSpecificCulture ("en-US");
+                ThreadStart starter = new ThreadStart(Sync_ThreadStarter);
+                syncThread = new Thread(starter);
+                syncThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
                 syncThread.CurrentUICulture = new CultureInfo("en-US");
                 syncThread.Start();
 
-				// wait for thread to start
+                //if new version on sourceforge.net website than print an information to the log
+                VersionInformation.isNewVersionAvailable();
+
+                // wait for thread to start
                 for (int i = 0; !syncThread.IsAlive && i < 10; i++)
                     Thread.Sleep(1000);//DoNothing, until the thread was started, but only wait maximum 10 seconds
-                
-			}
-			catch (Exception ex)
-			{
+
+            }
+            catch (Exception ex)
+            {
                 TimerSwitch(false);
                 ShowForm();
-				ErrorHandler.Handle(ex);
-			}
-		}
-     
+                ErrorHandler.Handle(ex);
+            }
+        }
+
         [STAThread]
-		private void Sync_ThreadStarter()
-		{
+        private void Sync_ThreadStarter()
+        {
             //==>Instead of lock, use Interlocked to exit the code, if already another thread is calling the same
             bool won = false;
 
@@ -757,12 +762,12 @@ namespace GoContactSyncMod
                         regKeyAppRoot.SetValue(RegistrySyncAppointmentsFolder, this.syncAppointmentsFolder);
                         if (string.IsNullOrEmpty(this.syncAppointmentsGoogleFolder) && !string.IsNullOrEmpty(oldSyncAppointmentsGoogleFolder))
                             this.syncAppointmentsGoogleFolder = oldSyncAppointmentsGoogleFolder;
-                        if (!string.IsNullOrEmpty(this.syncAppointmentsGoogleFolder))   
+                        if (!string.IsNullOrEmpty(this.syncAppointmentsGoogleFolder))
                             regKeyAppRoot.SetValue(RegistrySyncAppointmentsGoogleFolder, this.syncAppointmentsGoogleFolder);
                     }
 
                     SetLastSyncText("Syncing...");
-                    notifyIcon.Text = Application.ProductName + "\nSyncing...";                    
+                    notifyIcon.Text = Application.ProductName + "\nSyncing...";
                     //System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsForm));
                     //notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));                    
                     IconTimerSwitch(true);
@@ -803,15 +808,15 @@ namespace GoContactSyncMod
                         notifyIcon.Text = Application.ProductName + "\nSync failed";
 
                         string messageText = "Neither notes nor contacts nor appointments are switched on for syncing. Please choose at least one option. Sync aborted!";
-                    //    Logger.Log(messageText, EventType.Error);
-                    //    ShowForm();
-                    //    ShowBalloonToolTip("Error", messageText, ToolTipIcon.Error, 5000, true);
-                    //    return;
-                    //}
+                        //    Logger.Log(messageText, EventType.Error);
+                        //    ShowForm();
+                        //    ShowBalloonToolTip("Error", messageText, ToolTipIcon.Error, 5000, true);
+                        //    return;
+                        //}
 
-                    //if (sync.SyncAppointments && Syncronizer.Timezone == "")
-                    //{
-                    //    string messageText = "Please set your timezone before syncing your appointments! Sync aborted!";
+                        //if (sync.SyncAppointments && Syncronizer.Timezone == "")
+                        //{
+                        //    string messageText = "Please set your timezone before syncing your appointments! Sync aborted!";
                         Logger.Log(messageText, EventType.Error);
                         ShowForm();
                         ShowBalloonToolTip("Error", messageText, ToolTipIcon.Error, 5000, true);
@@ -821,7 +826,7 @@ namespace GoContactSyncMod
 
                     sync.LoginToGoogle(UserName.Text);
                     sync.LoginToOutlook();
-                    
+
                     sync.Sync();
 
                     lastSync = DateTime.Now;
@@ -829,7 +834,7 @@ namespace GoContactSyncMod
 
                     string message = string.Format("Sync complete.\r\n Synced:  {1} out of {0}.\r\n Deleted:  {2}.\r\n Skipped: {3}.\r\n Errors:    {4}.", sync.TotalCount, sync.SyncedCount, sync.DeletedCount, sync.SkippedCount, sync.ErrorCount);
                     Logger.Log(message, EventType.Information);
-                    
+
                     if (reportSyncResultCheckBox.Checked)
                     {
                         /*
@@ -903,9 +908,9 @@ namespace GoContactSyncMod
                 {
                     ErrorHandler.Handle(ex);
                 }
-            }							
-			finally
-			{
+            }
+            finally
+            {
                 if (won)
                 {
                     Interlocked.Exchange(ref executing, 0);
@@ -921,79 +926,79 @@ namespace GoContactSyncMod
 
                     IconTimerSwitch(false);
                 }
-			}
-		}
+            }
+        }
 
         public void ShowBalloonToolTip(string title, string message, ToolTipIcon icon, int timeout, bool error)
         {
             //if user is active on workstation
-            if(boolShowBalloonTip)
+            if (boolShowBalloonTip)
             {
                 notifyIcon.BalloonTipTitle = title;
-			    notifyIcon.BalloonTipText = message;
-			    notifyIcon.BalloonTipIcon = icon;
-			    notifyIcon.ShowBalloonTip(timeout);
+                notifyIcon.BalloonTipText = message;
+                notifyIcon.BalloonTipIcon = icon;
+                notifyIcon.ShowBalloonTip(timeout);
             }
 
             string iconText = title + ": " + message;
             if (!string.IsNullOrEmpty(iconText))
-                notifyIcon.Text = (iconText).Substring(0, iconText.Length >=63? 63:iconText.Length);
+                notifyIcon.Text = (iconText).Substring(0, iconText.Length >= 63 ? 63 : iconText.Length);
 
-            if (error) 
+            if (error)
                 notifyIcon.Icon = this.IconError;
         }
 
-		void Logger_LogUpdated(string Message)
-		{
-			AppendSyncConsoleText(Message);
-		}
+        void Logger_LogUpdated(string Message)
+        {
+            AppendSyncConsoleText(Message);
+        }
 
-		void OnErrorEncountered(string title, Exception ex, EventType eventType)
-		{
-			// do not show ErrorHandler, as there may be multiple exceptions that would nag the user
-			Logger.Log(ex.ToString(), EventType.Error);
-			string message = String.Format("Error Saving Contact: {0}.\nPlease report complete ErrorMessage from Log to the Tracker\nat https://sourceforge.net/tracker/?group_id=369321", ex.Message);
-            ShowBalloonToolTip(title,message,ToolTipIcon.Error,5000, true);
-			/*notifyIcon.BalloonTipTitle = title;
-			notifyIcon.BalloonTipText = message;
-			notifyIcon.BalloonTipIcon = ToolTipIcon.Error;
-			notifyIcon.ShowBalloonTip(5000);*/
-		}
+        void OnErrorEncountered(string title, Exception ex, EventType eventType)
+        {
+            // do not show ErrorHandler, as there may be multiple exceptions that would nag the user
+            Logger.Log(ex.ToString(), EventType.Error);
+            string message = String.Format("Error Saving Contact: {0}.\nPlease report complete ErrorMessage from Log to the Tracker\nat https://sourceforge.net/tracker/?group_id=369321", ex.Message);
+            ShowBalloonToolTip(title, message, ToolTipIcon.Error, 5000, true);
+            /*notifyIcon.BalloonTipTitle = title;
+            notifyIcon.BalloonTipText = message;
+            notifyIcon.BalloonTipIcon = ToolTipIcon.Error;
+            notifyIcon.ShowBalloonTip(5000);*/
+        }
 
-		void OnDuplicatesFound(string title, string message)
-		{
+        void OnDuplicatesFound(string title, string message)
+        {
             Logger.Log(message, EventType.Warning);
-            ShowBalloonToolTip(title,message,ToolTipIcon.Warning,5000, true);
+            ShowBalloonToolTip(title, message, ToolTipIcon.Warning, 5000, true);
             /*
 			notifyIcon.BalloonTipTitle = title;
 			notifyIcon.BalloonTipText = message;
 			notifyIcon.BalloonTipIcon = ToolTipIcon.Warning;
 			notifyIcon.ShowBalloonTip(5000);
              */
-		}
+        }
 
         void OnNotificationReceived(string message)
         {
-            SetLastSyncText(message);           
+            SetLastSyncText(message);
         }
 
-		public void SetFormEnabled(bool enabled)
-		{
-			if (this.InvokeRequired)
-			{
-				SwitchHandler h = new SwitchHandler(SetFormEnabled);
-				this.Invoke(h, new object[] { enabled });
-			}
-			else
-			{
-				resetMatchesLinkLabel.Enabled = enabled;
-				settingsGroupBox.Enabled = enabled;
-				syncButton.Enabled = enabled;
+        public void SetFormEnabled(bool enabled)
+        {
+            if (this.InvokeRequired)
+            {
+                SwitchHandler h = new SwitchHandler(SetFormEnabled);
+                this.Invoke(h, new object[] { enabled });
+            }
+            else
+            {
+                resetMatchesLinkLabel.Enabled = enabled;
+                settingsGroupBox.Enabled = enabled;
+                syncButton.Enabled = enabled;
                 cancelButton.Enabled = !enabled;
-			}
-		}
-		public void SetLastSyncText(string text)
-		{
+            }
+        }
+        public void SetLastSyncText(string text)
+        {
             if (this.InvokeRequired)
             {
                 TextHandler h = new TextHandler(SetLastSyncText);
@@ -1003,63 +1008,63 @@ namespace GoContactSyncMod
             {
                 lastSyncLabel.Text = text;
             }
-		}
+        }
 
-		public void SetSyncConsoleText(string text)
-		{
-			if (this.InvokeRequired)
-			{
-				TextHandler h = new TextHandler(SetSyncConsoleText);
-				this.Invoke(h, new object[] { text });
-			}
-			else
+        public void SetSyncConsoleText(string text)
+        {
+            if (this.InvokeRequired)
             {
-				syncConsole.Text = text;
+                TextHandler h = new TextHandler(SetSyncConsoleText);
+                this.Invoke(h, new object[] { text });
+            }
+            else
+            {
+                syncConsole.Text = text;
                 //Scroll to bottom to always see the last log entry
                 syncConsole.SelectionStart = syncConsole.TextLength;
                 syncConsole.ScrollToCaret();
             }
 
-		}
-		public void AppendSyncConsoleText(string text)
-		{
-			if (this.InvokeRequired)
-			{
-				TextHandler h = new TextHandler(AppendSyncConsoleText);
-				this.Invoke(h, new object[] { text });
-			}
-			else
+        }
+        public void AppendSyncConsoleText(string text)
+        {
+            if (this.InvokeRequired)
             {
-				syncConsole.Text += text;
+                TextHandler h = new TextHandler(AppendSyncConsoleText);
+                this.Invoke(h, new object[] { text });
+            }
+            else
+            {
+                syncConsole.Text += text;
                 //Scroll to bottom to always see the last log entry
                 syncConsole.SelectionStart = syncConsole.TextLength;
                 syncConsole.ScrollToCaret();
             }
-		}
-		public void TimerSwitch(bool value)
-		{
-			if (this.InvokeRequired)
-			{
-				SwitchHandler h = new SwitchHandler(TimerSwitch);
-				this.Invoke(h, new object[] { value });
-			}
-			else
-			{
+        }
+        public void TimerSwitch(bool value)
+        {
+            if (this.InvokeRequired)
+            {
+                SwitchHandler h = new SwitchHandler(TimerSwitch);
+                this.Invoke(h, new object[] { value });
+            }
+            else
+            {
                 //If PC resumes or unlocks or is started, give him 5 minutes to recover everything before the sync starts
                 if (lastSync <= DateTime.Now.AddSeconds(300) - new TimeSpan(0, (int)autoSyncInterval.Value, 0))
                     lastSync = DateTime.Now.AddSeconds(300) - new TimeSpan(0, (int)autoSyncInterval.Value, 0);
-				autoSyncInterval.Enabled = autoSyncCheckBox.Checked && value;
-				syncTimer.Enabled = autoSyncCheckBox.Checked && value;
-				nextSyncLabel.Visible = autoSyncCheckBox.Checked &&  value;          				
-			}
-		}
+                autoSyncInterval.Enabled = autoSyncCheckBox.Checked && value;
+                syncTimer.Enabled = autoSyncCheckBox.Checked && value;
+                nextSyncLabel.Visible = autoSyncCheckBox.Checked && value;
+            }
+        }
 
-        
+
 
         protected override void WndProc(ref System.Windows.Forms.Message m)
-		{
+        {
             //Logger.Log(m.Msg, EventType.Information);
-            switch(m.Msg) 
+            switch (m.Msg)
             {
                 //System shutdown
                 case NativeMethods.WM_QUERYENDSESSION:
@@ -1115,99 +1120,99 @@ namespace GoContactSyncMod
             //Show Window from Tray
             if (m.Msg == NativeMethods.WM_GCSM_SHOWME)
                 ShowForm();
-			base.WndProc(ref m);
-		} 
+            base.WndProc(ref m);
+        }
 
-		private void SettingsForm_FormClosing(object sender, FormClosingEventArgs e)
-		{
-			if (!requestClose)
-			{
-				SaveSettings();
-				e.Cancel = true;
-			}
-			HideForm();
-		}
-		private void SettingsForm_FormClosed(object sender, FormClosedEventArgs e)
-		{
-			try
-			{
-				if (sync != null)
-					sync.LogoffOutlook();
+        private void SettingsForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!requestClose)
+            {
+                SaveSettings();
+                e.Cancel = true;
+            }
+            HideForm();
+        }
+        private void SettingsForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            try
+            {
+                if (sync != null)
+                    sync.LogoffOutlook();
 
 
                 Logger.Log("Closed application.", EventType.Information);
                 Logger.Close();
 
-				SaveSettings();
-                
+                SaveSettings();
+
                 //unregister event handler
                 SystemEvents.SessionSwitch -= SystemEvents_SessionSwitch;
                 SystemEvents.PowerModeChanged -= SystemEvents_PowerModeSwitch;
-				
+
                 notifyIcon.Dispose();
-			}
-			catch (Exception ex)
-			{
-				ErrorHandler.Handle(ex);
-			}
-		}
+            }
+            catch (Exception ex)
+            {
+                ErrorHandler.Handle(ex);
+            }
+        }
 
-		private void syncOptionBox_SelectedIndexChanged(object sender, EventArgs e)
-		{
-			try
-			{
+        private void syncOptionBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
                 Application.DoEvents();
-				int index = syncOptionBox.SelectedIndex;
-				if (index == -1)
-					return;
+                int index = syncOptionBox.SelectedIndex;
+                if (index == -1)
+                    return;
 
-				SetSyncOption(index);
-			}
-			catch (Exception ex)
-			{
+                SetSyncOption(index);
+            }
+            catch (Exception ex)
+            {
                 TimerSwitch(false);
                 ShowForm();
-				ErrorHandler.Handle(ex);
-			}
-		}
-		private void SetSyncOption(int index)
-		{
-			syncOption = (SyncOption)index;
-			for (int i = 0; i < syncOptionBox.Items.Count; i++)
-			{
-				if (i == index)
-					syncOptionBox.SetItemCheckState(i, CheckState.Checked);
-				else
-					syncOptionBox.SetItemCheckState(i, CheckState.Unchecked);
-			}
-		}
+                ErrorHandler.Handle(ex);
+            }
+        }
+        private void SetSyncOption(int index)
+        {
+            syncOption = (SyncOption)index;
+            for (int i = 0; i < syncOptionBox.Items.Count; i++)
+            {
+                if (i == index)
+                    syncOptionBox.SetItemCheckState(i, CheckState.Checked);
+                else
+                    syncOptionBox.SetItemCheckState(i, CheckState.Unchecked);
+            }
+        }
 
-		private void SettingsForm_Resize(object sender, EventArgs e)
-		{
-			if (WindowState == FormWindowState.Minimized)
-				Hide();
+        private void SettingsForm_Resize(object sender, EventArgs e)
+        {
+            if (WindowState == FormWindowState.Minimized)
+                Hide();
 
-		}
+        }
 
-		private void notifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
-		{
+        private void notifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
             //if (WindowState == FormWindowState.Normal)
             //    HideForm();
             //else
-				ShowForm();
-		}
+            ShowForm();
+        }
 
-		private void autoSyncCheckBox_CheckedChanged(object sender, EventArgs e)
-		{
+        private void autoSyncCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
             lastSync = DateTime.Now.AddSeconds(300) - new TimeSpan(0, (int)autoSyncInterval.Value, 0);
             TimerSwitch(true);
-		}
+        }
 
-		private void syncTimer_Tick(object sender, EventArgs e)
-		{
-			
-			TimeSpan syncTime = DateTime.Now - lastSync;
-			TimeSpan limit = new TimeSpan(0, (int)autoSyncInterval.Value, 0);
+        private void syncTimer_Tick(object sender, EventArgs e)
+        {
+
+            TimeSpan syncTime = DateTime.Now - lastSync;
+            TimeSpan limit = new TimeSpan(0, (int)autoSyncInterval.Value, 0);
             if (syncTime < limit)
             {
                 TimeSpan diff = limit - syncTime;
@@ -1224,29 +1229,29 @@ namespace GoContactSyncMod
             {
                 Sync();
             }
-		}
+        }
 
-		private void resetMatchesLinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        private void resetMatchesLinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
 
-			// force deactivation to show up
-			Application.DoEvents();
-			try
-			{
+            // force deactivation to show up
+            Application.DoEvents();
+            try
+            {
                 this.cancelButton.Enabled = false; //Cancel is only working for sync currently, not for reset
-                ResetMatches(btSyncContacts.Checked,btSyncNotes.Checked, btSyncAppointments.Checked);
-			}
-			catch (Exception ex)
+                ResetMatches(btSyncContacts.Checked, btSyncNotes.Checked, btSyncAppointments.Checked);
+            }
+            catch (Exception ex)
             {
                 SetLastSyncText("Reset Matches failed");
                 Logger.Log("Reset Matches failed", EventType.Error);
-				ErrorHandler.Handle(ex);
-			}
-			finally
-			{
+                ErrorHandler.Handle(ex);
+            }
+            finally
+            {
                 lastSync = DateTime.Now;
                 TimerSwitch(true);
-				SetFormEnabled(true);
+                SetFormEnabled(true);
                 this.hideButton.Enabled = true;
                 if (sync != null)
                 {
@@ -1254,8 +1259,8 @@ namespace GoContactSyncMod
                     sync.LogoffGoogle();
                     sync = null;
                 }
-			}
-		}
+            }
+        }
 
         private bool ResetMatches(bool syncContacts, bool syncNotes, bool syncAppointments)
         {
@@ -1266,7 +1271,7 @@ namespace GoContactSyncMod
 
             fillSyncFolderItems();
 
-            SetFormEnabled(false);            
+            SetFormEnabled(false);
 
             if (sync == null)
             {
@@ -1290,13 +1295,13 @@ namespace GoContactSyncMod
             sync.LoginToGoogle(UserName.Text);
             sync.LoginToOutlook();
 
-           
+
             if (sync.SyncAppointments)
             {
                 bool deleteOutlookAppointments = false;
                 bool deleteGoogleAppointments = false;
 
-                switch (ShowDialog("Do you want to delete all Outlook Calendar entries?"))                
+                switch (ShowDialog("Do you want to delete all Outlook Calendar entries?"))
                 {
                     case DialogResult.Yes: deleteOutlookAppointments = true; break;
                     case DialogResult.No: deleteOutlookAppointments = false; break;
@@ -1308,7 +1313,7 @@ namespace GoContactSyncMod
                     case DialogResult.No: deleteGoogleAppointments = false; break;
                     default: return false;
                 }
-                
+
                 sync.LoadAppointments();
                 sync.ResetAppointmentMatches(deleteOutlookAppointments, deleteGoogleAppointments);
             }
@@ -1332,19 +1337,19 @@ namespace GoContactSyncMod
             return true;
         }
 
-       
-        public delegate DialogResult InvokeConflict(ConflictResolverForm conflictResolverForm); 
+
+        public delegate DialogResult InvokeConflict(ConflictResolverForm conflictResolverForm);
 
         public DialogResult ShowConflictDialog(ConflictResolverForm conflictResolverForm)
         {
             if (this.InvokeRequired)
             {
-                return (DialogResult) Invoke(new InvokeConflict(ShowConflictDialog), new object[] {conflictResolverForm});
+                return (DialogResult)Invoke(new InvokeConflict(ShowConflictDialog), new object[] { conflictResolverForm });
             }
             else
             {
                 DialogResult res = conflictResolverForm.ShowDialog(this);
-                                
+
                 notifyIcon.Icon = this.Icon0;
 
                 return res;
@@ -1361,62 +1366,62 @@ namespace GoContactSyncMod
             }
             else
             {
-                Show();                
-                Activate();                
+                Show();
+                Activate();
                 WindowState = FormWindowState.Normal;
                 fillSyncFolderItems();
             }
         }
-		private void HideForm()
-		{
-			WindowState = FormWindowState.Minimized;
-			Hide();
-		}
+        private void HideForm()
+        {
+            WindowState = FormWindowState.Minimized;
+            Hide();
+        }
 
-		private void toolStripMenuItem1_Click(object sender, EventArgs e)
-		{
-			ShowForm();
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            ShowForm();
             this.Activate();
-		}
-		private void toolStripMenuItem3_Click(object sender, EventArgs e)
-		{
-			HideForm();
-		}
-		private void toolStripMenuItem2_Click(object sender, EventArgs e)
-		{
-			requestClose = true;
-			Close();
-		}
-		private void toolStripMenuItem5_Click(object sender, EventArgs e)
-		{
-			AboutBox about = new AboutBox();
-			about.Show();
-		}
-		private void toolStripMenuItem4_Click(object sender, EventArgs e)
-		{
-			Sync();
-		}
+        }
+        private void toolStripMenuItem3_Click(object sender, EventArgs e)
+        {
+            HideForm();
+        }
+        private void toolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            requestClose = true;
+            Close();
+        }
+        private void toolStripMenuItem5_Click(object sender, EventArgs e)
+        {
+            AboutBox about = new AboutBox();
+            about.Show();
+        }
+        private void toolStripMenuItem4_Click(object sender, EventArgs e)
+        {
+            Sync();
+        }
 
-		private void SettingsForm_Load(object sender, EventArgs e)
-		{
-			if (string.IsNullOrEmpty(UserName.Text) ||
+        private void SettingsForm_Load(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(UserName.Text) ||
                 string.IsNullOrEmpty(cmbSyncProfile.Text) /*||
                 string.IsNullOrEmpty(contactFoldersComboBox.Text)*/ )
-			{
-				// this is the first load, show form
-				ShowForm();
-				UserName.Focus();
+            {
+                // this is the first load, show form
+                ShowForm();
+                UserName.Focus();
                 ShowBalloonToolTip(Application.ProductName,
                         "Application started and visible in your PC's system tray, click on this balloon or the icon below to open the settings form and enter your Google credentials there.",
                         ToolTipIcon.Info,
                         5000, false);
-			}
-			else
-				HideForm();
-		}
+            }
+            else
+                HideForm();
+        }
 
-		private void runAtStartupCheckBox_CheckedChanged(object sender, EventArgs e)
-		{
+        private void runAtStartupCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
             string regKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
             try
             {
@@ -1441,63 +1446,63 @@ namespace GoContactSyncMod
                 ShowForm();
                 ErrorHandler.Handle(new Exception(("Error saving 'Run program at startup' settings into Registry key '" + regKey + "' Error: " + ex.Message), ex));
             }
-		}
+        }
 
-		private void UserName_TextChanged(object sender, EventArgs e)
-		{
-			ValidateSyncButton();
-		}		
+        private void UserName_TextChanged(object sender, EventArgs e)
+        {
+            ValidateSyncButton();
+        }
 
-		private void ValidateSyncButton()
-		{
-			syncButton.Enabled = ValidCredentials && ValidSyncFolders;
-		}
+        private void ValidateSyncButton()
+        {
+            syncButton.Enabled = ValidCredentials && ValidSyncFolders;
+        }
 
-		private void deleteDuplicatesButton_Click(object sender, EventArgs e)
-		{
-			//DeleteDuplicatesForm f = new DeleteDuplicatesForm(_sync
-		}		       
+        private void deleteDuplicatesButton_Click(object sender, EventArgs e)
+        {
+            //DeleteDuplicatesForm f = new DeleteDuplicatesForm(_sync
+        }
 
-		private void Donate_Click(object sender, EventArgs e)
-		{
-			System.Diagnostics.Process.Start("https://sourceforge.net/project/project_donations.php?group_id=369321");
-		}
+        private void Donate_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://sourceforge.net/project/project_donations.php?group_id=369321");
+        }
 
-		private void Donate_MouseEnter(object sender, EventArgs e)
-		{
-			Donate.BackColor = System.Drawing.Color.LightGray;
-		}
+        private void Donate_MouseEnter(object sender, EventArgs e)
+        {
+            Donate.BackColor = System.Drawing.Color.LightGray;
+        }
 
-		private void Donate_MouseLeave(object sender, EventArgs e)
-		{
-			Donate.BackColor = System.Drawing.Color.Transparent;
-		}
+        private void Donate_MouseLeave(object sender, EventArgs e)
+        {
+            Donate.BackColor = System.Drawing.Color.Transparent;
+        }
 
-		private void hideButton_Click(object sender, EventArgs e)
-		{
-			this.Close();
-		}
+        private void hideButton_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
 
-		private void proxySettingsLinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-		{
+        private void proxySettingsLinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
             if (_proxy != null) _proxy.ShowDialog(this);
         }
 
-		private void SettingsForm_HelpButtonClicked(object sender, CancelEventArgs e)
-		{
-			ShowHelp();
-		}
+        private void SettingsForm_HelpButtonClicked(object sender, CancelEventArgs e)
+        {
+            ShowHelp();
+        }
 
-		private void SettingsForm_HelpRequested(object sender, HelpEventArgs hlpevent)
-		{
-			ShowHelp();
-		}
+        private void SettingsForm_HelpRequested(object sender, HelpEventArgs hlpevent)
+        {
+            ShowHelp();
+        }
 
-		private void ShowHelp()
-		{
-			// go to the page showing the help and howto instructions
-			Process.Start("http://googlesyncmod.sourceforge.net/");
-		}
+        private void ShowHelp()
+        {
+            // go to the page showing the help and howto instructions
+            Process.Start("http://googlesyncmod.sourceforge.net/");
+        }
 
         private void btSyncContacts_CheckedChanged(object sender, EventArgs e)
         {
@@ -1530,12 +1535,13 @@ namespace GoContactSyncMod
             this.labelTimezone.Visible = this.labelMonthsPast.Visible = this.labelMonthsFuture.Visible = this.btSyncAppointments.Checked;
             this.pastMonthInterval.Visible = this.futureMonthInterval.Visible = this.appointmentTimezonesComboBox.Visible = btSyncAppointments.Checked;
         }
-    	
+
         private void cmbSyncProfile_SelectedIndexChanged(object sender, EventArgs e)
         {
             ComboBox comboBox = (ComboBox)sender;
 
-            if ((0 == comboBox.SelectedIndex) || (comboBox.SelectedIndex == (comboBox.Items.Count - 1))) {
+            if ((0 == comboBox.SelectedIndex) || (comboBox.SelectedIndex == (comboBox.Items.Count - 1)))
+            {
                 ConfigurationManagerForm _configs = new ConfigurationManagerForm();
 
                 if (0 == comboBox.SelectedIndex && _configs != null)
@@ -1543,7 +1549,7 @@ namespace GoContactSyncMod
                     syncProfile = _configs.AddProfile();
                     ClearSettings();
                 }
-                
+
                 if (comboBox.SelectedIndex == (comboBox.Items.Count - 1) && _configs != null)
                     _configs.ShowDialog(this);
 
@@ -1579,7 +1585,7 @@ namespace GoContactSyncMod
             }
             ValidateSyncButton();
 
-            
+
         }
 
         private void noteFoldersComboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -1598,7 +1604,7 @@ namespace GoContactSyncMod
 
             ValidateSyncButton();
 
-            
+
         }
 
         private void appointmentFoldersComboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -1706,7 +1712,7 @@ namespace GoContactSyncMod
                 this.Invoke(h, new object[] { value });
             }
             else
-            {      
+            {
                 if (value) //Reset Icon to default icon as starting point for the syncing icon
                     notifyIcon.Icon = this.Icon0;
                 iconTimer.Enabled = value;
@@ -1723,14 +1729,14 @@ namespace GoContactSyncMod
             if (this.InvokeRequired)
             {
                 IconHandler h = new IconHandler(showNextIcon);
-                this.Invoke(h, new object[] {});
+                this.Invoke(h, new object[] { });
             }
             else
                 this.notifyIcon.Icon = GetNextIcon(this.notifyIcon.Icon); ;
         }
 
-        
-        
+
+
         private Icon GetNextIcon(Icon currentIcon)
         {
             if (currentIcon == IconError) //Don't change the icon anymore, once an error occurred
@@ -1797,7 +1803,7 @@ namespace GoContactSyncMod
                 Logger.Log("Trying to remove Authentication...", EventType.Information);
                 FileDataStore fDS = new FileDataStore(Logger.AuthFolder, true);
                 fDS.ClearAsync();
-                Logger.Log("Removed Authentication...", EventType.Information); 
+                Logger.Log("Removed Authentication...", EventType.Information);
             }
             catch (Exception ex)
             {
@@ -1813,7 +1819,7 @@ namespace GoContactSyncMod
         private void appointmentGoogleFoldersComboBox_Enter(object sender, EventArgs e)
         {
             if (this.appointmentGoogleFoldersComboBox.DataSource == null ||
-                this.appointmentGoogleFoldersComboBox.Items.Count <=1)
+                this.appointmentGoogleFoldersComboBox.Items.Count <= 1)
             {
                 Logger.Log("Loading Google Calendars...", EventType.Information);
                 ArrayList googleAppointmentFolders = new ArrayList();
@@ -1869,7 +1875,7 @@ namespace GoContactSyncMod
             //    autoSyncInterval.Value = autoSyncInterval.Minimum;
             //}
             syncTimer.Enabled = true;
-        }        
+        }
 
 
     }

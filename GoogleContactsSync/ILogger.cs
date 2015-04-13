@@ -91,6 +91,7 @@ namespace GoContactSyncMod
 		public static void Log(string message, EventType eventType)
         {
             
+            
             LogEntry new_logEntry = new LogEntry(DateTime.Now, eventType, message);
             messages.Add(new_logEntry);
 

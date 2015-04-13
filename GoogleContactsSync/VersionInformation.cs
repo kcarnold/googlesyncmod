@@ -4,6 +4,12 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Management;
 using System.Management.Instrumentation;
+using System.Net;
+using System.Threading.Tasks;
+using System.Reflection;
+using System.Diagnostics;
+using System.Threading;
+using System.Globalization;
 
 namespace GoContactSyncMod
 {
@@ -25,7 +31,7 @@ namespace GoContactSyncMod
             if (appVersion == null)
                 appVersion = new Microsoft.Office.Interop.Outlook.Application();
 
-            switch (appVersion.Version.ToString().Substring(0,2))
+            switch (appVersion.Version.ToString().Substring(0, 2))
             {
                 case "10":
                     return OutlookMainVersion.Outlook2002;
@@ -48,7 +54,7 @@ namespace GoContactSyncMod
                         return OutlookMainVersion.OutlookUnknownVersion;
                     }
             }
-     
+
         }
 
         /// <summary>
@@ -70,6 +76,60 @@ namespace GoContactSyncMod
                 }
             }
             return "Unknown Windows Version";
+        }
+
+        public static Version getGCSMVersion()
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+            Version assemblyVersionNumber = new Version(fvi.FileVersion);
+
+            return assemblyVersionNumber;
+        }
+
+        /// <summary>
+        /// getting the newest availible version on sourceforge.net of GCSM
+        /// </summary>
+        public static bool isNewVersionAvailable()
+        {
+            try
+            {
+                //check sf.net site for version number
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://sourceforge.net/projects/googlesyncmod/files/latest/download");
+                request.AllowAutoRedirect = true;
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                request.Abort();
+
+                //extracting version number from url
+                const string firstPattern = "Releases/";
+                // ex. /project/googlesyncmod/Releases/3.9.5/SetupGCSM-3.9.5.msi
+                string webVersion = response.ResponseUri.AbsolutePath;
+
+                //get version number string
+                int first = webVersion.IndexOf(firstPattern) + firstPattern.Length;
+                int second = webVersion.IndexOf("/", first);
+                Version webVersionNumber = new Version(webVersion.Substring(first, second - first));
+
+                response.Close();
+
+                //compare both versions
+                var result = webVersionNumber.CompareTo(getGCSMVersion());
+                if (result > 0)
+                {   //newer version found
+                    Logger.Log("New version of GCSM detected on sf.net!", EventType.Information);              
+                    return true;
+                }
+                else
+                {            //older or same version found
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Could not read version number from sf.net...", EventType.Warning);
+                Logger.Log(ex.ToString(), EventType.Warning);
+                return false;
+            }
         }
     }
 }
