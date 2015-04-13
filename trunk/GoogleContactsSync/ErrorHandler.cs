@@ -54,30 +54,10 @@ namespace GoContactSyncMod
                 // this can fail if form was disposed or not created yet, so catch the exception - balloon is not that important to risk followup error
                 Logger.Log("Error showing Balloon: " + exc.Message, EventType.Error);
             }
-            string message =    "Sorry, an unexpected error occured.\n" +
-                                "Please support us fixing this problem.\n\n" +
-                                "1. Ensure that you use the latest release of GCSM. You can download the latest version here:\n" +
-                                "https://sourceforge.net/projects/googlesyncmod/files/latest/download.\n\n" +
-                                "2.If the problem still exists, go to\n"+
-                                "https://sourceforge.net/projects/googlesyncmod/ and use the Tracker!\n" +
-                                "Please check first if error has already been reported.\n" +
-                                "\nHint: This error message is automatically copied to the clipboard.\n" +
-                                "Program Version: {0}\n\nError Details:\n{1}\n\nOS Version: {2}\nOutlook Version: {3}";
-            message = string.Format(message, AssemblyVersion, ex.ToString(), OSInfo, OutlookInfo);
-            
-            try
-            {
-                Thread thread = new Thread(() => Clipboard.SetText(message));
-                thread.SetApartmentState(ApartmentState.STA); //Set the thread to STA
-                thread.Start();
-                thread.Join();            
-            }
-            catch (Exception e)
-            {
-                Logger.Log("Message couldn't be copied to clipboard: " + e.Message, EventType.Debug);
-            }
-            //Logger.Log(message, EventType.Debug);
-            MessageBox.Show(message, Application.ProductName);
+            //create and show error information
+            ErrorDialog errorDialog = new ErrorDialog();
+            errorDialog.setErrorText(ex);
+            errorDialog.Show();
 
             //set user culture
             Thread.CurrentThread.CurrentCulture = oldCI;
