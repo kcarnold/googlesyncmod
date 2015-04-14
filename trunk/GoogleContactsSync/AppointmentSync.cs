@@ -1023,12 +1023,15 @@ namespace GoContactSyncMod
         internal static bool IsOrganizer(string email)
         {
             string userName = Synchronizer.UserName.Trim().ToLower().Replace("@googlemail.", "@gmail.");
-            email = email.Trim().ToLower().Replace("@googlemail.", "@gmail.");
-
-            if (email == null || email.Equals(userName, StringComparison.InvariantCultureIgnoreCase))
-                return true;
-            else
-                return false;
+            if (email != null)
+            {
+                email = email.Trim().ToLower().Replace("@googlemail.", "@gmail.");
+                if (email.Equals(userName, StringComparison.InvariantCultureIgnoreCase))
+                    return true;
+                else
+                    return false;
+            }
+            return false;
         }
 
         //internal static string GetOrganizer(Outlook.AppointmentItem outlookAppointment)

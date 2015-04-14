@@ -662,23 +662,7 @@ namespace GoContactSyncMod
 
         private void syncButton_Click(object sender, EventArgs e)
         {
-            //            TimeSpan syncTime = DateTime.Now - lastSync;
-            //            TimeSpan fiveMinLimit = new TimeSpan(0, 5, 0);
-            //#if debug
-            //            Logger.Log("Debug build, skipping time tolerance...", EventType.Debug);
-            //            Sync();
-            //#else
-            //            if ((syncTime > fiveMinLimit))
-            //            {
-            Sync();
-            //            }
-            //            else
-            //            {
-            //                TimeSpan tolerance = ((lastSync + fiveMinLimit) - DateTime.Now);
-            //                Logger.Log("There is a 5 minutes time tolerance between 2 syncs! You have to wait for another " +
-            //                tolerance.Minutes.ToString()+":"+ tolerance.Seconds.ToString() + " minutes!", EventType.Information);
-            //            }
-            //#endif		    
+            Sync();	    
         }
 
         private void Sync()
