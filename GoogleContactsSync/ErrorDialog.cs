@@ -22,7 +22,7 @@ namespace GoContactSyncMod
 
         public void setErrorText(Exception ex)
         {
-            //if (VersionInformation.isNewVersionAvailable())
+            if (VersionInformation.isNewVersionAvailable())
             {
                 richTextBoxError.AppendText(Environment.NewLine);
                 richTextBoxError.AppendText("NEW VERSION AVAILABLE - ");
@@ -35,11 +35,10 @@ namespace GoContactSyncMod
                 richTextBoxError.AppendText(downloadLink.Text);
                 richTextBoxError.AppendText(Environment.NewLine);
                 richTextBoxError.AppendText(Environment.NewLine);
-
                 AppendTextWithColor("PLEASE UPDATE TO THE LATEST VERSION!" + Environment.NewLine, Color.Red);
             }
 
-            AppendTextWithColor("PLEASE CHECK FIRST IF THIS ERROR HAS ALREADY BEEN REPORTED!", Color.Red);
+            AppendTextWithColor("FIRST CHECK IF THIS ERROR HAS ALREADY BEEN REPORTED!", Color.Red);
             AppendTextWithColor(Environment.NewLine + "IF THE PROBLEM STILL EXISTS WRITE AN ERROR REPORT ", Color.Red);
             LinkLabel bugsLink = new LinkLabel();
             bugsLink.Text = "HERE!";
@@ -47,7 +46,6 @@ namespace GoContactSyncMod
             bugsLink.Location = richTextBoxError.GetPositionFromCharIndex(richTextBoxError.TextLength);
             bugsLink.LinkClicked += (openBugsUrl);
             richTextBoxError.Controls.Add(bugsLink);
-
 
             richTextBoxError.AppendText(Environment.NewLine);
             richTextBoxError.AppendText(Environment.NewLine);
@@ -61,17 +59,16 @@ namespace GoContactSyncMod
             richTextBoxError.AppendText(ex.Message + Environment.NewLine);
             richTextBoxError.AppendText(Environment.NewLine);
             richTextBoxError.AppendText("ERROR MESAGE STACK TRACE:" + Environment.NewLine + Environment.NewLine);
-            richTextBoxError.AppendText(ex.StackTrace);
+            if (ex.StackTrace != null)
+                richTextBoxError.AppendText(ex.StackTrace);
+            else
+                richTextBoxError.AppendText("NO STACK TRACE AVAILABLE");
 
             string message = richTextBoxError.Text.Replace("\n", "\r\n");
             //copy to clipboard
             try
             {
-
-                Thread thread = new Thread(() => System.Windows.Clipboard.SetText(message));
-                thread.SetApartmentState(ApartmentState.STA); //Set the thread to STA
-                thread.Start();
-                //thread.Join();
+                System.Windows.Clipboard.SetText(message);
             }
             catch (Exception e)
             {
