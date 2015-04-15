@@ -1,19 +1,19 @@
 # +++ NEWS +++ NEWS +++ NEWS +++
 
 
-### Version [3.9.6] - XX.XX.2015
+### Version [3.9.6] - 15.04.2015
 
 ###### SVN commits
-**r536 - r541**
+**r514 - r528**
 
-	- **IMPROVEMENT**: adjusted error text color 
-	- **IMPROVEMENT**: Made Timezone selection a dropdown combobox to enable users to add their own timezone, if needed (e.g. America/Arizona)
-	- **IMPROVEMENT**: check for latest downloadable version at sf.net
-	- **IMPROVEMENT**: check for update on start 
-	- **IMPROVEMENT**: added new error dialog for user with clickable links
-	- **FIX**: renamed Folder OutlookAPI to MicrosoftAPI
-    - **FIX**: [bugs:#700] 
-	- **CHANGE**: small fixes and changes to the Error Dialog
+  - **IMPROVEMENT**: adjusted error text color
+  - **IMPROVEMENT**: Made Timezone selection a dropdown combobox to enable users to add their own timezone, if needed (e.g. America/Arizona)
+  - **IMPROVEMENT**: check for latest downloadable version at sf.net
+  - **IMPROVEMENT**: check for update on start
+  - **IMPROVEMENT**: added new error dialog for user with clickable links
+  - **FIX**: renamed Folder OutlookAPI to MicrosoftAPI
+  - **FIX**: https://sourceforge.net/p/googlesyncmod/bugs/700/
+  - **CHANGE**: small fixes and changes to the Error Dialog
 
 **Free Open Source Software, Hell Yeah!**
 
