@@ -4,7 +4,7 @@
 ### Version [3.9.6] - 15.04.2015
 
 ###### SVN commits
-**r514 - r528**
+**r536 - r541**
 
   - **IMPROVEMENT**: adjusted error text color
   - **IMPROVEMENT**: Made Timezone selection a dropdown combobox to enable users to add their own timezone, if needed (e.g. America/Arizona)
