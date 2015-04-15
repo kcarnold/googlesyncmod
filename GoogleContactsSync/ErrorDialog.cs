@@ -29,20 +29,22 @@ namespace GoContactSyncMod
                 LinkLabel downloadLink = new LinkLabel();
                 downloadLink.Text = "DOWNLOAD NOW";
                 downloadLink.AutoSize = true;
+                downloadLink.LinkColor = Color.FromArgb(0, 102, 204);
                 downloadLink.Location = richTextBoxError.GetPositionFromCharIndex(richTextBoxError.TextLength);
                 downloadLink.LinkClicked += (openDowloadUrl);
                 richTextBoxError.Controls.Add(downloadLink);
                 richTextBoxError.AppendText(downloadLink.Text);
                 richTextBoxError.AppendText(Environment.NewLine);
                 richTextBoxError.AppendText(Environment.NewLine);
-                AppendTextWithColor("PLEASE UPDATE TO THE LATEST VERSION!" + Environment.NewLine, Color.Red);
+                AppendTextWithColor("PLEASE UPDATE TO THE LATEST VERSION!" + Environment.NewLine, Color.Firebrick);
             }
 
-            AppendTextWithColor("FIRST CHECK IF THIS ERROR HAS ALREADY BEEN REPORTED!", Color.Red);
-            AppendTextWithColor(Environment.NewLine + "IF THE PROBLEM STILL EXISTS WRITE AN ERROR REPORT ", Color.Red);
+            AppendTextWithColor("FIRST CHECK IF THIS ERROR HAS ALREADY BEEN REPORTED!", Color.Firebrick);
+            AppendTextWithColor(Environment.NewLine + "IF THE PROBLEM STILL EXISTS WRITE AN ERROR REPORT ", Color.Firebrick);
             LinkLabel bugsLink = new LinkLabel();
             bugsLink.Text = "HERE!";
             bugsLink.AutoSize = true;
+            bugsLink.LinkColor = Color.FromArgb(0, 102, 204);
             bugsLink.Location = richTextBoxError.GetPositionFromCharIndex(richTextBoxError.TextLength);
             bugsLink.LinkClicked += (openBugsUrl);
             richTextBoxError.Controls.Add(bugsLink);
@@ -56,13 +58,13 @@ namespace GoContactSyncMod
             richTextBoxError.AppendText("OS VERSION:      " + VersionInformation.GetWindowsVersionName() + Environment.NewLine);
             richTextBoxError.AppendText(Environment.NewLine);
             richTextBoxError.AppendText("ERROR MESAGE:" + Environment.NewLine + Environment.NewLine);
-            richTextBoxError.AppendText(ex.Message + Environment.NewLine);
+            AppendTextWithColor(ex.Message + Environment.NewLine,Color.Firebrick);
             richTextBoxError.AppendText(Environment.NewLine);
             richTextBoxError.AppendText("ERROR MESAGE STACK TRACE:" + Environment.NewLine + Environment.NewLine);
             if (ex.StackTrace != null)
-                richTextBoxError.AppendText(ex.StackTrace);
+                AppendTextWithColor(ex.StackTrace, Color.Firebrick);
             else
-                richTextBoxError.AppendText("NO STACK TRACE AVAILABLE");
+                AppendTextWithColor("NO STACK TRACE AVAILABLE",Color.Firebrick);
 
             string message = richTextBoxError.Text.Replace("\n", "\r\n");
             //copy to clipboard
