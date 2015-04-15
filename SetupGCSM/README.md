@@ -1,8 +1,27 @@
 # +++ NEWS +++ NEWS +++ NEWS +++
 
+
+### Version [3.9.6] - XX.XX.2015
+
+###### SVN commits
+**r536 - r541**
+
+	- **IMPROVEMENT**: adjusted error text color 
+	- **IMPROVEMENT**: Made Timezone selection a dropdown combobox to enable users to add their own timezone, if needed (e.g. America/Arizona)
+	- **IMPROVEMENT**: check for latest downloadable version at sf.net
+	- **IMPROVEMENT**: check for update on start 
+	- **IMPROVEMENT**: added new error dialog for user with clickable links
+	- **FIX**: renamed Folder OutlookAPI to MicrosoftAPI
+    - **FIX**: [bugs:#700] 
+	- **CHANGE**: small fixes and changes to the Error Dialog
+
+**Free Open Source Software, Hell Yeah!**
+
 ### Version [3.9.5] - 10.04.2015
 
 ###### SVN commits
+**r535**
+
   - **FIX**: Fix errors when reading registry into checkbox or number textbox, see
   https://sourceforge.net/p/googlesyncmod/bugs/667/
   https://sourceforge.net/p/googlesyncmod/bugs/695/
@@ -12,6 +31,8 @@
   https://sourceforge.net/p/googlesyncmod/support-requests/363/
   https://sourceforge.net/p/googlesyncmod/support-requests/344/
   - **IMPROVEMENT**: Swtiched to number textboxes for the months range
+
+**Free Open Source Software, Hell Yeah!**
 
 ### Version [3.9.4] - 07.04.2015
 

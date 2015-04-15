@@ -177,8 +177,20 @@ namespace GoContactSyncMod
             SystemEvents.SessionSwitch += new SessionSwitchEventHandler(SystemEvents_SessionSwitch);
             //Register Power Mode Event
             SystemEvents.PowerModeChanged += new PowerModeChangedEventHandler(SystemEvents_PowerModeSwitch);
-            VersionInformation.isNewVersionAvailable();
+            
+            //check for new version
+            if (VersionInformation.isNewVersionAvailable())
+            {
+                notifyIcon.BalloonTipClicked += notifyIcon_UpdateBalloonTipClicked;
+                ShowBalloonToolTip("New version available", "Click here to download", ToolTipIcon.Info, 15000, false);
+            }
 		}
+
+        private void notifyIcon_UpdateBalloonTipClicked(object sender, System.EventArgs e)
+        {
+            Process.Start("https://sourceforge.net/projects/googlesyncmod/files/latest/download");
+            notifyIcon.Click -= notifyIcon_UpdateBalloonTipClicked;
+        }
 
         private void PopulateSyncOptionBox()
         {
