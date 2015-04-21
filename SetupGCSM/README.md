@@ -1,5 +1,14 @@
 # +++ NEWS +++ NEWS +++ NEWS +++
 
+### Version [3.9.7] - 21.04.2015
+
+###### SVN commits
+**r542 - r544**
+
+  - FIX: Removed Notes Sync, because not supported by Google anymore
+  - FIX: Handle null values in Registry Profiles http://sourceforge.net/p/googlesyncmod/bugs/675/
+
+**Free Open Source Software, Hell Yeah!**
 
 ### Version [3.9.6] - 15.04.2015
 
