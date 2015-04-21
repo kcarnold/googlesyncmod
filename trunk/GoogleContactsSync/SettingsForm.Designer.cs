@@ -62,10 +62,10 @@ namespace GoContactSyncMod
             this.appointmentTimezonesComboBox = new System.Windows.Forms.ComboBox();
             this.btSyncAppointments = new System.Windows.Forms.CheckBox();
             this.appointmentFoldersComboBox = new System.Windows.Forms.ComboBox();
-            this.btSyncNotes = new System.Windows.Forms.CheckBox();
+            //this.btSyncNotes = new System.Windows.Forms.CheckBox();//ToDo: Google.Documents API Replaced by Google.Drive API on 21-Apr-2015
             this.btSyncContacts = new System.Windows.Forms.CheckBox();
             this.btPromptDelete = new System.Windows.Forms.CheckBox();
-            this.noteFoldersComboBox = new System.Windows.Forms.ComboBox();
+            //this.noteFoldersComboBox = new System.Windows.Forms.ComboBox();//ToDo: Google.Documents API Replaced by Google.Drive API on 21-Apr-2015
             this.panel1 = new System.Windows.Forms.Panel();
             this.btSyncDelete = new System.Windows.Forms.CheckBox();
             this.cmbSyncProfile = new System.Windows.Forms.ComboBox();
@@ -345,10 +345,10 @@ namespace GoContactSyncMod
             this.groupBox2.Controls.Add(this.appointmentTimezonesComboBox);
             this.groupBox2.Controls.Add(this.btSyncAppointments);
             this.groupBox2.Controls.Add(this.appointmentFoldersComboBox);
-            this.groupBox2.Controls.Add(this.btSyncNotes);
+            //this.groupBox2.Controls.Add(this.btSyncNotes);//ToDo: Google.Documents API Replaced by Google.Drive API on 21-Apr-2015
             this.groupBox2.Controls.Add(this.btSyncContacts);
             this.groupBox2.Controls.Add(this.btPromptDelete);
-            this.groupBox2.Controls.Add(this.noteFoldersComboBox);
+            //this.groupBox2.Controls.Add(this.noteFoldersComboBox);//ToDo: Google.Documents API Replaced by Google.Drive API on 21-Apr-2015
             this.groupBox2.Controls.Add(this.panel1);
             this.groupBox2.Controls.Add(this.btSyncDelete);
             this.groupBox2.Controls.Add(this.cmbSyncProfile);
@@ -777,15 +777,17 @@ namespace GoContactSyncMod
             // 
             // btSyncNotes
             // 
-            this.btSyncNotes.AutoSize = true;
-            this.btSyncNotes.Location = new System.Drawing.Point(10, 94);
-            this.btSyncNotes.Name = "btSyncNotes";
-            this.btSyncNotes.Size = new System.Drawing.Size(90, 17);
-            this.btSyncNotes.TabIndex = 5;
-            this.btSyncNotes.Text = "Sync &Notes";
-            this.toolTip.SetToolTip(this.btSyncNotes, "This specifies whether notes are synchronized.");
-            this.btSyncNotes.UseVisualStyleBackColor = true;
-            this.btSyncNotes.CheckedChanged += new System.EventHandler(this.btSyncNotes_CheckedChanged);
+            //ToDo: Google.Documents API Replaced by Google.Drive API on 21-Apr-2015
+            //this.btSyncNotes.AutoSize = true;
+            //this.btSyncNotes.Location = new System.Drawing.Point(10, 94);
+            //this.btSyncNotes.Name = "btSyncNotes";
+            //this.btSyncNotes.Size = new System.Drawing.Size(90, 17);
+            //this.btSyncNotes.TabIndex = 5;
+            //this.btSyncNotes.Text = "Sync &Notes";
+            //this.toolTip.SetToolTip(this.btSyncNotes, "This specifies whether notes are synchronized.");
+            //this.btSyncNotes.UseVisualStyleBackColor = true;
+            //this.btSyncNotes.Visible = false;
+            //this.btSyncNotes.CheckedChanged += new System.EventHandler(this.btSyncNotes_CheckedChanged);//ToDo: Google.Documents API Replaced by Google.Drive API on 21-Apr-2015
             // 
             // btSyncContacts
             // 
@@ -816,16 +818,18 @@ namespace GoContactSyncMod
             // 
             // noteFoldersComboBox
             // 
-            this.noteFoldersComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.noteFoldersComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.noteFoldersComboBox.FormattingEnabled = true;
-            this.noteFoldersComboBox.Location = new System.Drawing.Point(161, 92);
-            this.noteFoldersComboBox.Name = "noteFoldersComboBox";
-            this.noteFoldersComboBox.Size = new System.Drawing.Size(428, 21);
-            this.noteFoldersComboBox.TabIndex = 7;
-            this.toolTip.SetToolTip(this.noteFoldersComboBox, "Select the Outlook Notes folder you want to sync");
-            this.noteFoldersComboBox.SelectedIndexChanged += new System.EventHandler(this.noteFoldersComboBox_SelectedIndexChanged);
+            //ToDo: Google.Documents API Replaced by Google.Drive API on 21-Apr-2015
+            //this.noteFoldersComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            //| System.Windows.Forms.AnchorStyles.Right)));
+            //this.noteFoldersComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            //this.noteFoldersComboBox.FormattingEnabled = true;
+            //this.noteFoldersComboBox.Location = new System.Drawing.Point(161, 92);
+            //this.noteFoldersComboBox.Name = "noteFoldersComboBox";
+            //this.noteFoldersComboBox.Size = new System.Drawing.Size(428, 21);
+            //this.noteFoldersComboBox.TabIndex = 7;
+            ////this.toolTip.SetToolTip(this.noteFoldersComboBox, "Select the Outlook Notes folder you want to sync");//ToDo: Google.Documents API Replaced by Google.Drive API on 21-Apr-2015
+            //this.noteFoldersComboBox.Visible = false;
+            //this.noteFoldersComboBox.SelectedIndexChanged += new System.EventHandler(this.noteFoldersComboBox_SelectedIndexChanged);
             // 
             // panel1
             // 
@@ -1197,11 +1201,11 @@ namespace GoContactSyncMod
         private System.Windows.Forms.Button hideButton;
         private System.Windows.Forms.LinkLabel proxySettingsLinkLabel;
         private System.Windows.Forms.CheckBox reportSyncResultCheckBox;
-        private System.Windows.Forms.CheckBox btSyncNotes;
+        //private System.Windows.Forms.CheckBox btSyncNotes;//ToDo: Google.Documents API Replaced by Google.Drive API on 21-Apr-2015
         private System.Windows.Forms.CheckBox btSyncContacts;
         private System.Windows.Forms.ComboBox contactFoldersComboBox;
         private System.Windows.Forms.ComboBox cmbSyncProfile;
-        private System.Windows.Forms.ComboBox noteFoldersComboBox;
+        //private System.Windows.Forms.ComboBox noteFoldersComboBox;//ToDo: Google.Documents API Replaced by Google.Drive API on 21-Apr-2015
         private System.Windows.Forms.CheckBox btPromptDelete;
         private System.Windows.Forms.CheckBox chkUseFileAs;
         private System.Windows.Forms.PictureBox pictureBoxExit;
