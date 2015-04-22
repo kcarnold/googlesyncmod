@@ -70,7 +70,10 @@ namespace GoContactSyncMod
             //copy to clipboard
             try
             {
-                System.Windows.Clipboard.SetText(message);
+                Thread thread = new Thread(() => System.Windows.Clipboard.SetText(message));
+                thread.SetApartmentState(ApartmentState.STA); //Set the thread to STA
+                thread.Start();
+                thread.Join();
             }
             catch (Exception e)
             {

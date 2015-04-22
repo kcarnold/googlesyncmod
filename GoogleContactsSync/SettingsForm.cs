@@ -941,11 +941,21 @@ namespace GoContactSyncMod
                         sync.LogoffGoogle();
                         sync = null;
                     }
-
+                    //if (VersionInformation.isNewVersionAvailable())
+                    notifyIcon.Click += new EventHandler(openDowloadUrl);
+                        ShowBalloonToolTip("Update detected!", "Click to download the latest version!", ToolTipIcon.Info, 30000, false);
+                        
                     IconTimerSwitch(false);
                 }
             }
         }
+
+        private void openDowloadUrl(object sender, EventArgs e)
+        {
+            Process.Start("https://sourceforge.net/projects/googlesyncmod/files/latest/download");
+            notifyIcon.Click -= (openDowloadUrl);
+        }
+
 
         public void ShowBalloonToolTip(string title, string message, ToolTipIcon icon, int timeout, bool error)
         {
