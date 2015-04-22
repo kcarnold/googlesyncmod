@@ -354,7 +354,7 @@ namespace GoContactSyncMod
                 {
                     try
                     {
-                        _outlookNamespace = OutlookApplication.GetNamespace("mapi");
+                        _outlookNamespace = OutlookApplication.GetNamespace("MAPI");
                         break;  //Exit the for loop, if creating outllok application was successful
                     }
                     catch (COMException ex)
