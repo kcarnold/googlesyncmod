@@ -181,15 +181,15 @@ namespace GoContactSyncMod
             //check for new version
             if (VersionInformation.isNewVersionAvailable())
             {
-                notifyIcon.BalloonTipClicked += notifyIcon_UpdateBalloonTipClicked;
-                ShowBalloonToolTip("New version available", "Click here to download", ToolTipIcon.Info, 15000, false);
+                notifyIcon.BalloonTipClicked += notifyIcon_BalloonTipClickedDownloadNewVersion;
+                ShowBalloonToolTip("New version available", "Click here to download", ToolTipIcon.Info, 20000, false);
             }
 		}
 
-        private void notifyIcon_UpdateBalloonTipClicked(object sender, System.EventArgs e)
+        private void notifyIcon_BalloonTipClickedDownloadNewVersion(object sender, System.EventArgs e)
         {
             Process.Start("https://sourceforge.net/projects/googlesyncmod/files/latest/download");
-            notifyIcon.Click -= notifyIcon_UpdateBalloonTipClicked;
+            notifyIcon.BalloonTipClicked -= notifyIcon_BalloonTipClickedDownloadNewVersion;
         }
 
         private void PopulateSyncOptionBox()
@@ -941,21 +941,10 @@ namespace GoContactSyncMod
                         sync.LogoffGoogle();
                         sync = null;
                     }
-                    //if (VersionInformation.isNewVersionAvailable())
-                    notifyIcon.Click += new EventHandler(openDowloadUrl);
-                        ShowBalloonToolTip("Update detected!", "Click to download the latest version!", ToolTipIcon.Info, 30000, false);
-                        
                     IconTimerSwitch(false);
                 }
             }
         }
-
-        private void openDowloadUrl(object sender, EventArgs e)
-        {
-            Process.Start("https://sourceforge.net/projects/googlesyncmod/files/latest/download");
-            notifyIcon.Click -= (openDowloadUrl);
-        }
-
 
         public void ShowBalloonToolTip(string title, string message, ToolTipIcon icon, int timeout, bool error)
         {
