@@ -1787,7 +1787,7 @@ namespace GoContactSyncMod
                 if (slave.Creator == null || AppointmentSync.IsOrganizer(slave.Creator.Email))
                 {
                     AppointmentPropertiesUtils.SetGoogleOutlookAppointmentId(SyncProfile, slave, master);
-                    slave = SaveGoogleAppointment(slave);
+                    slave = SaveGoogleAppointment(slave);                    
                 }
 
                 //ToDo: Doesn'T work for newly created recurrence appointments before save, because Event.Reminder is throwing NullPointerException and Reminders cannot be initialized, therefore moved to after saving
@@ -1819,7 +1819,10 @@ namespace GoContactSyncMod
 
                 //After saving Google Appointment => also sync recurrence exceptions and save again
                 if ((slave.Creator == null || AppointmentSync.IsOrganizer(slave.Creator.Email)) && master.IsRecurring && master.RecurrenceState == Outlook.OlRecurrenceState.olApptMaster && AppointmentSync.UpdateRecurrenceExceptions(master, slave, this))
+                {
                     slave = SaveGoogleAppointment(slave);
+                }
+
 
                 SyncedCount++;
                 Logger.Log("Updated appointment from Outlook to Google: \"" + master.Subject + " - " + master.Start + "\".", EventType.Information);
@@ -2317,8 +2320,16 @@ namespace GoContactSyncMod
                 }
                 catch (Exception ex)
                 {
-                    string newEx = String.Format("Error saving EXISTING Google appointment: {0}. \n{1}", googleAppointment.Summary + " - " + GetTime(googleAppointment), ex.Message);
-                    throw new ApplicationException(newEx, ex);
+                    string error = "Error saving EXISTING Google appointment: ";
+                    error += googleAppointment.Summary + " - " + Synchronizer.GetTime(googleAppointment);
+                    error += " - Creator: " + (googleAppointment.Creator != null?googleAppointment.Creator.Email:"null") ;
+                    error += " - Organizer: " + (googleAppointment.Organizer != null?googleAppointment.Organizer.Email:"null");
+                    error += ". \n" + ex.Message;
+                    Logger.Log(error, EventType.Warning);
+                    //string newEx = String.Format("Error saving EXISTING Google appointment: {0}. \n{1}", googleAppointment.Summary + " - " + GetTime(googleAppointment), ex.Message);
+                    //throw new ApplicationException(newEx, ex);
+
+                    return googleAppointment;
                 }
             }
         }
