@@ -1,5 +1,16 @@
 # +++ NEWS +++ NEWS +++ NEWS +++
 
+### Version [3.9.8] - 04.05.2015
+
+###### SVN commits
+**r546 - r550**
+	- FIX: stopped duplicating Group combinations and adding them to Google, see   https://sourceforge.net/p/googlesyncmod/bugs/691/
+	- FIX: avoid "Forbidden" error message, if calender item cannot be changed by Google account, see https://sourceforge.net/p/googlesyncmod/bugs/696/
+	- FIX: removed debug update detection code
+	- UPDATE: Google.Apis.Calendar.v3
+	- FIX: moving "Copy to Clipboard" back to own STA-Thread
+	- FIX: ballon tooltip for update was always shown (svn commit error)
+
 ### Version [3.9.7] - 21.04.2015
 
 ###### SVN commits
