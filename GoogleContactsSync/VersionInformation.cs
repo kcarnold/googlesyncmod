@@ -92,6 +92,8 @@ namespace GoContactSyncMod
         /// </summary>
         public static bool isNewVersionAvailable()
         {
+
+            Logger.Log("Reading version number from sf.net...", EventType.Information);
             try
             {
                 //check sf.net site for version number
@@ -121,13 +123,14 @@ namespace GoContactSyncMod
                 }
                 else
                 {            //older or same version found
+                    Logger.Log("Version of GCSM is uptodate.", EventType.Information);
                     return false;
                 }
             }
             catch (Exception ex)
             {
                 Logger.Log("Could not read version number from sf.net...", EventType.Warning);
-                Logger.Log(ex.ToString(), EventType.Warning);
+                Logger.Log(ex.ToString(), EventType.Debug);
                 return false;
             }
         }

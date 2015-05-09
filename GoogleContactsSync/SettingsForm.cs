@@ -178,12 +178,7 @@ namespace GoContactSyncMod
             //Register Power Mode Event
             SystemEvents.PowerModeChanged += new PowerModeChangedEventHandler(SystemEvents_PowerModeSwitch);
             
-            //check for new version
-            if (VersionInformation.isNewVersionAvailable())
-            {
-                notifyIcon.BalloonTipClicked += notifyIcon_BalloonTipClickedDownloadNewVersion;
-                ShowBalloonToolTip("New version available", "Click here to download", ToolTipIcon.Info, 20000, false);
-            }
+            
 		}
 
         private void notifyIcon_BalloonTipClickedDownloadNewVersion(object sender, System.EventArgs e)
@@ -720,7 +715,7 @@ namespace GoContactSyncMod
                 syncThread.Start();
 
                 //if new version on sourceforge.net website than print an information to the log
-                VersionInformation.isNewVersionAvailable();
+                CheckVersion();
 
                 // wait for thread to start
                 for (int i = 0; !syncThread.IsAlive && i < 10; i++)
@@ -1383,10 +1378,45 @@ namespace GoContactSyncMod
             }
             else
             {
+                FormWindowState oldState = WindowState;
+                
                 Show();
                 Activate();
                 WindowState = FormWindowState.Normal;
                 fillSyncFolderItems();
+               
+                if (oldState != WindowState)
+                    CheckVersion();
+            }
+        }
+
+        private void CheckVersion()
+        {
+            if (!NewVersionLinkLabel.Visible)
+            {//Only check once, if new version is available
+
+                try
+                {
+                    Cursor = Cursors.WaitCursor;
+                    SuspendLayout();
+                    //check for new version
+                    if (NewVersionLinkLabel.LinkColor != Color.Red && VersionInformation.isNewVersionAvailable())
+                    {
+                        NewVersionLinkLabel.Visible = true;
+                        NewVersionLinkLabel.LinkColor = Color.Red;
+                        NewVersionLinkLabel.Text = "New Version of GCSM available on sf.net!";
+                        notifyIcon.BalloonTipClicked += notifyIcon_BalloonTipClickedDownloadNewVersion;
+                        ShowBalloonToolTip("New version available", "Click here to download", ToolTipIcon.Info, 20000, false);
+                    }
+
+                    NewVersionLinkLabel.Visible = true;
+                    
+                }
+                finally
+                {
+                    Cursor = Cursors.Default;
+                    ResumeLayout();
+                }
             }
         }
         private void HideForm()
@@ -1892,6 +1922,14 @@ namespace GoContactSyncMod
             //    autoSyncInterval.Value = autoSyncInterval.Minimum;
             //}
             syncTimer.Enabled = true;
+        }
+
+        private void NewVersionLinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            if (((LinkLabel)sender).LinkColor == Color.Red)
+                Process.Start("https://sourceforge.net/projects/googlesyncmod/files/latest/download");
+            else
+                Process.Start("https://sourceforge.net/projects/googlesyncmod");
         }
 
 
