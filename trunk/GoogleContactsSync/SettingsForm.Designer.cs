@@ -87,6 +87,7 @@ namespace GoContactSyncMod
             this.MainPanel = new System.Windows.Forms.Panel();
             this.MainSplitter = new System.Windows.Forms.Splitter();
             this.iconTimer = new System.Windows.Forms.Timer(this.components);
+            this.NewVersionLinkLabel = new System.Windows.Forms.LinkLabel();
             this.systemTrayMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.autoSyncInterval)).BeginInit();
             this.groupBox1.SuspendLayout();
@@ -1080,12 +1081,26 @@ namespace GoContactSyncMod
             this.iconTimer.Interval = 150;
             this.iconTimer.Tick += new System.EventHandler(this.iconTimer_Tick);
             // 
+            // NewVersionLinkLabel
+            // 
+            this.NewVersionLinkLabel.AutoSize = true;
+            this.NewVersionLinkLabel.LinkColor = System.Drawing.Color.Blue;
+            this.NewVersionLinkLabel.Location = new System.Drawing.Point(269, 603);
+            this.NewVersionLinkLabel.Name = "NewVersionLinkLabel";
+            this.NewVersionLinkLabel.Size = new System.Drawing.Size(412, 13);
+            this.NewVersionLinkLabel.TabIndex = 7;
+            this.NewVersionLinkLabel.TabStop = true;
+            this.NewVersionLinkLabel.Text = "Version of GCSM is uptodate, click to open GCSM homepage on sf.net!";
+            this.NewVersionLinkLabel.Visible = false;
+            this.NewVersionLinkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.NewVersionLinkLabel_LinkClicked);
+            // 
             // SettingsForm
             // 
             this.AcceptButton = this.syncButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1161, 628);
+            this.Controls.Add(this.NewVersionLinkLabel);
             this.Controls.Add(this.Donate);
             this.Controls.Add(this.MainPanel);
             this.Controls.Add(this.pictureBoxExit);
@@ -1189,6 +1204,7 @@ namespace GoContactSyncMod
         private System.Windows.Forms.ComboBox appointmentGoogleFoldersComboBox;
         private System.Windows.Forms.NumericUpDown futureMonthInterval;
         private System.Windows.Forms.NumericUpDown pastMonthInterval;
+        private System.Windows.Forms.LinkLabel NewVersionLinkLabel;
 
     }
 }
