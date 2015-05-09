@@ -88,6 +88,7 @@ namespace GoContactSyncMod
                 if (master.RecurrenceState == Outlook.OlRecurrenceState.olApptMaster)
                 {   //As Timezone is only mandatory for recurrence events
                     //If user has selected a timezone in settings form, use this as timezone, otherwise assign the Outlook timezoen (not working always and sometimes not compatible
+                    //A list of TZ can be found here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
                     if (!string.IsNullOrEmpty(Synchronizer.Timezone))
                     {
                         slave.Start.TimeZone = Synchronizer.Timezone;
