@@ -969,9 +969,11 @@ namespace GoContactSyncMod
                         }
                         else
                         {
-                            sync.UpdateAppointment(ref googleRecurrenceException, outlookRecurrenceException, null);
-                            outlookRecurrenceException.Save();
-                            Logger.Log("Updated recurrence exception from Google to Outlook: " + googleRecurrenceException.Summary + " - " + Synchronizer.GetTime(googleRecurrenceException), EventType.Information);
+                            if (sync.UpdateAppointment(ref googleRecurrenceException, outlookRecurrenceException, null))
+                            {
+                                outlookRecurrenceException.Save();
+                                Logger.Log("Updated recurrence exception from Google to Outlook: " + googleRecurrenceException.Summary + " - " + Synchronizer.GetTime(googleRecurrenceException), EventType.Information);
+                            }
                         }
                         ret = true;
 

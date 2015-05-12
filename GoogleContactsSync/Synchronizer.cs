@@ -1844,7 +1844,7 @@ namespace GoContactSyncMod
         /// <summary>
         /// Updates Outlook appointment from master to slave (including groups/categories)
         /// </summary>
-        public void UpdateAppointment(ref Google.Apis.Calendar.v3.Data.Event master, Outlook.AppointmentItem slave, List<Google.Apis.Calendar.v3.Data.Event> googleAppointmentExceptions)
+        public bool UpdateAppointment(ref Google.Apis.Calendar.v3.Data.Event master, Outlook.AppointmentItem slave, List<Google.Apis.Calendar.v3.Data.Event> googleAppointmentExceptions)
         {
                         
             //if (master.Participants.Count > 1)
@@ -1935,7 +1935,15 @@ namespace GoContactSyncMod
                 }
                 catch (Exception)
                 {
-                    slave.Save();
+                    try
+                    {
+                        slave.Save();
+                    }
+                    catch (COMException ex)
+                    {
+                        Logger.Log("Error saving Outlook appointment: \"" + master.Summary + " - " + GetTime(master) + "\".\n"+ex.StackTrace, EventType.Warning);
+                        return false;
+                    }
                 }
 
 
@@ -1952,10 +1960,10 @@ namespace GoContactSyncMod
 
                 //After saving Outlook Appointment => also sync recurrence exceptions and increase SyncCount
                 if (master.Recurrence != null && googleAppointmentExceptions != null && AppointmentSync.UpdateRecurrenceExceptions(googleAppointmentExceptions, slave, this))
-                    SyncedCount++;
+                    SyncedCount++;                
             }
 
-
+            return true;
         }
 
 
