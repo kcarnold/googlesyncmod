@@ -1,5 +1,12 @@
 # +++ NEWS +++ NEWS +++ NEWS +++
 
+### Version [3.9.9] - 12.05.2015
+
+###### SVN commits
+**r552 - r553**
+FIX: Improved GUI behavior, if CheckVersion fails (e.g. because of missing internet connection or wrong proxy settings)
+FIX: added America/Phoenix to the timezone Dropdown
+
 ### Version [3.9.8] - 04.05.2015
 
 ###### SVN commits
