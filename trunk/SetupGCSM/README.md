@@ -1,5 +1,12 @@
 # +++ NEWS +++ NEWS +++ NEWS +++
 
+### Version [3.9.10] - 16.05.2015
+
+###### SVN commits
+**r555 - r556**:
+FIX: Extended ListSeparator for GoogleGroups
+FIX: handle exception when saving Outlook appointment fails (log warning instead of stop and throw error)
+
 ### Version [3.9.9] - 12.05.2015
 
 ###### SVN commits
