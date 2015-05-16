@@ -277,8 +277,15 @@ namespace GoContactSyncMod
             if (outlookContactCategories == null)
                 return new string[] { };
 
-            char[] listseparator = ";".ToCharArray(); // Doesn't work, because returns "," instead of ";": System.Globalization.CultureInfo.CurrentCulture.TextInfo.ListSeparator.ToCharArray();
+            char[] listseparator = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ListSeparator.ToCharArray(); 
+            if (!outlookContactCategories.Contains(System.Globalization.CultureInfo.CurrentCulture.TextInfo.ListSeparator))
+            {// ListSeparator doesn't work always, because ListSeparator returns "," instead of ";"
+                listseparator = ",".ToCharArray();
+                if (!outlookContactCategories.Contains(","))
+                    listseparator = ";".ToCharArray();
+            }
             string[] categories = outlookContactCategories.Split(listseparator);
+
             for (int i = 0; i < categories.Length; i++)
             {
                 categories[i] = categories[i].Trim();
