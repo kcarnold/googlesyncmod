@@ -380,16 +380,16 @@ namespace GoContactSyncMod
         {
             try
             {                               
-
-                if (master.RecurrenceState != Outlook.OlRecurrenceState.olApptMaster)
-                    return;
-
+                
                 if (!master.IsRecurring)
                 {
                     if (slave.Recurrence != null)
                         slave.Recurrence = null;
                     return;
                 }
+
+                if (master.RecurrenceState != Outlook.OlRecurrenceState.olApptMaster)
+                    return;
 
                 Outlook.RecurrencePattern masterRecurrence = master.GetRecurrencePattern();
 
