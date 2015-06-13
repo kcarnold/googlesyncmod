@@ -84,25 +84,22 @@ namespace GoContactSyncMod
         private string syncAppointmentsGoogleFolder = "";
         private string Timezone = "";
 
-        private string syncProfile
+        //private string _syncProfile;
+        private string SyncProfile
         {
             get
             {
                 RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey);
-
-                //only for downside compliance reasons: load old registry settings first and save them later on in new structure
-                if (Registry.CurrentUser.OpenSubKey(@"Software\Webgear\GOContactSync") != null)
-                {
-                    regKeyAppRoot = Registry.CurrentUser.CreateSubKey(@"Software\Webgear\GOContactSync");
-                }
                 return (regKeyAppRoot.GetValue(RegistrySyncProfile) != null) ?
                        (string)regKeyAppRoot.GetValue(RegistrySyncProfile) : null;
             }
             set
             {
                 RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey);
-                if (!string.IsNullOrEmpty(value))
+                if ( value != null)
+                {
                     regKeyAppRoot.SetValue(RegistrySyncProfile, value);
+                }
             }
         }
 
@@ -181,11 +178,7 @@ namespace GoContactSyncMod
             
 		}
 
-        private void notifyIcon_BalloonTipClickedDownloadNewVersion(object sender, System.EventArgs e)
-        {
-            Process.Start("https://sourceforge.net/projects/googlesyncmod/files/latest/download");
-            notifyIcon.BalloonTipClicked -= notifyIcon_BalloonTipClickedDownloadNewVersion;
-        }
+        
 
         private void PopulateSyncOptionBox()
         {
@@ -335,7 +328,7 @@ namespace GoContactSyncMod
                         ResumeLayout();
                     }
 
-                    LoadSettingsFolders(syncProfile);
+                    LoadSettingsFolders(SyncProfile);
                 }
             }
         }
@@ -397,16 +390,16 @@ namespace GoContactSyncMod
                     cmbSyncProfile.Items.Add(subKeyName);
             }
 
-            if (string.IsNullOrEmpty(syncProfile))
-                syncProfile = "Default_" + System.Environment.MachineName;
+            if (SyncProfile == null)
+                SyncProfile = "Default_" + System.Environment.MachineName;
 
             if (cmbSyncProfile.Items.Count == 1)
-                cmbSyncProfile.Items.Add(syncProfile);
+                cmbSyncProfile.Items.Add(SyncProfile);
             else
                 vReturn = true;
 
             cmbSyncProfile.Items.Add("[Configuration manager...]");
-            cmbSyncProfile.Text = syncProfile;
+            cmbSyncProfile.Text = SyncProfile;
 
             return vReturn;
         }
@@ -592,7 +585,7 @@ namespace GoContactSyncMod
         {
             if (!string.IsNullOrEmpty(profile))
             {
-                syncProfile = cmbSyncProfile.Text;
+                SyncProfile = cmbSyncProfile.Text;
                 RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey + "\\" + profile);
                 regKeyAppRoot.SetValue(RegistrySyncOption, (int)syncOption);
 
@@ -746,7 +739,7 @@ namespace GoContactSyncMod
                     TimerSwitch(false);
 
                     //if the contacts or notes folder has changed ==> Reset matches (to not delete contacts or notes on the one or other side)                
-                    RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey + "\\" + syncProfile);
+                    RegistryKey regKeyAppRoot = Registry.CurrentUser.CreateSubKey(AppRootKey + "\\" + SyncProfile);
                     string oldSyncContactsFolder = regKeyAppRoot.GetValue(RegistrySyncContactsFolder) as string;
                     string oldSyncNotesFolder = regKeyAppRoot.GetValue(RegistrySyncNotesFolder) as string;
                     string oldSyncAppointmentsFolder = regKeyAppRoot.GetValue(RegistrySyncAppointmentsFolder) as string;
@@ -796,9 +789,9 @@ namespace GoContactSyncMod
 
                     Logger.ClearLog();
                     SetSyncConsoleText("");
-                    Logger.Log("Sync started (" + syncProfile + ").", EventType.Information);
+                    Logger.Log("Sync started (" + SyncProfile + ").", EventType.Information);
                     //SetSyncConsoleText(Logger.GetText());
-                    sync.SyncProfile = syncProfile;
+                    sync.SyncProfile = SyncProfile;
                     Synchronizer.SyncContactsFolder = this.syncContactsFolder;
                     Synchronizer.SyncNotesFolder = this.syncNotesFolder;
                     Synchronizer.SyncAppointmentsFolder = this.syncAppointmentsFolder;
@@ -1292,7 +1285,7 @@ namespace GoContactSyncMod
 
             Logger.ClearLog();
             SetSyncConsoleText("");
-            Logger.Log("Reset Matches started  (" + syncProfile + ").", EventType.Information);
+            Logger.Log("Reset Matches started  (" + SyncProfile + ").", EventType.Information);
 
             sync.SyncNotes = syncNotes;
             sync.SyncContacts = syncContacts;
@@ -1302,7 +1295,7 @@ namespace GoContactSyncMod
             Synchronizer.SyncNotesFolder = syncNotesFolder;
             Synchronizer.SyncAppointmentsFolder = syncAppointmentsFolder;
             Synchronizer.SyncAppointmentsGoogleFolder = syncAppointmentsGoogleFolder;
-            sync.SyncProfile = syncProfile;
+            sync.SyncProfile = SyncProfile;
 
             sync.LoginToGoogle(UserName.Text);
             sync.LoginToOutlook();
@@ -1419,6 +1412,13 @@ namespace GoContactSyncMod
                 }
             }
         }
+
+        private void notifyIcon_BalloonTipClickedDownloadNewVersion(object sender, System.EventArgs e)
+        {
+            Process.Start("https://sourceforge.net/projects/googlesyncmod/files/latest/download");
+            notifyIcon.BalloonTipClicked -= notifyIcon_BalloonTipClickedDownloadNewVersion;
+        }
+
         private void HideForm()
         {
             WindowState = FormWindowState.Minimized;
@@ -1593,7 +1593,7 @@ namespace GoContactSyncMod
 
                 if (0 == comboBox.SelectedIndex && _configs != null)
                 {
-                    syncProfile = _configs.AddProfile();
+                    SyncProfile = _configs.AddProfile();
                     ClearSettings();
                 }
 
@@ -1602,7 +1602,7 @@ namespace GoContactSyncMod
 
                 fillSyncProfileItems();
 
-                comboBox.Text = syncProfile;
+                comboBox.Text = SyncProfile;
                 SaveSettings();
             }
             if (comboBox.SelectedIndex < 0)
@@ -1611,7 +1611,7 @@ namespace GoContactSyncMod
             {
                 //ClearSettings();
                 LoadSettings(comboBox.Text);
-                syncProfile = comboBox.Text;
+                SyncProfile = comboBox.Text;
             }
 
             ValidateSyncButton();

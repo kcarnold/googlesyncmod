@@ -923,8 +923,8 @@ namespace GoContactSyncMod
             this.linkLabelRevokeAuthentication.TabIndex = 8;
             this.linkLabelRevokeAuthentication.TabStop = true;
             this.linkLabelRevokeAuthentication.Text = "Revoke Authentication";
-            this.toolTip.SetToolTip(this.linkLabelRevokeAuthentication, "If you want to authentificate GoogleContactsSyncMod again, or if something didn\'t" +
-        " work corecctly with autehtification.");
+            this.toolTip.SetToolTip(this.linkLabelRevokeAuthentication, "If you want to authenticate GoogleContactsSyncMod again, or if something didn\'t w" +
+        "ork corecctly with authenication.");
             this.linkLabelRevokeAuthentication.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelRevokeAuthentication_LinkClicked);
             // 
             // chkUseFileAs
