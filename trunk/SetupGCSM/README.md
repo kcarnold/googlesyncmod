@@ -4,16 +4,16 @@
 
 ###### SVN commits
 **r555 - r557**:
-FIX: Remove recurrence from slave, if removed from master
-FIX: Extended ListSeparator for GoogleGroups
-FIX: handle exception when saving Outlook appointment fails (log warning instead of stop and throw error)
+	- FIX: Remove recurrence from slave, if removed from master
+	- FIX: Extended ListSeparator for GoogleGroups
+	- FIX: handle exception when saving Outlook appointment fails (log warning instead of stop and throw error)
 
 ### Version [3.9.9] - 12.05.2015
 
 ###### SVN commits
 **r552 - r553**
-FIX: Improved GUI behavior, if CheckVersion fails (e.g. because of missing internet connection or wrong proxy settings)
-FIX: added America/Phoenix to the timezone Dropdown
+	- FIX: Improved GUI behavior, if CheckVersion fails (e.g. because of missing internet connection or wrong proxy settings)
+	- FIX: added America/Phoenix to the timezone Dropdown
 
 ### Version [3.9.8] - 04.05.2015
 

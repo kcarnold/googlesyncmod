@@ -264,8 +264,10 @@ namespace GoContactSyncMod
             //if (!IsOrganizer(GetOrganizer(master)) || !IsOrganizer(GetOrganizer(slave), slave))
             //    slave.MeetingStatus = Outlook.OlMeetingStatus.olMeetingReceived;
 
-            slave.BusyStatus = Outlook.OlBusyStatus.olBusy;
-            if (master.Status.Equals("tentative"))
+            //if (master.Status.Equals("confirmed"))
+            //    slave.BusyStatus = Outlook.OlBusyStatus.olBusy;
+            //else
+            if (master.Status.Equals("tentative")) //ToDo: Doesn'T work, because Google items are always returned confirmed or cancelled, even if tentative, it is not returned ==> Google bug
                 slave.BusyStatus = Outlook.OlBusyStatus.olTentative;
             else if (master.Status.Equals("cancelled"))
                 slave.BusyStatus = Outlook.OlBusyStatus.olFree;       
