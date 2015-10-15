@@ -1,5 +1,20 @@
 # +++ NEWS +++ NEWS +++ NEWS +++
 
+### Version [3.9.11] - 15.10.2015
+**r560 - r562**:
+	- FIX: Referenced Outlook 2013 Interop API and copied it locally, maybe now runnable with Outlook 2016?
+	- FIX: Workaround, to not overwrite tentative/free Calendar items, see [bugs:#709]
+	- FIX: [bugs:#731]
+	- UPDATE: nuget packages
+	- FIX: dont load old registry settings to avoid profile errors
+
+###### SVN commits
+**r555 - r557**:
+	- FIX: Remove recurrence from slave, if removed from master
+	- FIX: Extended ListSeparator for GoogleGroups
+	- FIX: handle exception when saving Outlook appointment fails (log warning instead of stop and throw error)
+
+
 ### Version [3.9.10] - 16.05.2015
 
 ###### SVN commits
