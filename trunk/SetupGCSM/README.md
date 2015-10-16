@@ -1,8 +1,12 @@
 # +++ NEWS +++ NEWS +++ NEWS +++
 
+### Version [3.9.12] - 16.10.2015
+- Reverted change from 3.9.11: Referenced Outlook 2013 Interop API and copied it locally
+	turned out, also not runnable with Outlook 2016
+	and has issues with Older Office 2010 and 2007 installations
+
 ### Version [3.9.11] - 15.10.2015
-**r560 - r562**:
-	- FIX: Referenced Outlook 2013 Interop API and copied it locally, maybe now runnable with Outlook 2016?
+**r560 - r562**:	
 	- FIX: Workaround, to not overwrite tentative/free Calendar items, see [bugs:#709]
 	- FIX: [bugs:#731]
 	- UPDATE: nuget packages
